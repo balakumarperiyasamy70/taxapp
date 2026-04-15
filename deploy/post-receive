@@ -1,0 +1,47 @@
+#!/bin/bash
+# Git post-receive hook — runs on VPS after git push
+# Place at: /var/repo/taxapp.git/hooks/post-receive
+
+TARGET_BACKEND="/var/www/taxapp/backend"
+TARGET_FRONTEND_EXT="/var/www/taxapp/frontend-extension"
+TARGET_FRONTEND_FILING="/var/www/taxapp/frontend-filing"
+TARGET_FRONTEND_LOAN="/var/www/taxapp/frontend-loan"
+GIT_DIR="/var/repo/taxapp.git"
+WORK_TREE="/tmp/taxapp-deploy"
+
+echo "==> Deploying TaxApp..."
+
+# Checkout latest code to temp dir
+rm -rf $WORK_TREE
+git --work-tree=$WORK_TREE --git-dir=$GIT_DIR checkout -f main
+
+# --- Backend ---
+echo "==> Updating backend..."
+rsync -a --delete $WORK_TREE/backend/ $TARGET_BACKEND/
+cd $TARGET_BACKEND
+source venv/bin/activate
+pip install -r requirements.txt -q
+alembic upgrade head
+deactivate
+
+# Restart FastAPI
+sudo systemctl restart taxapp-backend
+
+# --- Frontend: extension ---
+echo "==> Building frontend-extension..."
+cd $WORK_TREE/frontend
+npm ci --silent
+VITE_APP=extension npm run build -- --outDir $TARGET_FRONTEND_EXT/dist
+
+# --- Frontend: filing ---
+echo "==> Building frontend-filing..."
+VITE_APP=filing npm run build -- --outDir $TARGET_FRONTEND_FILING/dist
+
+# --- Frontend: loan ---
+echo "==> Building frontend-loan..."
+VITE_APP=loan npm run build -- --outDir $TARGET_FRONTEND_LOAN/dist
+
+# Reload Nginx
+sudo systemctl reload nginx
+
+echo "==> Deploy complete."

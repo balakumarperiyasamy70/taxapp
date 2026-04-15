@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Home",
+    "extension": "File Extension",
+    "taxfiling": "File Taxes",
+    "loan": "Refund Loan",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone Number",
+    "login": "Login",
+    "register": "Create Account",
+    "mfaCode": "Authenticator Code",
+    "loginTitle": "Sign In",
+    "registerTitle": "Create Your Account"
+  },
+  "identity": {
+    "title": "Verify Your Identity",
+    "ssn": "Social Security Number",
+    "dob": "Date of Birth",
+    "verify": "Verify Identity"
+  },
+  "extension": {
+    "title": "File Tax Extension (Form 4868)",
+    "subtitle": "Get 6 more months to file your federal tax return",
+    "taxYear": "Tax Year",
+    "estimatedTax": "Estimated Total Tax",
+    "taxPayments": "Payments Already Made",
+    "balanceDue": "Balance Due",
+    "submit": "Submit Extension",
+    "success": "Your extension has been submitted successfully!"
+  },
+  "filing": {
+    "title": "File Your Tax Return",
+    "filingStatus": "Filing Status",
+    "single": "Single",
+    "marriedJoint": "Married Filing Jointly",
+    "marriedSeparate": "Married Filing Separately",
+    "headHousehold": "Head of Household",
+    "wages": "Wages (W-2)",
+    "interest": "Interest Income",
+    "dividends": "Dividends",
+    "otherIncome": "Other Income",
+    "standardDeduction": "Use Standard Deduction",
+    "submit": "Submit Return",
+    "refundAmount": "Estimated Refund",
+    "taxOwed": "Tax Owed"
+  },
+  "loan": {
+    "title": "Apply for Refund Advance Loan",
+    "subtitle": "Get up to $4,000 before your IRS refund arrives",
+    "amount": "Loan Amount",
+    "maxAmount": "Maximum: $4,000",
+    "bankRouting": "Bank Routing Number",
+    "bankAccount": "Bank Account Number",
+    "apply": "Apply Now",
+    "pending": "Application Pending",
+    "approved": "Approved",
+    "denied": "Denied",
+    "disbursed": "Funds Disbursed"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "invalidSSN": "Invalid SSN format (XXX-XX-XXXX)",
+    "maxLoan": "Maximum loan amount is $4,000"
+  }
+}

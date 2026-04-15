@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "extension": "Solicitar Extensión",
+    "taxfiling": "Declarar Impuestos",
+    "loan": "Préstamo de Reembolso",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar Sesión"
+  },
+  "auth": {
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "phone": "Número de Teléfono",
+    "login": "Iniciar Sesión",
+    "register": "Crear Cuenta",
+    "mfaCode": "Código de Autenticación",
+    "loginTitle": "Iniciar Sesión",
+    "registerTitle": "Crear Su Cuenta"
+  },
+  "identity": {
+    "title": "Verificar Su Identidad",
+    "ssn": "Número de Seguro Social",
+    "dob": "Fecha de Nacimiento",
+    "verify": "Verificar Identidad"
+  },
+  "extension": {
+    "title": "Solicitar Extensión de Impuestos (Formulario 4868)",
+    "subtitle": "Obtenga 6 meses adicionales para presentar su declaración federal",
+    "taxYear": "Año Fiscal",
+    "estimatedTax": "Impuesto Total Estimado",
+    "taxPayments": "Pagos Ya Realizados",
+    "balanceDue": "Saldo Pendiente",
+    "submit": "Enviar Extensión",
+    "success": "¡Su extensión ha sido enviada exitosamente!"
+  },
+  "filing": {
+    "title": "Presentar Su Declaración de Impuestos",
+    "filingStatus": "Estado Civil Tributario",
+    "single": "Soltero/a",
+    "marriedJoint": "Casado/a en Declaración Conjunta",
+    "marriedSeparate": "Casado/a en Declaración Separada",
+    "headHousehold": "Jefe de Familia",
+    "wages": "Salarios (W-2)",
+    "interest": "Ingresos por Intereses",
+    "dividends": "Dividendos",
+    "otherIncome": "Otros Ingresos",
+    "standardDeduction": "Usar Deducción Estándar",
+    "submit": "Enviar Declaración",
+    "refundAmount": "Reembolso Estimado",
+    "taxOwed": "Impuesto a Pagar"
+  },
+  "loan": {
+    "title": "Solicitar Préstamo Anticipado de Reembolso",
+    "subtitle": "Obtenga hasta $4,000 antes de que llegue su reembolso del IRS",
+    "amount": "Monto del Préstamo",
+    "maxAmount": "Máximo: $4,000",
+    "bankRouting": "Número de Ruta Bancaria",
+    "bankAccount": "Número de Cuenta Bancaria",
+    "apply": "Solicitar Ahora",
+    "pending": "Solicitud Pendiente",
+    "approved": "Aprobado",
+    "denied": "Denegado",
+    "disbursed": "Fondos Desembolsados"
+  },
+  "errors": {
+    "required": "Este campo es obligatorio",
+    "invalidEmail": "Dirección de correo inválida",
+    "invalidSSN": "Formato de SSN inválido (XXX-XX-XXXX)",
+    "maxLoan": "El monto máximo del préstamo es $4,000"
+  }
+}
