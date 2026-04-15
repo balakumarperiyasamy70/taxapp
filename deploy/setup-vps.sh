@@ -30,34 +30,30 @@ echo "==> Setting up PostgreSQL..."
 sudo -u postgres psql -c "CREATE USER taxapp_user WITH PASSWORD 'CHANGE_ME_NOW';" || true
 sudo -u postgres psql -c "CREATE DATABASE taxapp_db OWNER taxapp_user;" || true
 
-echo "==> Creating bare git repo..."
-mkdir -p /var/repo/taxapp.git
-git init --bare /var/repo/taxapp.git
+echo "==> Cloning repo from GitHub..."
+git clone https://github.com/balakumarperiyasamy70/taxapp.git /var/www/taxapp/repo
 
-echo "==> Installing post-receive deploy hook..."
-cat > /var/repo/taxapp.git/hooks/post-receive << 'HOOK'
+echo "==> Installing deploy script..."
+cat > /usr/local/bin/taxapp-deploy << 'DEPLOY'
 #!/bin/bash
 set -e
 
-WORK_TREE="/tmp/taxapp-deploy"
-GIT_DIR="/var/repo/taxapp.git"
-
-echo "==> Deploying TaxApp..."
-rm -rf $WORK_TREE
-git --work-tree=$WORK_TREE --git-dir=$GIT_DIR checkout -f master
+echo "==> Pulling latest from GitHub..."
+cd /var/www/taxapp/repo
+git pull origin master
 
 # Backend
 echo "==> Updating backend..."
-rsync -a --delete $WORK_TREE/backend/ /var/www/taxapp/backend/
+rsync -a --delete /var/www/taxapp/repo/backend/ /var/www/taxapp/backend/
 cd /var/www/taxapp/backend
 source venv/bin/activate
 pip install -r requirements.txt -q
-alembic upgrade head 2>/dev/null || echo "  (skipping migrations — alembic not yet configured)"
+alembic upgrade head 2>/dev/null || echo "  (skipping migrations)"
 deactivate
 
 # Frontend: extension
 echo "==> Building frontend-extension..."
-cd $WORK_TREE/frontend
+cd /var/www/taxapp/repo/frontend
 npm ci --silent
 VITE_SITE=extension npx vite build --outDir /var/www/taxapp/frontend-extension/dist --emptyOutDir
 
@@ -71,15 +67,13 @@ VITE_SITE=loan npx vite build --outDir /var/www/taxapp/frontend-loan/dist --empt
 
 # Restart backend
 echo "==> Restarting backend..."
-sudo systemctl restart taxapp-backend
-
-# Reload Nginx
-sudo systemctl reload nginx
+systemctl restart taxapp-backend
+systemctl reload nginx
 
 echo "==> Deploy complete!"
-HOOK
+DEPLOY
 
-chmod +x /var/repo/taxapp.git/hooks/post-receive
+chmod +x /usr/local/bin/taxapp-deploy
 
 echo "==> Configuring Nginx..."
 sudo cp ~/setup-vps.sh /dev/null 2>/dev/null || true  # no-op placeholder
@@ -130,12 +124,9 @@ echo "============================================"
 echo " VPS setup complete!"
 echo "============================================"
 echo ""
-echo " Next — on your LOCAL machine run:"
-echo "   cd taxapp"
-echo "   git remote add vps ssh://root@129.121.85.32/var/repo/taxapp.git"
-echo "   git push vps master"
-echo ""
-echo " That will trigger the post-receive hook and deploy everything."
+echo " Deployment workflow:"
+echo "   1. On local: git push origin master"
+echo "   2. On VPS:   taxapp-deploy"
 echo ""
 echo " IMPORTANT: Before first push, create .env on VPS:"
 echo "   nano /var/www/taxapp/backend/.env"
