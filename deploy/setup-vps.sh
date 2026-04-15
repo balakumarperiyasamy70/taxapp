@@ -1,6 +1,6 @@
 #!/bin/bash
 # Run ONCE on Bluehost VPS to prepare the server.
-# After this, all deploys happen via: git push vps master
+# After this, all deploys happen via: git push origin master → ssh → taxapp-deploy
 # Usage: bash setup-vps.sh
 
 set -e
@@ -16,22 +16,22 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
 echo "==> Creating app directories..."
-sudo mkdir -p /var/www/taxapp/backend
-sudo mkdir -p /var/www/taxapp/frontend-extension/dist
-sudo mkdir -p /var/www/taxapp/frontend-filing/dist
-sudo mkdir -p /var/www/taxapp/frontend-loan/dist
-sudo mkdir -p /var/taxapp/uploads
-sudo chown -R $USER:$USER /var/www/taxapp /var/taxapp
+sudo mkdir -p /opt/taxapp/backend
+sudo mkdir -p /opt/taxapp/frontend-extension/dist
+sudo mkdir -p /opt/taxapp/frontend-filing/dist
+sudo mkdir -p /opt/taxapp/frontend-loan/dist
+sudo mkdir -p /opt/taxapp/uploads
+sudo chown -R $USER:$USER /opt/taxapp
 
 echo "==> Setting up Python venv..."
-python3 -m venv /var/www/taxapp/backend/venv
+python3 -m venv /opt/taxapp/backend/venv
 
 echo "==> Setting up PostgreSQL..."
 sudo -u postgres psql -c "CREATE USER taxapp_user WITH PASSWORD 'CHANGE_ME_NOW';" || true
 sudo -u postgres psql -c "CREATE DATABASE taxapp_db OWNER taxapp_user;" || true
 
 echo "==> Cloning repo from GitHub..."
-git clone https://github.com/balakumarperiyasamy70/taxapp.git /var/www/taxapp/repo
+git clone https://github.com/balakumarperiyasamy70/taxapp.git /opt/taxapp/repo
 
 echo "==> Installing deploy script..."
 cat > /usr/local/bin/taxapp-deploy << 'DEPLOY'
@@ -39,13 +39,13 @@ cat > /usr/local/bin/taxapp-deploy << 'DEPLOY'
 set -e
 
 echo "==> Pulling latest from GitHub..."
-cd /var/www/taxapp/repo
+cd /opt/taxapp/repo
 git pull origin master
 
 # Backend
 echo "==> Updating backend..."
-rsync -a --delete /var/www/taxapp/repo/backend/ /var/www/taxapp/backend/
-cd /var/www/taxapp/backend
+rsync -a --delete /opt/taxapp/repo/backend/ /opt/taxapp/backend/
+cd /opt/taxapp/backend
 source venv/bin/activate
 pip install -r requirements.txt -q
 alembic upgrade head 2>/dev/null || echo "  (skipping migrations)"
@@ -53,17 +53,17 @@ deactivate
 
 # Frontend: extension
 echo "==> Building frontend-extension..."
-cd /var/www/taxapp/repo/frontend
+cd /opt/taxapp/repo/frontend
 npm ci --silent
-VITE_SITE=extension npx vite build --outDir /var/www/taxapp/frontend-extension/dist --emptyOutDir
+VITE_SITE=extension npx vite build --outDir /opt/taxapp/frontend-extension/dist --emptyOutDir
 
 # Frontend: filing
 echo "==> Building frontend-filing..."
-VITE_SITE=filing npx vite build --outDir /var/www/taxapp/frontend-filing/dist --emptyOutDir
+VITE_SITE=filing npx vite build --outDir /opt/taxapp/frontend-filing/dist --emptyOutDir
 
 # Frontend: loan
 echo "==> Building frontend-loan..."
-VITE_SITE=loan npx vite build --outDir /var/www/taxapp/frontend-loan/dist --emptyOutDir
+VITE_SITE=loan npx vite build --outDir /opt/taxapp/frontend-loan/dist --emptyOutDir
 
 # Restart backend
 echo "==> Restarting backend..."
@@ -76,9 +76,6 @@ DEPLOY
 chmod +x /usr/local/bin/taxapp-deploy
 
 echo "==> Configuring Nginx..."
-sudo cp ~/setup-vps.sh /dev/null 2>/dev/null || true  # no-op placeholder
-# Nginx config will be deployed on first git push
-# For now create a minimal placeholder
 sudo tee /etc/nginx/sites-available/taxapp > /dev/null << 'NGINX'
 server {
     listen 80;
@@ -106,10 +103,10 @@ After=network.target postgresql.service
 
 [Service]
 User=root
-WorkingDirectory=/var/www/taxapp/backend
-ExecStart=/var/www/taxapp/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+WorkingDirectory=/opt/taxapp/backend
+ExecStart=/opt/taxapp/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 Restart=always
-EnvironmentFile=/var/www/taxapp/backend/.env
+EnvironmentFile=/opt/taxapp/backend/.env
 
 [Install]
 WantedBy=multi-user.target
@@ -117,17 +114,17 @@ SERVICE
 
 sudo systemctl daemon-reload
 sudo systemctl enable taxapp-backend
-# NOTE: backend starts automatically after first git push deploys the code
 
 echo ""
 echo "============================================"
 echo " VPS setup complete!"
 echo "============================================"
 echo ""
-echo " Deployment workflow:"
-echo "   1. On local: git push origin master"
-echo "   2. On VPS:   taxapp-deploy"
+echo " IMPORTANT: Create .env before first deploy:"
+echo "   cp /opt/taxapp/repo/backend/.env.example /opt/taxapp/backend/.env"
+echo "   nano /opt/taxapp/backend/.env"
 echo ""
-echo " IMPORTANT: Before first push, create .env on VPS:"
-echo "   nano /var/www/taxapp/backend/.env"
+echo " Deployment workflow:"
+echo "   1. Local: git push origin master"
+echo "   2. VPS:   taxapp-deploy"
 echo "============================================"
