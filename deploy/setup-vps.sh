@@ -104,7 +104,7 @@ After=network.target postgresql.service
 [Service]
 User=root
 WorkingDirectory=/opt/taxapp/backend
-ExecStart=/opt/taxapp/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+ExecStart=/opt/taxapp/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8003
 Restart=always
 EnvironmentFile=/opt/taxapp/backend/.env
 
