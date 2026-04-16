@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import api from '../services/api'
 import styles from './Form.module.css'
@@ -8,7 +8,9 @@ import styles from './Form.module.css'
 export default function Login() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
   const { setAuth } = useAuthStore()
+  const successMessage = (location.state as any)?.message || ''
   const [form, setForm] = useState({ email: '', password: '', mfa_code: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -31,6 +33,7 @@ export default function Login() {
   return (
     <div className={styles.card}>
       <h2>{t('auth.loginTitle')}</h2>
+      {successMessage && <div className={styles.success}>{successMessage}</div>}
       {error && <div className={styles.error}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <label>{t('auth.email')}
@@ -46,6 +49,9 @@ export default function Login() {
           {loading ? '...' : t('auth.login')}
         </button>
       </form>
+      <p className={styles.switchLink}>
+        <Link to="/forgot-password">Forgot password?</Link>
+      </p>
       <p className={styles.switchLink}>
         Don't have an account? <Link to="/register">{t('auth.register')}</Link>
       </p>

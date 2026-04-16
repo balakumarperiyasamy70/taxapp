@@ -25,5 +25,7 @@ class User(Base):
     is_verified = Column(Boolean, default=False)   # identity verified
     mfa_secret = Column(String)                    # TOTP secret (encrypted)
     mfa_enabled = Column(Boolean, default=False)
+    reset_token = Column(String, nullable=True)
+    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

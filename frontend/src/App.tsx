@@ -8,6 +8,8 @@ import Extension4868 from './pages/Extension4868'
 import TaxFiling1040 from './pages/TaxFiling1040'
 import LoanApplication from './pages/LoanApplication'
 import Dashboard from './pages/Dashboard'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import { useAuthStore } from './store/authStore'
 
 export default function App() {
@@ -26,6 +28,8 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify" element={token ? <VerifyIdentity /> : <Navigate to="/login" />} />
         <Route path="/dashboard" element={token ? <Dashboard site={site} /> : <Navigate to="/login" />} />
         <Route path="/extension" element={token ? <Extension4868 /> : <Navigate to="/login" />} />

@@ -18,6 +18,13 @@ class Settings(BaseSettings):
     upload_dir: str = "/var/taxapp/uploads"
     allowed_origins: str = "http://localhost:3000"
 
+    smtp_host: str = "127.0.0.1"
+    smtp_port: int = 587
+    smtp_user: str = "noreply@taxrefundloan.us"
+    smtp_password: str = ""
+    smtp_from: str = "noreply@taxrefundloan.us"
+    frontend_base_url: str = "https://loan.taxrefundloan.us"
+
     class Config:
         env_file = ".env"
 
