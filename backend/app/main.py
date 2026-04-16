@@ -1,12 +1,25 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.config import get_settings
+from app.database import engine
 from app.routers import auth, users, tax, loans, documents
 
 settings = get_settings()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Import all models so Base picks them up, then create tables
+    from app.models import user, tax_return, loan, document  # noqa: F401
+    from app.database import Base
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="TaxApp API",
     description="Tax filing and refund loan platform",
     version="1.0.0",
