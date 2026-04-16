@@ -54,7 +54,7 @@ deactivate
 # Frontend: extension
 echo "==> Building frontend-extension..."
 cd /opt/taxapp.conf/repo/frontend
-npm ci --silent
+npm install --silent
 VITE_SITE=extension npx vite build --outDir /opt/taxapp.conf/frontend-extension/dist --emptyOutDir
 
 # Frontend: filing
