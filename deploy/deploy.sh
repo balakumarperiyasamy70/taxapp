@@ -18,8 +18,8 @@ alembic upgrade head 2>/dev/null || echo "  (no migrations to run)"
 deactivate
 
 echo "==> Deploying homepage..."
-mkdir -p /var/taxapp
-cp -r /opt/taxapp/repo/public/* /var/taxapp/
+mkdir -p /opt/taxapp/public
+cp -r /opt/taxapp/repo/public/* /opt/taxapp/public/
 
 echo "==> Restarting backend..."
 systemctl restart taxapp
