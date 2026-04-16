@@ -1,0 +1,48 @@
+.wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  height: 64px;
+  background: #1a1a2e;
+  color: white;
+}
+
+.brand a { color: white; font-size: 1.1rem; font-weight: 600; }
+
+.navLinks { display: flex; align-items: center; gap: 1.5rem; }
+.navLinks a { color: #ccc; font-size: 0.95rem; }
+.navLinks a:hover { color: white; }
+
+.btnLink { background: none; border: none; color: #ccc; font-size: 0.95rem; padding: 0; }
+.btnLink:hover { color: white; }
+
+.btnPrimary {
+  background: #e63946;
+  color: white !important;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.langBtn {
+  background: none;
+  border: 1px solid #555;
+  color: #ccc;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+.langBtn:hover { border-color: white; color: white; }
+
+.main { flex: 1; padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%; }
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  background: #1a1a2e;
+  color: #888;
+  font-size: 0.85rem;
+}
