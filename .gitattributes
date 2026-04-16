@@ -1,0 +1,9 @@
+# Force LF line endings for all files deployed to Linux
+* text=auto eol=lf
+
+# Explicitly LF for deploy files
+deploy/*.sh text eol=lf
+deploy/*.conf text eol=lf
+
+# Windows-only files
+*.bat text eol=crlf
