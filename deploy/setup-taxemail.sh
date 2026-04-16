@@ -64,7 +64,7 @@ add_mailbox "taxfiling"      "Tax Filing"                 "Tax"       "Filing"
 add_mailbox "refund"         "Refund TaxRefundLoan"       "Refund"    "TaxRefundLoan"
 
 echo "==> Adding DB columns for password reset..."
-psql -U taxapp_user -d taxapp_db -c "
+psql -h 127.0.0.1 -U taxapp_user -d taxapp_db -c "
 ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;"
 
