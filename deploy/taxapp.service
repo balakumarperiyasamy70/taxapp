@@ -1,0 +1,13 @@
+[Unit]
+Description=TaxApp FastAPI
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/taxapp/backend
+ExecStart=/opt/taxapp/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8003
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
