@@ -10,9 +10,17 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 7
     encryption_key: str
 
-    irs_efin: str = ""
-    irs_mef_url: str = "https://la.www4.irs.gov/mef/"
-    irs_mef_test_url: str = "https://la.www4.irs.gov/mef/test/"
+    # IRS MeF (direct — requires EFIN, on hold)
+    # irs_efin: str = ""
+    # irs_mef_url: str = "https://la.www4.irs.gov/mef/"
+    # irs_mef_test_url: str = "https://la.www4.irs.gov/mef/test/"
+
+    # TaxBandits (active transmitter)
+    taxbandits_client_id: str = ""
+    taxbandits_client_secret: str = ""
+    taxbandits_user_token: str = ""
+    taxbandits_base_url: str = "https://sandbox.taxbandits.com"
+    taxbandits_auth_url: str = "https://testoauth.expressauth.net/v2/tbsauth"
 
     app_env: str = "development"
     upload_dir: str = "/var/taxapp/uploads"
