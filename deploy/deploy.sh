@@ -17,6 +17,17 @@ pip install -r requirements.txt -q
 alembic upgrade head 2>/dev/null || echo "  (no migrations to run)"
 deactivate
 
+echo "==> Building frontend-extension..."
+cd /opt/taxapp/repo/frontend
+npm install --silent
+VITE_SITE=extension npx vite build --outDir /opt/taxapp/frontend-extension/dist --emptyOutDir
+
+echo "==> Building frontend-filing..."
+VITE_SITE=filing npx vite build --outDir /opt/taxapp/frontend-filing/dist --emptyOutDir
+
+echo "==> Building frontend-loan..."
+VITE_SITE=loan npx vite build --outDir /opt/taxapp/frontend-loan/dist --emptyOutDir
+
 echo "==> Deploying homepage..."
 mkdir -p /opt/taxapp/public
 cp -r /opt/taxapp/repo/public/* /opt/taxapp/public/
