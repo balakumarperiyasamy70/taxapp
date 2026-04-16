@@ -3,6 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import styles from './Layout.module.css'
 
+const SITES = {
+  extension: { label: 'File Extension', url: 'https://fileextension.taxrefundloan.us' },
+  filing:    { label: 'File Taxes',     url: 'https://taxfiling.taxrefundloan.us' },
+  loan:      { label: 'Refund Loan',    url: 'https://loan.taxrefundloan.us' },
+}
+
 interface Props {
   site: string
   children: React.ReactNode
@@ -24,17 +30,24 @@ export default function Layout({ site, children }: Props) {
     <div className={styles.wrapper}>
       <nav className={styles.nav}>
         <div className={styles.brand}>
-          {site === 'extension' && <Link to="/">TaxRefundLoan — File Extension</Link>}
-          {site === 'filing' && <Link to="/">TaxRefundLoan — File Taxes</Link>}
-          {site === 'loan' && <Link to="/">TaxRefundLoan — Refund Loan</Link>}
+          <a href="/">TaxRefundLoan — {SITES[site as keyof typeof SITES]?.label}</a>
         </div>
         <div className={styles.navLinks}>
+          {/* Cross-product links — always visible */}
+          {(Object.keys(SITES) as Array<keyof typeof SITES>).map(key =>
+            key !== site ? (
+              <a key={key} href={SITES[key].url} className={styles.siteLink}>
+                {SITES[key].label}
+              </a>
+            ) : null
+          )}
+
           {token ? (
             <>
               <Link to="/dashboard">{t('nav.home')}</Link>
               {site === 'extension' && <Link to="/extension">{t('nav.extension')}</Link>}
-              {site === 'filing' && <Link to="/filing">{t('nav.taxfiling')}</Link>}
-              {site === 'loan' && <Link to="/loan">{t('nav.loan')}</Link>}
+              {site === 'filing'    && <Link to="/filing">{t('nav.taxfiling')}</Link>}
+              {site === 'loan'      && <Link to="/loan">{t('nav.loan')}</Link>}
               <button onClick={handleLogout} className={styles.btnLink}>{t('nav.logout')}</button>
             </>
           ) : (

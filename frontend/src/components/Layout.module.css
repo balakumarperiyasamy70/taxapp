@@ -16,6 +16,15 @@
 .navLinks a { color: #ccc; font-size: 0.95rem; }
 .navLinks a:hover { color: white; }
 
+.siteLink {
+  color: #a8d8f0 !important;
+  font-size: 0.85rem;
+  border: 1px solid #3a4a6b;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+.siteLink:hover { color: white !important; border-color: #6a8abf; }
+
 .btnLink { background: none; border: none; color: #ccc; font-size: 0.95rem; padding: 0; }
 .btnLink:hover { color: white; }
 
