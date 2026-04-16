@@ -9,6 +9,12 @@ class Form4868(BaseModel):
     last_name: str
     ssn: str
     spouse_ssn: Optional[str] = None
+    spouse_first_name: Optional[str] = None
+    spouse_last_name: Optional[str] = None
+    spouse_phone: Optional[str] = None
+    spouse_pin: Optional[str] = None
+    spouse_dob: Optional[str] = None
+    spouse_prev_year_agi: Optional[float] = None
     address: str
     city: str
     state: str
@@ -16,6 +22,10 @@ class Form4868(BaseModel):
     estimated_tax: float        # total tax liability
     tax_payments: float         # already paid
     balance_due: float
+    # TaxBandits signature fields
+    pin: str                    # 5-digit IRS self-select PIN
+    dob: str                    # MM/DD/YYYY
+    prev_year_agi: float        # prior year adjusted gross income
 
 
 class Form1040(BaseModel):

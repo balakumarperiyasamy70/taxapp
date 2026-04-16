@@ -23,7 +23,8 @@ export default function Extension4868() {
   const [form, setForm] = useState({
     tax_year: 2024, first_name: '', last_name: '', ssn: '',
     address: '', city: '', state: '', zip_code: '',
-    estimated_tax: '', tax_payments: '', balance_due: ''
+    estimated_tax: '', tax_payments: '', balance_due: '',
+    pin: '', dob: '', prev_year_agi: ''
   })
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
@@ -73,6 +74,7 @@ export default function Extension4868() {
         estimated_tax: parseFloat(form.estimated_tax),
         tax_payments: parseFloat(form.tax_payments),
         balance_due: parseFloat(form.balance_due),
+        prev_year_agi: parseFloat(form.prev_year_agi),
       })
       setResult(res.data)
     } catch (err: any) {
@@ -201,6 +203,46 @@ export default function Extension4868() {
             min="0"
             value={form.balance_due}
             onChange={e => set('balance_due', e.target.value)}
+            required
+          />
+        </label>
+
+        <hr style={{ margin: '16px 0', borderColor: 'rgba(255,255,255,0.1)' }} />
+        <p style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: '8px' }}>
+          IRS Identity Verification (required for e-filing)
+        </p>
+
+        <label>Date of Birth
+          <input
+            type="text"
+            placeholder="MM/DD/YYYY"
+            value={form.dob}
+            onChange={e => set('dob', e.target.value)}
+            maxLength={10}
+            required
+          />
+        </label>
+
+        <label>5-Digit IRS Self-Select PIN
+          <input
+            type="text"
+            placeholder="5-digit PIN (you choose)"
+            value={form.pin}
+            onChange={e => set('pin', e.target.value.replace(/\D/g, '').slice(0, 5))}
+            inputMode="numeric"
+            maxLength={5}
+            required
+          />
+        </label>
+
+        <label>Prior Year Adjusted Gross Income ($)
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="From last year's tax return"
+            value={form.prev_year_agi}
+            onChange={e => set('prev_year_agi', e.target.value)}
             required
           />
         </label>
