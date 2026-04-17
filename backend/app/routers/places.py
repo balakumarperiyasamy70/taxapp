@@ -41,8 +41,10 @@ def details(place_id: str = Query(...)):
         timeout=5,
     )
     data = resp.json()
+    import sys
+    print(f"PLACES DETAILS RESPONSE: {data}", flush=True, file=sys.stderr)
     if data.get("status") != "OK":
-        raise HTTPException(status_code=502, detail=f"Places API error: {data.get('status')}")
+        raise HTTPException(status_code=502, detail=f"Places API error: {data.get('status')} — {data.get('error_message','')}")
 
     components = data["result"]["address_components"]
     result = {"street_number": "", "route": "", "city": "", "state": "", "zip": ""}
