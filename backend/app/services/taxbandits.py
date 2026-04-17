@@ -62,7 +62,8 @@ def _api_post(path: str, body: dict) -> dict:
         },
         timeout=30,
     )
-    resp.raise_for_status()
+    if not resp.is_success:
+        raise RuntimeError(f"TaxBandits API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 
