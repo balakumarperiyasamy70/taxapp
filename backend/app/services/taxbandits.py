@@ -107,9 +107,6 @@ def submit_4868(data) -> dict:
             "TentativeTax": int(data.estimated_tax),
             "TotPayments": int(data.tax_payments),
             "BalanceDue": int(data.balance_due),
-            "PaymentAmt": None,
-            "IRSPaymentType": None,
-            "IRSPayment": None,
             "TaxPayerSignatureDetails": {
                 "PIN": data.pin,
                 "DOB": data.dob,
