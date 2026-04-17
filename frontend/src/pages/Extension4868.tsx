@@ -217,7 +217,13 @@ export default function Extension4868() {
             type="text"
             placeholder="MM/DD/YYYY"
             value={form.dob}
-            onChange={e => set('dob', e.target.value)}
+            onChange={e => {
+              const digits = e.target.value.replace(/\D/g, '').slice(0, 8)
+              let formatted = digits
+              if (digits.length > 4) formatted = `${digits.slice(0,2)}/${digits.slice(2,4)}/${digits.slice(4)}`
+              else if (digits.length > 2) formatted = `${digits.slice(0,2)}/${digits.slice(2)}`
+              set('dob', formatted)
+            }}
             maxLength={10}
             required
           />
