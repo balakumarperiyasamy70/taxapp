@@ -68,3 +68,36 @@
 .statusSubmitted { background: #e3f2fd; color: #1565c0; }
 .statusAccepted  { background: #e8f5e9; color: #2e7d32; }
 .statusRejected  { background: #ffebee; color: #c62828; }
+
+/* Action buttons */
+.actions { display: flex; gap: 6px; }
+.btnDownload, .btnEmail {
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btnDownload { background: #1a1a2e; color: white; }
+.btnDownload:hover { background: #2d2d50; }
+.btnEmail { background: #e63946; color: white; }
+.btnEmail:hover { background: #c1121f; }
+
+/* Modal */
+.modalOverlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 420px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.modal h3 { margin-bottom: 1rem; font-size: 1.1rem; }

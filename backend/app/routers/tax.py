@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.tax import Form4868, Form1040, ScheduleC, Form1120S, Form1065, TaxReturnOut
@@ -6,7 +7,11 @@ from app.models.tax_return import TaxReturn, ReturnType, ReturnStatus
 from app.routers.users import get_current_user
 from app.models.user import User
 from app.services import tax_service, irs_efile
+from app.services.pdf_service import generate_pdf, protect_pdf, make_password
+from app.services.email_service import send_pdf_email
+from pydantic import BaseModel
 import json
+import io
 
 router = APIRouter()
 
@@ -173,3 +178,68 @@ def list_returns(
     db: Session = Depends(get_db)
 ):
     return db.query(TaxReturn).filter(TaxReturn.user_id == current_user.id).all()
+
+
+@router.get("/returns/{return_id}/pdf")
+def download_pdf(
+    return_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    tax_return = db.query(TaxReturn).filter(
+        TaxReturn.id == return_id, TaxReturn.user_id == current_user.id
+    ).first()
+    if not tax_return:
+        raise HTTPException(status_code=404, detail="Return not found")
+    pdf_bytes = generate_pdf(tax_return)
+    filename = f"TaxReturn_{tax_return.return_type}_{tax_return.tax_year}.pdf"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+class EmailPDFRequest(BaseModel):
+    dob: str   # MM/DD/YYYY — used to compute password
+
+
+@router.post("/returns/{return_id}/email-pdf")
+def email_pdf(
+    return_id: int,
+    body: EmailPDFRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    tax_return = db.query(TaxReturn).filter(
+        TaxReturn.id == return_id, TaxReturn.user_id == current_user.id
+    ).first()
+    if not tax_return:
+        raise HTTPException(status_code=404, detail="Return not found")
+
+    form_data = json.loads(tax_return.form_data or '{}')
+    ssn_or_ein = form_data.get('ssn') or form_data.get('ein') or ''
+    if not ssn_or_ein:
+        raise HTTPException(status_code=400, detail="No SSN or EIN found on this return")
+
+    password = make_password(body.dob, ssn_or_ein)
+    pdf_bytes = generate_pdf(tax_return)
+    protected = protect_pdf(pdf_bytes, password)
+
+    label = {
+        "4868": "Form 4868", "1040": "Form 1040",
+        "schedule_c": "Schedule C", "1120s": "Form 1120-S", "1065": "Form 1065",
+    }.get(tax_return.return_type, tax_return.return_type)
+
+    try:
+        send_pdf_email(
+            to_email=current_user.email,
+            return_type=label,
+            tax_year=tax_return.tax_year,
+            pdf_bytes=protected,
+            password=password,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Email failed: {str(e)}")
+
+    return {"message": f"PDF sent to {current_user.email}", "password_hint": "birth year + last 4 of SSN/EIN"}
