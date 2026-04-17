@@ -54,9 +54,9 @@
   },
   "loan": {
     "title": "Solicitar Préstamo Anticipado de Reembolso",
-    "subtitle": "Obtenga hasta $4,000 antes de que llegue su reembolso del IRS",
+    "subtitle": "Obtenga hasta $10,000 antes de que llegue su reembolso del IRS",
     "amount": "Monto del Préstamo",
-    "maxAmount": "Máximo: $4,000",
+    "maxAmount": "Máximo: $10,000",
     "bankRouting": "Número de Ruta Bancaria",
     "bankAccount": "Número de Cuenta Bancaria",
     "apply": "Solicitar Ahora",
@@ -69,6 +69,6 @@
     "required": "Este campo es obligatorio",
     "invalidEmail": "Dirección de correo inválida",
     "invalidSSN": "Formato de SSN inválido (XXX-XX-XXXX)",
-    "maxLoan": "El monto máximo del préstamo es $4,000"
+    "maxLoan": "El monto máximo del préstamo es $10,000"
   }
 }

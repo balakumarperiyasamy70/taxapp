@@ -49,7 +49,7 @@ function validate(form: Record<string, any>): Record<string, string> {
 
   const amount = parseFloat(form.requested_amount)
   if (isNaN(amount) || amount <= 0) e.requested_amount = 'Enter a valid amount'
-  else if (amount > 4000) e.requested_amount = 'Maximum loan amount is $4,000'
+  else if (amount > 10000) e.requested_amount = 'Maximum loan amount is $10,000'
 
   if (!form.bank_routing.trim()) e.bank_routing = 'Routing number is required'
   else if (!/^\d{9}$/.test(form.bank_routing.replace(/\s/g, ''))) e.bank_routing = 'Routing number must be 9 digits'
@@ -188,7 +188,7 @@ export default function LoanApplication() {
         </label>
 
         <label>{t('loan.amount')} <span className={styles.hint}>{t('loan.maxAmount')}</span>
-          <input type="number" step="0.01" min="0" max="4000" value={form.requested_amount}
+          <input type="number" step="0.01" min="0" max="10000" value={form.requested_amount}
             onChange={e => set('requested_amount', e.target.value)} className={ic('requested_amount')} />
           {fe('requested_amount')}
         </label>

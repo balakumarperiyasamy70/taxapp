@@ -11,7 +11,7 @@ import json
 
 router = APIRouter()
 
-MAX_LOAN_CENTS = 400000  # $4,000
+MAX_LOAN_CENTS = 1000000  # $10,000
 
 
 @router.post("/apply", response_model=LoanOut)

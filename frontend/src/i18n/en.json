@@ -54,9 +54,9 @@
   },
   "loan": {
     "title": "Apply for Refund Advance Loan",
-    "subtitle": "Get up to $4,000 before your IRS refund arrives",
+    "subtitle": "Get up to $10,000 before your IRS refund arrives",
     "amount": "Loan Amount",
-    "maxAmount": "Maximum: $4,000",
+    "maxAmount": "Maximum: $10,000",
     "bankRouting": "Bank Routing Number",
     "bankAccount": "Bank Account Number",
     "apply": "Apply Now",
@@ -69,6 +69,6 @@
     "required": "This field is required",
     "invalidEmail": "Invalid email address",
     "invalidSSN": "Invalid SSN format (XXX-XX-XXXX)",
-    "maxLoan": "Maximum loan amount is $4,000"
+    "maxLoan": "Maximum loan amount is $10,000"
   }
 }

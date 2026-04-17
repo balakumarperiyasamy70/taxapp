@@ -5,7 +5,7 @@ from datetime import datetime
 
 class LoanApplication(BaseModel):
     tax_return_id: int
-    requested_amount: float     # max $4000
+    requested_amount: float     # max $10,000
     bank_routing: str
     bank_account: str
     # Applicant info (required for lender submission)
