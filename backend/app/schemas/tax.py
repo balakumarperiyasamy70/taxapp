@@ -54,6 +54,90 @@ class Form1040(BaseModel):
     earned_income_credit: float = 0.0
 
 
+class ScheduleC(BaseModel):
+    tax_year: int
+    first_name: str
+    last_name: str
+    ssn: str
+    business_name: str
+    ein: Optional[str] = None
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    principal_business: str
+    gross_receipts: float = 0.0
+    returns_allowances: float = 0.0
+    cost_of_goods: float = 0.0
+    advertising: float = 0.0
+    car_expenses: float = 0.0
+    depreciation: float = 0.0
+    insurance: float = 0.0
+    legal_professional: float = 0.0
+    office_expense: float = 0.0
+    rent_lease: float = 0.0
+    supplies: float = 0.0
+    taxes_licenses: float = 0.0
+    travel: float = 0.0
+    utilities: float = 0.0
+    wages: float = 0.0
+    other_expenses: float = 0.0
+    home_office_deduction: float = 0.0
+
+
+class Form1120S(BaseModel):
+    tax_year: int
+    corporation_name: str
+    ein: str
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    date_incorporated: str
+    state_incorporated: str
+    total_assets: float = 0.0
+    ordinary_income: float = 0.0
+    gross_receipts: float = 0.0
+    cost_of_goods: float = 0.0
+    compensation_officers: float = 0.0
+    salaries_wages: float = 0.0
+    repairs: float = 0.0
+    bad_debts: float = 0.0
+    rents: float = 0.0
+    taxes_licenses: float = 0.0
+    interest: float = 0.0
+    depreciation: float = 0.0
+    advertising: float = 0.0
+    other_deductions: float = 0.0
+    shareholder_count: int = 1
+
+
+class Form1065(BaseModel):
+    tax_year: int
+    partnership_name: str
+    ein: str
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    date_formed: str
+    state_formed: str
+    total_assets: float = 0.0
+    gross_receipts: float = 0.0
+    cost_of_goods: float = 0.0
+    ordinary_income: float = 0.0
+    salaries_wages: float = 0.0
+    guaranteed_payments: float = 0.0
+    repairs: float = 0.0
+    bad_debts: float = 0.0
+    rents: float = 0.0
+    taxes_licenses: float = 0.0
+    interest: float = 0.0
+    depreciation: float = 0.0
+    other_deductions: float = 0.0
+    partner_count: int = 2
+
+
 class TaxReturnOut(BaseModel):
     id: int
     tax_year: int

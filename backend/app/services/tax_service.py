@@ -1,3 +1,65 @@
+SE_TAX_RATE = 0.1413  # 14.13% self-employment tax (after 50% deduction)
+CORPORATE_TAX_RATE = 0.21  # 21% flat C-Corp rate (1120-S passes through, no entity tax)
+
+
+def calculate_schedule_c(data) -> dict:
+    gross_profit = data.gross_receipts - data.returns_allowances - data.cost_of_goods
+    total_expenses = (
+        data.advertising + data.car_expenses + data.depreciation +
+        data.insurance + data.legal_professional + data.office_expense +
+        data.rent_lease + data.supplies + data.taxes_licenses +
+        data.travel + data.utilities + data.wages +
+        data.other_expenses + data.home_office_deduction
+    )
+    net_profit = gross_profit - total_expenses
+    se_tax = max(0, net_profit) * SE_TAX_RATE
+    se_deduction = se_tax / 2
+    taxable_income = max(0, net_profit - se_deduction)
+    return {
+        "gross_profit": gross_profit,
+        "total_expenses": total_expenses,
+        "net_profit": net_profit,
+        "se_tax": round(se_tax, 2),
+        "taxable_income": round(taxable_income, 2),
+        "tax_owed": round(se_tax, 2),
+        "refund": 0.0,
+    }
+
+
+def calculate_1120s(data) -> dict:
+    gross_profit = data.gross_receipts - data.cost_of_goods
+    total_deductions = (
+        data.compensation_officers + data.salaries_wages + data.repairs +
+        data.bad_debts + data.rents + data.taxes_licenses +
+        data.interest + data.depreciation + data.advertising + data.other_deductions
+    )
+    ordinary_income = gross_profit - total_deductions
+    return {
+        "gross_profit": gross_profit,
+        "total_deductions": total_deductions,
+        "ordinary_income": round(ordinary_income, 2),
+        "tax_owed": 0.0,  # S-Corp passes through to shareholders
+        "refund": 0.0,
+    }
+
+
+def calculate_1065(data) -> dict:
+    gross_profit = data.gross_receipts - data.cost_of_goods
+    total_deductions = (
+        data.salaries_wages + data.guaranteed_payments + data.repairs +
+        data.bad_debts + data.rents + data.taxes_licenses +
+        data.interest + data.depreciation + data.other_deductions
+    )
+    ordinary_income = gross_profit - total_deductions
+    return {
+        "gross_profit": gross_profit,
+        "total_deductions": total_deductions,
+        "ordinary_income": round(ordinary_income, 2),
+        "tax_owed": 0.0,  # Partnership passes through to partners
+        "refund": 0.0,
+    }
+
+
 # 2024 tax brackets (single filer)
 TAX_BRACKETS_SINGLE = [
     (11600,  0.10),

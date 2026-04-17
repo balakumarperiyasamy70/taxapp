@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import VerifyIdentity from './pages/VerifyIdentity'
 import Extension4868 from './pages/Extension4868'
 import TaxFiling1040 from './pages/TaxFiling1040'
+import BusinessTax from './pages/BusinessTax'
 import LoanApplication from './pages/LoanApplication'
 import Dashboard from './pages/Dashboard'
 import ForgotPassword from './pages/ForgotPassword'
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/dashboard" element={token ? <Dashboard site={site} /> : <Navigate to="/login" />} />
         <Route path="/extension" element={token ? <Extension4868 /> : <Navigate to="/login" />} />
         <Route path="/filing" element={token ? <TaxFiling1040 /> : <Navigate to="/login" />} />
+        <Route path="/business" element={token ? <BusinessTax /> : <Navigate to="/login" />} />
         <Route path="/loan" element={token ? <LoanApplication /> : <Navigate to="/login" />} />
         <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
       </Routes>

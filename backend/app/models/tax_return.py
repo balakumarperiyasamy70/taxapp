@@ -7,6 +7,9 @@ import enum
 class ReturnType(str, enum.Enum):
     extension_4868 = "4868"
     individual_1040 = "1040"
+    schedule_c = "schedule_c"
+    form_1120s = "1120s"
+    form_1065 = "1065"
 
 
 class ReturnStatus(str, enum.Enum):

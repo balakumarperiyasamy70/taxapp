@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.tax import Form4868, Form1040, TaxReturnOut
+from app.schemas.tax import Form4868, Form1040, ScheduleC, Form1120S, Form1065, TaxReturnOut
 from app.models.tax_return import TaxReturn, ReturnType, ReturnStatus
 from app.routers.users import get_current_user
 from app.models.user import User
@@ -90,6 +90,81 @@ def get_return_status(
     from app.services.taxbandits import get_4868_status
     result = get_4868_status(tax_return.submission_id)
     return result
+
+
+@router.post("/business/schedule-c", response_model=TaxReturnOut)
+def file_schedule_c(
+    data: ScheduleC,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user.is_verified:
+        raise HTTPException(status_code=403, detail="Identity verification required")
+    calc = tax_service.calculate_schedule_c(data)
+    tax_return = TaxReturn(
+        user_id=current_user.id,
+        tax_year=data.tax_year,
+        return_type=ReturnType.schedule_c,
+        status=ReturnStatus.draft,
+        total_income_cents=int(data.gross_receipts * 100),
+        tax_owed_cents=int(calc["tax_owed"] * 100),
+        refund_amount_cents=0,
+        form_data=json.dumps(data.model_dump()),
+    )
+    db.add(tax_return)
+    db.commit()
+    db.refresh(tax_return)
+    return tax_return
+
+
+@router.post("/business/1120s", response_model=TaxReturnOut)
+def file_1120s(
+    data: Form1120S,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user.is_verified:
+        raise HTTPException(status_code=403, detail="Identity verification required")
+    calc = tax_service.calculate_1120s(data)
+    tax_return = TaxReturn(
+        user_id=current_user.id,
+        tax_year=data.tax_year,
+        return_type=ReturnType.form_1120s,
+        status=ReturnStatus.draft,
+        total_income_cents=int(data.gross_receipts * 100),
+        tax_owed_cents=0,
+        refund_amount_cents=0,
+        form_data=json.dumps(data.model_dump()),
+    )
+    db.add(tax_return)
+    db.commit()
+    db.refresh(tax_return)
+    return tax_return
+
+
+@router.post("/business/1065", response_model=TaxReturnOut)
+def file_1065(
+    data: Form1065,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user.is_verified:
+        raise HTTPException(status_code=403, detail="Identity verification required")
+    calc = tax_service.calculate_1065(data)
+    tax_return = TaxReturn(
+        user_id=current_user.id,
+        tax_year=data.tax_year,
+        return_type=ReturnType.form_1065,
+        status=ReturnStatus.draft,
+        total_income_cents=int(data.gross_receipts * 100),
+        tax_owed_cents=0,
+        refund_amount_cents=0,
+        form_data=json.dumps(data.model_dump()),
+    )
+    db.add(tax_return)
+    db.commit()
+    db.refresh(tax_return)
+    return tax_return
 
 
 @router.get("/returns", response_model=list[TaxReturnOut])

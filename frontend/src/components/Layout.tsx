@@ -47,6 +47,7 @@ export default function Layout({ site, children }: Props) {
               <Link to="/dashboard">{t('nav.home')}</Link>
               {site === 'extension' && <Link to="/extension">{t('nav.extension')}</Link>}
               {site === 'filing'    && <Link to="/filing">{t('nav.taxfiling')}</Link>}
+              {site === 'filing'    && <Link to="/business">Business Tax</Link>}
               {site === 'loan'      && <Link to="/loan">{t('nav.loan')}</Link>}
               <button onClick={handleLogout} className={styles.btnLink}>{t('nav.logout')}</button>
             </>
