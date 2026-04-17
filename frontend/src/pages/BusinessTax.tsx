@@ -78,6 +78,12 @@ export default function BusinessTax() {
   const setP = (k: string, v: any) => setForm1065(f => ({ ...f, [k]: v }))
 
   const num = (v: string) => parseFloat(v) || 0
+  // Convert YYYY-MM-DD (HTML date input) → MM/DD/YYYY (IRS format)
+  const toIRSDate = (v: string) => {
+    if (!v) return ''
+    const [y, m, d] = v.split('-')
+    return `${m}/${d}/${y}`
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,6 +115,7 @@ export default function BusinessTax() {
       } else if (formType === '1120s') {
         res = await api.post('/tax/business/1120s', {
           ...form1120s,
+          date_incorporated: toIRSDate(form1120s.date_incorporated),
           total_assets: num(form1120s.total_assets),
           gross_receipts: num(form1120s.gross_receipts),
           cost_of_goods: num(form1120s.cost_of_goods),
@@ -127,6 +134,7 @@ export default function BusinessTax() {
       } else {
         res = await api.post('/tax/business/1065', {
           ...form1065,
+          date_formed: toIRSDate(form1065.date_formed),
           total_assets: num(form1065.total_assets),
           gross_receipts: num(form1065.gross_receipts),
           cost_of_goods: num(form1065.cost_of_goods),
@@ -257,8 +265,8 @@ export default function BusinessTax() {
             </label>
             <div className={styles.row}>
               <label>Date Incorporated
-                <input type="text" placeholder="MM/DD/YYYY" value={form1120s.date_incorporated}
-                  onChange={e => setS('date_incorporated', e.target.value)} maxLength={10} required />
+                <input type="date" value={form1120s.date_incorporated}
+                  onChange={e => setS('date_incorporated', e.target.value)} required />
               </label>
               <label>State Incorporated
                 <select value={form1120s.state_incorporated} onChange={e => setS('state_incorporated', e.target.value)} required>
@@ -315,8 +323,8 @@ export default function BusinessTax() {
             </label>
             <div className={styles.row}>
               <label>Date Formed
-                <input type="text" placeholder="MM/DD/YYYY" value={form1065.date_formed}
-                  onChange={e => setP('date_formed', e.target.value)} maxLength={10} required />
+                <input type="date" value={form1065.date_formed}
+                  onChange={e => setP('date_formed', e.target.value)} required />
               </label>
               <label>State Formed
                 <select value={form1065.state_formed} onChange={e => setP('state_formed', e.target.value)} required>
