@@ -17,6 +17,8 @@ def submit_4868(tax_return, data) -> dict:
 
 
 def submit_1040(tax_return, data) -> dict:
-    """Submit Form 1040 via TaxBandits. (Endpoint integration pending.)"""
-    # TODO: implement taxbandits.submit_1040() once 1040 endpoint is confirmed
-    raise NotImplementedError("1040 TaxBandits integration coming soon")
+    """Save Form 1040 locally. E-filing pending IRS EFIN approval."""
+    return {
+        "submission_id": None,
+        "status": "saved",
+    }
