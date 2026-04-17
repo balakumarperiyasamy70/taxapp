@@ -28,6 +28,9 @@ class Loan(Base):
     bank_account = Column(String)       # encrypted
     disbursed_at = Column(DateTime(timezone=True))
 
+    # Applicant info (JSON blob for lender submission)
+    applicant_info = Column(String)
+
     # Lender reference
     lender_ref_id = Column(String)
 

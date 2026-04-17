@@ -7,6 +7,7 @@ from app.models.tax_return import TaxReturn, ReturnStatus
 from app.routers.users import get_current_user
 from app.models.user import User
 from app.utils.security import encrypt_field
+import json
 
 router = APIRouter()
 
@@ -44,6 +45,12 @@ def apply_loan(
         bank_routing=encrypt_field(data.bank_routing),
         bank_account=encrypt_field(data.bank_account),
         status=LoanStatus.pending,
+        applicant_info=json.dumps({
+            "first_name": data.first_name, "last_name": data.last_name,
+            "ssn": data.ssn, "dob": data.dob,
+            "address": data.address, "city": data.city,
+            "state": data.state, "zip_code": data.zip_code,
+        }),
     )
     db.add(loan)
     db.commit()
