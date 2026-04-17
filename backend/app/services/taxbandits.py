@@ -136,9 +136,16 @@ def submit_4868(data) -> dict:
     if errors:
         raise RuntimeError(f"TaxBandits 4868 error: {errors}")
 
+    submission_id = result.get("SubmissionId")
+
+    transmit_result = _api_post("Form4868/Transmit", {"SubmissionIds": [submission_id]})
+    transmit_errors = transmit_result.get("Errors")
+    if transmit_errors:
+        raise RuntimeError(f"TaxBandits 4868 transmit error: {transmit_errors}")
+
     return {
-        "submission_id": result.get("SubmissionId"),
-        "status": result.get("Form4868Status", "CREATED"),
+        "submission_id": submission_id,
+        "status": transmit_result.get("Form4868Status") or result.get("Form4868Status", "TRANSMITTED"),
         "taxbandits_payer_id": result.get("TaxPayerId"),
     }
 
