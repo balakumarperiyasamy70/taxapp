@@ -63,7 +63,7 @@ def _api_post(path: str, body: dict) -> dict:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         },
-        timeout=30,
+        timeout=60,
     )
     print(f"TB RESPONSE {resp.status_code}: {resp.text}", flush=True, file=sys.stderr)
     if not resp.is_success:
@@ -80,6 +80,11 @@ def submit_4868(data) -> dict:
     body = {
         "SubmissionManifest": {
             "TaxYear": str(data.tax_year),
+            "SubmissionType": "CREATE",
+            "IsFederalReturn": True,
+            "IsStateReturn": False,
+            "IsScheduleK1": False,
+            "IsBusinessReturn": False,
         },
         "ReturnHeader": {
             "TaxPayer": {
