@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     taxbandits_client_id: str = ""
     taxbandits_client_secret: str = ""
     taxbandits_user_token: str = ""
-    taxbandits_base_url: str = "https://sandbox.taxbandits.com"
+    taxbandits_base_url: str = "https://testapi.taxbandits.com/v1.7.3"
     taxbandits_auth_url: str = "https://testoauth.expressauth.net/v2/tbsauth"
 
     app_env: str = "development"
