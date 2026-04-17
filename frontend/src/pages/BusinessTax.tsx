@@ -25,6 +25,56 @@ function formatEIN(v: string) {
 
 type FormType = 'schedule_c' | '1120s' | '1065'
 
+const isValidSSN = (v: string) => /^\d{3}-\d{2}-\d{4}$/.test(v)
+const isValidEIN = (v: string) => /^\d{2}-\d{7}$/.test(v)
+const isValidZIP = (v: string) => /^\d{5}$/.test(v)
+
+function validateCommon(f: any): Record<string, string> {
+  const e: Record<string, string> = {}
+  if (!f.address?.trim()) e.address = 'Address is required'
+  if (!f.city?.trim()) e.city = 'City is required'
+  if (!f.state) e.state = 'Select a state'
+  if (!isValidZIP(f.zip_code)) e.zip_code = 'Enter a valid 5-digit ZIP'
+  const gr = parseFloat(f.gross_receipts)
+  if (isNaN(gr) || gr < 0) e.gross_receipts = 'Enter a valid amount'
+  return e
+}
+
+function validateScheduleC(f: any): Record<string, string> {
+  const e = validateCommon(f)
+  if (!f.first_name?.trim()) e.first_name = 'Required'
+  else if (!/^[A-Za-z\s'-]+$/.test(f.first_name)) e.first_name = 'Letters only'
+  if (!f.last_name?.trim()) e.last_name = 'Required'
+  else if (!/^[A-Za-z\s'-]+$/.test(f.last_name)) e.last_name = 'Letters only'
+  if (!isValidSSN(f.ssn)) e.ssn = 'Enter a valid SSN (XXX-XX-XXXX)'
+  if (!f.business_name?.trim()) e.business_name = 'Business name is required'
+  if (!f.principal_business?.trim()) e.principal_business = 'Principal business is required'
+  if (f.ein && !isValidEIN(f.ein)) e.ein = 'Enter a valid EIN (XX-XXXXXXX)'
+  return e
+}
+
+function validate1120S(f: any): Record<string, string> {
+  const e = validateCommon(f)
+  if (!f.corporation_name?.trim()) e.corporation_name = 'Corporation name is required'
+  if (!isValidEIN(f.ein)) e.ein = 'Enter a valid EIN (XX-XXXXXXX)'
+  if (!f.date_incorporated) e.date_incorporated = 'Date incorporated is required'
+  if (!f.state_incorporated) e.state_incorporated = 'Select state of incorporation'
+  const sc = parseInt(f.shareholder_count)
+  if (isNaN(sc) || sc < 1) e.shareholder_count = 'Must have at least 1 shareholder'
+  return e
+}
+
+function validate1065(f: any): Record<string, string> {
+  const e = validateCommon(f)
+  if (!f.partnership_name?.trim()) e.partnership_name = 'Partnership name is required'
+  if (!isValidEIN(f.ein)) e.ein = 'Enter a valid EIN (XX-XXXXXXX)'
+  if (!f.date_formed) e.date_formed = 'Date formed is required'
+  if (!f.state_formed) e.state_formed = 'Select state of formation'
+  const pc = parseInt(f.partner_count)
+  if (isNaN(pc) || pc < 2) e.partner_count = 'Must have at least 2 partners'
+  return e
+}
+
 const FORM_LABELS: Record<FormType, string> = {
   schedule_c: 'Schedule C — Sole Proprietor / Self-Employed',
   '1120s': 'Form 1120-S — S-Corporation',
@@ -71,11 +121,16 @@ export default function BusinessTax() {
   const [form1065, setForm1065] = useState({ ...INITIAL_1065 })
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
-  const setC = (k: string, v: any) => setScheduleC(f => ({ ...f, [k]: v }))
-  const setS = (k: string, v: any) => setForm1120s(f => ({ ...f, [k]: v }))
-  const setP = (k: string, v: any) => setForm1065(f => ({ ...f, [k]: v }))
+  const clearErr = (k: string) => setErrors(e => { const n = { ...e }; delete n[k]; return n })
+  const setC = (k: string, v: any) => { setScheduleC(f => ({ ...f, [k]: v })); clearErr(k) }
+  const setS = (k: string, v: any) => { setForm1120s(f => ({ ...f, [k]: v })); clearErr(k) }
+  const setP = (k: string, v: any) => { setForm1065(f => ({ ...f, [k]: v })); clearErr(k) }
+
+  const fe = (k: string) => errors[k] ? <span className={styles.fieldError}>{errors[k]}</span> : null
+  const ic = (k: string) => errors[k] ? styles.inputError : ''
 
   const num = (v: string) => parseFloat(v) || 0
   // Convert YYYY-MM-DD (HTML date input) → MM/DD/YYYY (IRS format)
@@ -87,6 +142,10 @@ export default function BusinessTax() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const errs = formType === 'schedule_c' ? validateScheduleC(scheduleC)
+      : formType === '1120s' ? validate1120S(form1120s)
+      : validate1065(form1065)
+    if (Object.keys(errs).length > 0) { setErrors(errs); return }
     setLoading(true)
     setError('')
     try {
@@ -180,7 +239,7 @@ export default function BusinessTax() {
       <h2>Business Tax Filing</h2>
       {error && <div className={styles.error}>{error}</div>}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
           <label>Business Type
             <select value={formType} onChange={e => { setFormType(e.target.value as FormType); setError('') }} required>
               <option value="">— Select Business Type —</option>
@@ -197,44 +256,61 @@ export default function BusinessTax() {
           {formType === 'schedule_c' && <>
             <div className={styles.row}>
               <label>First Name
-                <input value={scheduleC.first_name} onChange={e => setC('first_name', e.target.value)} required />
+                <input value={scheduleC.first_name} onChange={e => setC('first_name', e.target.value)} className={ic('first_name')} />
+                {fe('first_name')}
               </label>
               <label>Last Name
-                <input value={scheduleC.last_name} onChange={e => setC('last_name', e.target.value)} required />
+                <input value={scheduleC.last_name} onChange={e => setC('last_name', e.target.value)} className={ic('last_name')} />
+                {fe('last_name')}
               </label>
             </div>
             <label>Social Security Number
               <input placeholder="XXX-XX-XXXX" value={scheduleC.ssn}
-                onChange={e => setC('ssn', formatSSN(e.target.value))} inputMode="numeric" maxLength={11} required />
+                onChange={e => setC('ssn', formatSSN(e.target.value))} className={ic('ssn')} inputMode="numeric" maxLength={11} />
+              {fe('ssn')}
             </label>
             <label>Business Name
-              <input value={scheduleC.business_name} onChange={e => setC('business_name', e.target.value)} required />
+              <input value={scheduleC.business_name} onChange={e => setC('business_name', e.target.value)} className={ic('business_name')} />
+              {fe('business_name')}
             </label>
             <label>EIN (optional)
               <input placeholder="XX-XXXXXXX" value={scheduleC.ein}
-                onChange={e => setC('ein', formatEIN(e.target.value))} inputMode="numeric" maxLength={10} />
+                onChange={e => setC('ein', formatEIN(e.target.value))} className={ic('ein')} inputMode="numeric" maxLength={10} />
+              {fe('ein')}
             </label>
             <label>Principal Business or Profession
               <input value={scheduleC.principal_business} onChange={e => setC('principal_business', e.target.value)}
-                placeholder="e.g. Consulting, Retail, Construction" required />
+                className={ic('principal_business')} placeholder="e.g. Consulting, Retail, Construction" />
+              {fe('principal_business')}
             </label>
             <label>Business Address
               <AddressAutocomplete value={scheduleC.address} onChange={v => setC('address', v)}
-                onSelect={r => setScheduleC(f => ({ ...f, address: r.address, city: r.city, state: r.state, zip_code: r.zip }))}
-                placeholder="Start typing business address..." required />
+                onSelect={r => { setScheduleC(f => ({ ...f, address: r.address, city: r.city, state: r.state, zip_code: r.zip })); setErrors(e => { const n={...e}; delete n.address; delete n.city; delete n.state; delete n.zip_code; return n }) }}
+                placeholder="Start typing business address..." />
+              {fe('address')}
             </label>
             <div className={styles.row}>
-              <label>City <input value={scheduleC.city} onChange={e => setC('city', e.target.value)} required /></label>
+              <label>City
+                <input value={scheduleC.city} onChange={e => setC('city', e.target.value)} className={ic('city')} />
+                {fe('city')}
+              </label>
               <label>State
-                <select value={scheduleC.state} onChange={e => setC('state', e.target.value)} required>
+                <select value={scheduleC.state} onChange={e => setC('state', e.target.value)} className={ic('state')}>
                   <option value="">Select</option>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+                {fe('state')}
               </label>
-              <label>ZIP <input value={scheduleC.zip_code} onChange={e => setC('zip_code', e.target.value.replace(/\D/g,'').slice(0,5))} inputMode="numeric" maxLength={5} required /></label>
+              <label>ZIP
+                <input value={scheduleC.zip_code} onChange={e => setC('zip_code', e.target.value.replace(/\D/g,'').slice(0,5))} className={ic('zip_code')} inputMode="numeric" maxLength={5} />
+                {fe('zip_code')}
+              </label>
             </div>
             <h3 className={styles.sectionTitle}>Income</h3>
-            <label>Gross Receipts ($) <input type="number" step="0.01" min="0" value={scheduleC.gross_receipts} onChange={e => setC('gross_receipts', e.target.value)} required /></label>
+            <label>Gross Receipts ($)
+              <input type="number" step="0.01" min="0" value={scheduleC.gross_receipts} onChange={e => setC('gross_receipts', e.target.value)} className={ic('gross_receipts')} />
+              {fe('gross_receipts')}
+            </label>
             <label>Returns & Allowances ($) <input type="number" step="0.01" min="0" value={scheduleC.returns_allowances} onChange={e => setC('returns_allowances', e.target.value)} /></label>
             <label>Cost of Goods Sold ($) <input type="number" step="0.01" min="0" value={scheduleC.cost_of_goods} onChange={e => setC('cost_of_goods', e.target.value)} /></label>
             <h3 className={styles.sectionTitle}>Expenses</h3>
@@ -257,45 +333,61 @@ export default function BusinessTax() {
           {/* ── FORM 1120-S ── */}
           {formType === '1120s' && <>
             <label>Corporation Name
-              <input value={form1120s.corporation_name} onChange={e => setS('corporation_name', e.target.value)} required />
+              <input value={form1120s.corporation_name} onChange={e => setS('corporation_name', e.target.value)} className={ic('corporation_name')} />
+              {fe('corporation_name')}
             </label>
             <label>EIN
               <input placeholder="XX-XXXXXXX" value={form1120s.ein}
-                onChange={e => setS('ein', formatEIN(e.target.value))} inputMode="numeric" maxLength={10} required />
+                onChange={e => setS('ein', formatEIN(e.target.value))} className={ic('ein')} inputMode="numeric" maxLength={10} />
+              {fe('ein')}
             </label>
             <div className={styles.row}>
               <label>Date Incorporated
                 <input type="date" value={form1120s.date_incorporated}
-                  onChange={e => setS('date_incorporated', e.target.value)} required />
+                  onChange={e => setS('date_incorporated', e.target.value)} className={ic('date_incorporated')} />
+                {fe('date_incorporated')}
               </label>
               <label>State Incorporated
-                <select value={form1120s.state_incorporated} onChange={e => setS('state_incorporated', e.target.value)} required>
+                <select value={form1120s.state_incorporated} onChange={e => setS('state_incorporated', e.target.value)} className={ic('state_incorporated')}>
                   <option value="">Select</option>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+                {fe('state_incorporated')}
               </label>
             </div>
             <label>Business Address
               <AddressAutocomplete value={form1120s.address} onChange={v => setS('address', v)}
-                onSelect={r => setForm1120s(f => ({ ...f, address: r.address, city: r.city, state: r.state, zip_code: r.zip }))}
-                placeholder="Start typing business address..." required />
+                onSelect={r => { setForm1120s(f => ({ ...f, address: r.address, city: r.city, state: r.state, zip_code: r.zip })); setErrors(e => { const n={...e}; delete n.address; delete n.city; delete n.state; delete n.zip_code; return n }) }}
+                placeholder="Start typing business address..." />
+              {fe('address')}
             </label>
             <div className={styles.row}>
-              <label>City <input value={form1120s.city} onChange={e => setS('city', e.target.value)} required /></label>
+              <label>City
+                <input value={form1120s.city} onChange={e => setS('city', e.target.value)} className={ic('city')} />
+                {fe('city')}
+              </label>
               <label>State
-                <select value={form1120s.state} onChange={e => setS('state', e.target.value)} required>
+                <select value={form1120s.state} onChange={e => setS('state', e.target.value)} className={ic('state')}>
                   <option value="">Select</option>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+                {fe('state')}
               </label>
-              <label>ZIP <input value={form1120s.zip_code} onChange={e => setS('zip_code', e.target.value.replace(/\D/g,'').slice(0,5))} inputMode="numeric" maxLength={5} required /></label>
+              <label>ZIP
+                <input value={form1120s.zip_code} onChange={e => setS('zip_code', e.target.value.replace(/\D/g,'').slice(0,5))} className={ic('zip_code')} inputMode="numeric" maxLength={5} />
+                {fe('zip_code')}
+              </label>
             </div>
             <label>Number of Shareholders
-              <input type="number" min="1" value={form1120s.shareholder_count} onChange={e => setS('shareholder_count', e.target.value)} required />
+              <input type="number" min="1" value={form1120s.shareholder_count} onChange={e => setS('shareholder_count', e.target.value)} className={ic('shareholder_count')} />
+              {fe('shareholder_count')}
             </label>
             <label>Total Assets ($) <input type="number" step="0.01" min="0" value={form1120s.total_assets} onChange={e => setS('total_assets', e.target.value)} /></label>
             <h3 className={styles.sectionTitle}>Income</h3>
-            <label>Gross Receipts ($) <input type="number" step="0.01" min="0" value={form1120s.gross_receipts} onChange={e => setS('gross_receipts', e.target.value)} required /></label>
+            <label>Gross Receipts ($)
+              <input type="number" step="0.01" min="0" value={form1120s.gross_receipts} onChange={e => setS('gross_receipts', e.target.value)} className={ic('gross_receipts')} />
+              {fe('gross_receipts')}
+            </label>
             <label>Cost of Goods Sold ($) <input type="number" step="0.01" min="0" value={form1120s.cost_of_goods} onChange={e => setS('cost_of_goods', e.target.value)} /></label>
             <h3 className={styles.sectionTitle}>Deductions</h3>
             {[
@@ -315,45 +407,61 @@ export default function BusinessTax() {
           {/* ── FORM 1065 ── */}
           {formType === '1065' && <>
             <label>Partnership / LLC Name
-              <input value={form1065.partnership_name} onChange={e => setP('partnership_name', e.target.value)} required />
+              <input value={form1065.partnership_name} onChange={e => setP('partnership_name', e.target.value)} className={ic('partnership_name')} />
+              {fe('partnership_name')}
             </label>
             <label>EIN
               <input placeholder="XX-XXXXXXX" value={form1065.ein}
-                onChange={e => setP('ein', formatEIN(e.target.value))} inputMode="numeric" maxLength={10} required />
+                onChange={e => setP('ein', formatEIN(e.target.value))} className={ic('ein')} inputMode="numeric" maxLength={10} />
+              {fe('ein')}
             </label>
             <div className={styles.row}>
               <label>Date Formed
                 <input type="date" value={form1065.date_formed}
-                  onChange={e => setP('date_formed', e.target.value)} required />
+                  onChange={e => setP('date_formed', e.target.value)} className={ic('date_formed')} />
+                {fe('date_formed')}
               </label>
               <label>State Formed
-                <select value={form1065.state_formed} onChange={e => setP('state_formed', e.target.value)} required>
+                <select value={form1065.state_formed} onChange={e => setP('state_formed', e.target.value)} className={ic('state_formed')}>
                   <option value="">Select</option>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+                {fe('state_formed')}
               </label>
             </div>
             <label>Business Address
               <AddressAutocomplete value={form1065.address} onChange={v => setP('address', v)}
-                onSelect={r => setForm1065(f => ({ ...f, address: r.address, city: r.city, state: r.state, zip_code: r.zip }))}
-                placeholder="Start typing business address..." required />
+                onSelect={r => { setForm1065(f => ({ ...f, address: r.address, city: r.city, state: r.state, zip_code: r.zip })); setErrors(e => { const n={...e}; delete n.address; delete n.city; delete n.state; delete n.zip_code; return n }) }}
+                placeholder="Start typing business address..." />
+              {fe('address')}
             </label>
             <div className={styles.row}>
-              <label>City <input value={form1065.city} onChange={e => setP('city', e.target.value)} required /></label>
+              <label>City
+                <input value={form1065.city} onChange={e => setP('city', e.target.value)} className={ic('city')} />
+                {fe('city')}
+              </label>
               <label>State
-                <select value={form1065.state} onChange={e => setP('state', e.target.value)} required>
+                <select value={form1065.state} onChange={e => setP('state', e.target.value)} className={ic('state')}>
                   <option value="">Select</option>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+                {fe('state')}
               </label>
-              <label>ZIP <input value={form1065.zip_code} onChange={e => setP('zip_code', e.target.value.replace(/\D/g,'').slice(0,5))} inputMode="numeric" maxLength={5} required /></label>
+              <label>ZIP
+                <input value={form1065.zip_code} onChange={e => setP('zip_code', e.target.value.replace(/\D/g,'').slice(0,5))} className={ic('zip_code')} inputMode="numeric" maxLength={5} />
+                {fe('zip_code')}
+              </label>
             </div>
             <label>Number of Partners
-              <input type="number" min="2" value={form1065.partner_count} onChange={e => setP('partner_count', e.target.value)} required />
+              <input type="number" min="2" value={form1065.partner_count} onChange={e => setP('partner_count', e.target.value)} className={ic('partner_count')} />
+              {fe('partner_count')}
             </label>
             <label>Total Assets ($) <input type="number" step="0.01" min="0" value={form1065.total_assets} onChange={e => setP('total_assets', e.target.value)} /></label>
             <h3 className={styles.sectionTitle}>Income</h3>
-            <label>Gross Receipts ($) <input type="number" step="0.01" min="0" value={form1065.gross_receipts} onChange={e => setP('gross_receipts', e.target.value)} required /></label>
+            <label>Gross Receipts ($)
+              <input type="number" step="0.01" min="0" value={form1065.gross_receipts} onChange={e => setP('gross_receipts', e.target.value)} className={ic('gross_receipts')} />
+              {fe('gross_receipts')}
+            </label>
             <label>Cost of Goods Sold ($) <input type="number" step="0.01" min="0" value={form1065.cost_of_goods} onChange={e => setP('cost_of_goods', e.target.value)} /></label>
             <h3 className={styles.sectionTitle}>Deductions</h3>
             {[

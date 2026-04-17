@@ -77,3 +77,6 @@ input:focus, select:focus {
 
 .switchLink { margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: #666; }
 .switchLink a { color: #e63946; font-weight: 500; }
+
+.fieldError { color: #c62828; font-size: 0.78rem; font-weight: normal; margin-top: 1px; }
+.inputError { border-color: #e63946 !important; background: #fff8f8; }
