@@ -5,11 +5,11 @@ import io
 from datetime import datetime
 
 RETURN_LABELS = {
-    "4868": "Form 4868 — Extension of Time to File",
-    "1040": "Form 1040 — U.S. Individual Income Tax Return",
-    "schedule_c": "Schedule C — Profit or Loss from Business",
-    "1120s": "Form 1120-S — U.S. Income Tax Return for an S Corporation",
-    "1065": "Form 1065 — U.S. Return of Partnership Income",
+    "4868": "Form 4868 - Extension of Time to File",
+    "1040": "Form 1040 - U.S. Individual Income Tax Return",
+    "schedule_c": "Schedule C - Profit or Loss from Business",
+    "1120s": "Form 1120-S - U.S. Income Tax Return for an S Corporation",
+    "1065": "Form 1065 - U.S. Return of Partnership Income",
 }
 
 FIELD_LABELS = {
@@ -68,7 +68,7 @@ class TaxPDF(FPDF):
         self.set_font('Helvetica', 'B', 14)
         self.set_text_color(255, 255, 255)
         self.set_xy(0, 5)
-        self.cell(0, 12, 'TaxRefundLoan.us  —  Tax Document', align='C')
+        self.cell(0, 12, 'TaxRefundLoan.us - Tax Document', align='C')
         self.set_text_color(0, 0, 0)
         self.ln(18)
 
@@ -76,14 +76,14 @@ class TaxPDF(FPDF):
         self.set_y(-12)
         self.set_font('Helvetica', 'I', 8)
         self.set_text_color(150, 150, 150)
-        self.cell(0, 10, f'Generated {datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")}  |  Page {self.page_no()}  |  TaxRefundLoan.us', align='C')
+        self.cell(0, 10, f'Generated {datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")} | Page {self.page_no()} | TaxRefundLoan.us', align='C')
 
 
 def _fmt_value(k: str, v) -> str:
     if isinstance(v, bool):
         return 'Yes' if v else 'No'
     if v is None or v == '' or v == 0 or v == 0.0:
-        return '—'
+        return '-'
     return str(v)
 
 

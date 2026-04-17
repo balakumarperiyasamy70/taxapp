@@ -56,14 +56,18 @@ export default function Dashboard({ site }: Props) {
   const [loans, setLoans] = useState<Loan[]>([])
   const [loading, setLoading] = useState(true)
   const [emailModal, setEmailModal] = useState<{ returnId: number; returnType: string } | null>(null)
-  const [dob, setDob] = useState('')
   const [emailStatus, setEmailStatus] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
 
   const handleDownload = async (id: number, returnType: string, taxYear: number) => {
     try {
-      const res = await api.get(`/tax/returns/${id}/pdf`, { responseType: 'blob' })
-      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+      const token = localStorage.getItem('token')
+      const res = await fetch(`/api/tax/returns/${id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error('Download failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
       a.download = `TaxReturn_${returnType}_${taxYear}.pdf`
@@ -72,13 +76,11 @@ export default function Dashboard({ site }: Props) {
     } catch { alert('Download failed. Please try again.') }
   }
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!emailModal) return
+  const handleSendEmail = async (returnId: number) => {
     setEmailLoading(true)
     setEmailStatus('')
     try {
-      const res = await api.post(`/tax/returns/${emailModal.returnId}/email-pdf`, { dob })
+      const res = await api.post(`/tax/returns/${returnId}/email-pdf`)
       setEmailStatus(res.data.message)
     } catch (err: any) {
       setEmailStatus(err.response?.data?.detail || 'Failed to send email')
@@ -171,7 +173,7 @@ export default function Dashboard({ site }: Props) {
                     <td>
                       <div className={styles.actions}>
                         <button className={styles.btnDownload} onClick={() => handleDownload(r.id, r.return_type, r.tax_year)}>⬇ PDF</button>
-                        <button className={styles.btnEmail} onClick={() => { setEmailModal({ returnId: r.id, returnType: r.return_type }); setDob(''); setEmailStatus('') }}>✉ Email</button>
+                        <button className={styles.btnEmail} onClick={() => { setEmailModal({ returnId: r.id, returnType: r.return_type }); setEmailStatus('') }}>✉ Email</button>
                       </div>
                     </td>
                   </tr>
@@ -221,52 +223,33 @@ export default function Dashboard({ site }: Props) {
 
       {/* Email PDF Modal */}
       {emailModal && (
-        <div className={styles.modalOverlay} onClick={() => setEmailModal(null)}>
+        <div className={styles.modalOverlay} onClick={() => { if (!emailLoading) setEmailModal(null) }}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h3>Email Password-Protected PDF</h3>
-            <p style={{ fontSize: '0.88rem', color: '#666', marginBottom: '1rem' }}>
-              The PDF will be sent to <strong>{user?.email}</strong> with a password.<br />
-              Password = <strong>birth year + last 4 digits of SSN/EIN</strong><br />
-              Example: <em>19700078</em>
+            <p style={{ fontSize: '0.88rem', color: '#666', marginBottom: '1.2rem' }}>
+              A password-protected PDF will be sent to:<br />
+              <strong>{user?.email}</strong><br /><br />
+              To open the PDF, use:<br />
+              <strong>Birth year + last 4 digits of SSN/EIN</strong><br />
+              <em style={{ fontSize: '0.82rem' }}>Example: 19700078</em>
             </p>
-            {emailStatus ? (
-              <div className={emailStatus.includes('sent') ? formStyles.success : formStyles.error}>
+            {emailStatus && (
+              <div className={emailStatus.toLowerCase().includes('sent') ? formStyles.success : formStyles.error} style={{ marginBottom: '1rem' }}>
                 {emailStatus}
               </div>
-            ) : (
-              <form onSubmit={handleEmailSubmit}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.9rem', fontWeight: 500 }}>
-                  Your Date of Birth (to generate password)
-                  <input
-                    type="text" placeholder="MM/DD/YYYY" value={dob} maxLength={10}
-                    onChange={e => {
-                      const d = e.target.value.replace(/\D/g, '').slice(0, 8)
-                      let f = d
-                      if (d.length > 4) f = `${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4)}`
-                      else if (d.length > 2) f = `${d.slice(0,2)}/${d.slice(2)}`
-                      setDob(f)
-                    }}
-                    style={{ padding: '0.6rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.95rem' }}
-                    required
-                  />
-                </label>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
-                  <button type="submit" className={formStyles.btnSubmit} disabled={emailLoading} style={{ flex: 1 }}>
-                    {emailLoading ? 'Sending...' : 'Send PDF'}
-                  </button>
-                  <button type="button" onClick={() => setEmailModal(null)}
-                    style={{ flex: 1, padding: '0.8rem', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', background: 'white' }}>
-                    Cancel
-                  </button>
-                </div>
-              </form>
             )}
-            {emailStatus && (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {!emailStatus && (
+                <button className={formStyles.btnSubmit} disabled={emailLoading}
+                  onClick={() => handleSendEmail(emailModal.returnId)} style={{ flex: 1 }}>
+                  {emailLoading ? 'Sending...' : 'Send PDF to My Email'}
+                </button>
+              )}
               <button onClick={() => setEmailModal(null)}
-                style={{ marginTop: '1rem', width: '100%', padding: '0.7rem', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', background: 'white' }}>
-                Close
+                style={{ flex: 1, padding: '0.8rem', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', background: 'white' }}>
+                {emailStatus ? 'Close' : 'Cancel'}
               </button>
-            )}
+            </div>
           </div>
         </div>
       )}

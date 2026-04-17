@@ -200,14 +200,9 @@ def download_pdf(
     )
 
 
-class EmailPDFRequest(BaseModel):
-    dob: str   # MM/DD/YYYY — used to compute password
-
-
 @router.post("/returns/{return_id}/email-pdf")
 def email_pdf(
     return_id: int,
-    body: EmailPDFRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -222,7 +217,10 @@ def email_pdf(
     if not ssn_or_ein:
         raise HTTPException(status_code=400, detail="No SSN or EIN found on this return")
 
-    password = make_password(body.dob, ssn_or_ein)
+    # Auto-extract DOB from form_data if available, otherwise use 0000
+    dob = form_data.get('dob', '')
+    password = make_password(dob, ssn_or_ein)
+
     pdf_bytes = generate_pdf(tax_return)
     protected = protect_pdf(pdf_bytes, password)
 
