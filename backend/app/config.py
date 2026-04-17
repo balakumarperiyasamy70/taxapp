@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     upload_dir: str = "/var/taxapp/uploads"
     allowed_origins: str = "http://localhost:3000"
 
+    google_places_api_key: str = ""
+    google_validation_api_key: str = ""
+
     smtp_host: str = "127.0.0.1"
     smtp_port: int = 587
     smtp_user: str = "noreply@taxrefundloan.us"

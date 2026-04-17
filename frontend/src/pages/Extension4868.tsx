@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
 import styles from './Form.module.css'
+import AddressAutocomplete from '../components/AddressAutocomplete'
 
 // Format SSN input as XXX-XX-XXXX, max 9 digits
 function formatSSN(value: string): string {
@@ -130,26 +131,13 @@ export default function Extension4868() {
         </label>
 
         <label>Address
-          <input
+          <AddressAutocomplete
             value={form.address}
-            onChange={e => set('address', e.target.value)}
-            autoComplete="street-address"
-            placeholder="Street address"
+            onChange={v => set('address', v)}
+            onSelect={r => setForm(f => ({ ...f, address: r.address, city: r.city, state: r.state, zip_code: r.zip }))}
+            placeholder="Start typing your address..."
             required
           />
-        </label>
-
-        <label>ZIP Code
-          <input
-            value={form.zip_code}
-            onChange={handleZIP}
-            inputMode="numeric"
-            maxLength={5}
-            placeholder="5-digit ZIP"
-            autoComplete="postal-code"
-            required
-          />
-          {zipLoading && <span style={{ fontSize: '0.8rem', color: '#888' }}> Looking up...</span>}
         </label>
 
         <div className={styles.row}>
@@ -157,8 +145,7 @@ export default function Extension4868() {
             <input
               value={form.city}
               onChange={e => set('city', e.target.value)}
-              autoComplete="address-level2"
-              placeholder="Auto-filled from ZIP"
+              placeholder="Auto-filled from address"
               required
             />
           </label>
@@ -173,6 +160,16 @@ export default function Extension4868() {
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
+          </label>
+          <label>ZIP Code
+            <input
+              value={form.zip_code}
+              onChange={handleZIP}
+              inputMode="numeric"
+              maxLength={5}
+              placeholder="ZIP"
+              required
+            />
           </label>
         </div>
 

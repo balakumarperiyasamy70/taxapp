@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.config import get_settings
 from app.database import engine
-from app.routers import auth, users, tax, loans, documents
+from app.routers import auth, users, tax, loans, documents, places
 
 settings = get_settings()
 
@@ -42,6 +42,7 @@ app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(tax.router, prefix="/api/tax", tags=["tax"])
 app.include_router(loans.router, prefix="/api/loans", tags=["loans"])
 app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
+app.include_router(places.router, prefix="/api/places", tags=["places"])
 
 
 @app.get("/api/health")
