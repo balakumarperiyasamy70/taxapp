@@ -51,8 +51,12 @@ def _get_access_token() -> str:
 
 
 def _api_post(path: str, body: dict) -> dict:
+    import json, logging
+    logger = logging.getLogger(__name__)
     token = _get_access_token()
     url = f"{settings.taxbandits_base_url}/{path.lstrip('/')}"
+    logger.error(f"TaxBandits REQUEST → {url}")
+    logger.error(f"TaxBandits BODY → {json.dumps(body)}")
     resp = httpx.post(
         url,
         json=body,
@@ -62,6 +66,7 @@ def _api_post(path: str, body: dict) -> dict:
         },
         timeout=30,
     )
+    logger.error(f"TaxBandits RESPONSE {resp.status_code} → {resp.text}")
     if not resp.is_success:
         raise RuntimeError(f"TaxBandits API error {resp.status_code}: {resp.text}")
     return resp.json()
