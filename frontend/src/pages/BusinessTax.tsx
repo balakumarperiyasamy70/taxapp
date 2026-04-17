@@ -170,19 +170,19 @@ export default function BusinessTax() {
   return (
     <div className={styles.card}>
       <h2>Business Tax Filing</h2>
-      <p className={styles.subtitle}>Select your business type to get started</p>
       {error && <div className={styles.error}>{error}</div>}
 
-      {!formType ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-          {(Object.keys(FORM_LABELS) as FormType[]).map(type => (
-            <button key={type} className={styles.btnSubmit} onClick={() => setFormType(type)}>
-              {FORM_LABELS[type]}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
+          <label>Business Type
+            <select value={formType} onChange={e => { setFormType(e.target.value as FormType); setError('') }} required>
+              <option value="">— Select Business Type —</option>
+              {(Object.keys(FORM_LABELS) as FormType[]).map(type => (
+                <option key={type} value={type}>{FORM_LABELS[type]}</option>
+              ))}
+            </select>
+          </label>
+
+        {formType && <>
           <p className={styles.subtitle}><strong>{FORM_LABELS[formType]}</strong></p>
 
           {/* ── SCHEDULE C ── */}
@@ -362,18 +362,17 @@ export default function BusinessTax() {
             ))}
           </>}
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-            <button type="button" className={styles.btnSubmit}
-              style={{ background: 'rgba(255,255,255,0.1)' }}
-              onClick={() => setFormType('')}>
-              ← Back
-            </button>
-            <button type="submit" className={styles.btnSubmit} disabled={loading}>
-              {loading ? '...' : 'Save Return'}
-            </button>
-          </div>
-        </form>
-      )}
+          <button type="submit" className={styles.btnSubmit} disabled={loading}>
+            {loading ? '...' : 'Save Return'}
+          </button>
+        </>}
+
+        {!formType && (
+          <p className={styles.subtitle} style={{ marginTop: '1rem' }}>
+            Select a business type above to view the filing form.
+          </p>
+        )}
+      </form>
     </div>
   )
 }
