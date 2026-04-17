@@ -79,29 +79,21 @@ def submit_4868(data) -> dict:
         },
         "ReturnHeader": {
             "TaxPayer": {
-                "TaxPayerId": None,
                 "FirstNm": data.first_name,
-                "MiddleNm": None,
                 "LastNm": data.last_name,
-                "Suffix": None,
-                "TaxTaxPayerRef": None,
-                "TradeNm": None,
                 "IsEIN": False,
                 "EINorSSN": data.ssn.replace("-", ""),
                 "IsForeign": False,
                 "USAddress": {
                     "Address1": data.address,
-                    "Address2": None,
                     "City": data.city,
                     "State": data.state,
                     "ZipCd": data.zip_code,
                 },
-                "ForeignAddress": None,
             }
         },
         "ReturnData": {
             "TypeOfFiling": "JOINT" if is_joint else "SINGLE",
-            "SpouseDetails": None,
             "IsTaxPayerAbroad": False,
             "IsNonResNoWH": False,
             "TentativeTax": int(data.estimated_tax),
@@ -111,19 +103,15 @@ def submit_4868(data) -> dict:
                 "PIN": data.pin,
                 "DOB": data.dob,
                 "PrevYrAdjGrossIncome": int(data.prev_year_agi),
-                "PrevYrPIN": None,
             },
-            "SpouseSignatureDetails": None,
         },
     }
 
-    # Add spouse if joint filing
+    # Add spouse details only for joint filing
     if is_joint:
         body["ReturnData"]["SpouseDetails"] = {
             "FirstNm": data.spouse_first_name,
-            "MiddleNm": None,
             "LastNm": data.spouse_last_name,
-            "Suffix": None,
             "SSN": data.spouse_ssn.replace("-", ""),
             "Phone": data.spouse_phone,
         }
@@ -131,7 +119,6 @@ def submit_4868(data) -> dict:
             "PIN": data.spouse_pin,
             "DOB": data.spouse_dob,
             "PrevYrAdjGrossIncome": int(data.spouse_prev_year_agi),
-            "PrevYrPIN": None,
         }
 
     result = _api_post("Form4868/Create", body)
