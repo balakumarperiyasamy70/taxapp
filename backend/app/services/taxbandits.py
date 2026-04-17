@@ -36,7 +36,7 @@ def _get_access_token() -> str:
 
     resp = httpx.get(
         settings.taxbandits_auth_url,
-        headers={"Authorization": jws},
+        headers={"Authentication": jws},
         timeout=15,
     )
     resp.raise_for_status()
