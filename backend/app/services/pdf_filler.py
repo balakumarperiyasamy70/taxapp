@@ -117,7 +117,7 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
     return buf.getvalue()
 
 
-def add_watermark(pdf_bytes: bytes, text: str = "DRAFT — CLIENT COPY") -> bytes:
+def add_watermark(pdf_bytes: bytes, text: str = "DRAFT - CLIENT COPY") -> bytes:
     """Overlay a diagonal watermark on every page. Used for client/download copies."""
     from fpdf import FPDF
 
