@@ -71,7 +71,7 @@
 
 /* Action buttons */
 .actions { display: flex; gap: 6px; }
-.btnDownload, .btnEmail {
+.btnDownload, .btnEmail, .btnSubmit {
   padding: 0.3rem 0.6rem;
   border-radius: 5px;
   border: none;
@@ -84,6 +84,9 @@
 .btnDownload:hover { background: #2d2d50; }
 .btnEmail { background: #e63946; color: white; }
 .btnEmail:hover { background: #c1121f; }
+.btnSubmit { background: #2a9d8f; color: white; }
+.btnSubmit:hover { background: #21867a; }
+.btnSubmit:disabled { background: #aaa; cursor: not-allowed; }
 
 /* Modal */
 .modalOverlay {

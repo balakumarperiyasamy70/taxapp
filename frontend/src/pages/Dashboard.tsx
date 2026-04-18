@@ -16,6 +16,7 @@ interface TaxReturn {
   tax_owed_cents: number
   refund_amount_cents: number
   submission_id: string | null
+  irs_timestamp: string | null
   created_at: string
 }
 
@@ -58,6 +59,7 @@ export default function Dashboard({ site }: Props) {
   const [emailModal, setEmailModal] = useState<{ returnId: number; returnType: string } | null>(null)
   const [emailStatus, setEmailStatus] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
+  const [submitting, setSubmitting] = useState<number | null>(null)
 
   const handleDownload = async (id: number, returnType: string, taxYear: number) => {
     try {
@@ -74,6 +76,20 @@ export default function Dashboard({ site }: Props) {
       a.click()
       URL.revokeObjectURL(url)
     } catch { alert('Download failed. Please try again.') }
+  }
+
+  const handleSubmitReturn = async (returnId: number) => {
+    if (!window.confirm('Submit this return for filing? This action cannot be undone.')) return
+    setSubmitting(returnId)
+    try {
+      await api.post(`/tax/returns/${returnId}/submit`)
+      const res = await api.get('/tax/returns')
+      setReturns(res.data)
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Submission failed. Please try again.')
+    } finally {
+      setSubmitting(null)
+    }
   }
 
   const handleSendEmail = async (returnId: number) => {
@@ -140,7 +156,7 @@ export default function Dashboard({ site }: Props) {
 
       {/* Filed Returns */}
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>My Filed Returns</h3>
+        <h3 className={styles.sectionTitle}>My Tax Returns</h3>
         {loading ? (
           <p className={styles.empty}>Loading...</p>
         ) : returns.length === 0 ? (
@@ -174,6 +190,15 @@ export default function Dashboard({ site }: Props) {
                       <div className={styles.actions}>
                         <button className={styles.btnDownload} onClick={() => handleDownload(r.id, r.return_type, r.tax_year)}>⬇ PDF</button>
                         <button className={styles.btnEmail} onClick={() => { setEmailModal({ returnId: r.id, returnType: r.return_type }); setEmailStatus('') }}>✉ Email</button>
+                        {r.status === 'draft' && r.return_type === '1040' && (
+                          <button
+                            className={styles.btnSubmit}
+                            disabled={submitting === r.id}
+                            onClick={() => handleSubmitReturn(r.id)}
+                          >
+                            {submitting === r.id ? 'Submitting...' : '✔ Submit for Filing'}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
