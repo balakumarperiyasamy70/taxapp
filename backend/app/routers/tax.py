@@ -191,8 +191,24 @@ def download_pdf(
     ).first()
     if not tax_return:
         raise HTTPException(status_code=404, detail="Return not found")
-    pdf_bytes = generate_pdf(tax_return)
-    filename = f"TaxReturn_{tax_return.return_type}_{tax_return.tax_year}.pdf"
+
+    form_data = json.loads(tax_return.form_data or '{}')
+
+    if tax_return.return_type == ReturnType.individual_1040:
+        try:
+            from app.services.pdf_filler import fill_1040
+            # Inject calculated refund/balance_due so the PDF totals match the DB
+            form_data["_refund"]      = tax_return.refund_amount_cents / 100
+            form_data["_balance_due"] = tax_return.tax_owed_cents / 100
+            pdf_bytes = fill_1040(form_data)
+            filename = f"Form1040_{tax_return.tax_year}_{tax_return.id}.pdf"
+        except FileNotFoundError:
+            pdf_bytes = generate_pdf(tax_return)
+            filename = f"TaxReturn_1040_{tax_return.tax_year}.pdf"
+    else:
+        pdf_bytes = generate_pdf(tax_return)
+        filename = f"TaxReturn_{tax_return.return_type}_{tax_return.tax_year}.pdf"
+
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
         media_type="application/pdf",
@@ -221,7 +237,16 @@ def email_pdf(
     dob = form_data.get('dob', '')
     password = make_password(dob, ssn_or_ein)
 
-    pdf_bytes = generate_pdf(tax_return)
+    if tax_return.return_type == ReturnType.individual_1040:
+        try:
+            from app.services.pdf_filler import fill_1040
+            form_data["_refund"]      = tax_return.refund_amount_cents / 100
+            form_data["_balance_due"] = tax_return.tax_owed_cents / 100
+            pdf_bytes = fill_1040(form_data)
+        except FileNotFoundError:
+            pdf_bytes = generate_pdf(tax_return)
+    else:
+        pdf_bytes = generate_pdf(tax_return)
     protected = protect_pdf(pdf_bytes, password)
 
     label = {

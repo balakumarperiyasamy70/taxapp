@@ -23,6 +23,9 @@ frontend/build/
 # Uploads / documents
 backend/uploads/
 
+# IRS PDF forms — downloaded on VPS, not committed to repo
+backend/app/forms/*.pdf
+
 # IDE
 .vscode/
 .idea/
