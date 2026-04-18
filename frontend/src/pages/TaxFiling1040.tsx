@@ -172,7 +172,7 @@ export default function TaxFiling1040() {
 
   if (result) return (
     <div className={styles.card}>
-      <div className={styles.success}>Return submitted successfully!</div>
+      <div className={styles.success}>Draft saved successfully!</div>
       <div className={styles.resultCard}>
         <div className={styles.resultRow}><span>Return ID</span><strong>#{result.id}</strong></div>
         <div className={styles.resultRow}><span>Tax Year</span><strong>{result.tax_year}</strong></div>
@@ -194,8 +194,8 @@ export default function TaxFiling1040() {
         )}
       </div>
       <p className={styles.disclaimer}>
-        Your return has been saved. E-filing will be available once our IRS authorization is complete.
-        You can download or email your PDF from the dashboard.
+        Your draft has been saved. Download or email your <strong>DRAFT PDF</strong> from the dashboard to review with your advisor.
+        When ready, click <strong>"Submit for Filing"</strong> on the dashboard to file your return.
       </p>
     </div>
   )

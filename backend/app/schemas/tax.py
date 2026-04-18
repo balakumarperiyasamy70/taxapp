@@ -159,6 +159,7 @@ class TaxReturnOut(BaseModel):
     refund_amount_cents: int
     tax_owed_cents: int
     submission_id: Optional[str]
+    irs_timestamp: Optional[datetime]
     created_at: datetime
 
     class Config:

@@ -47,7 +47,7 @@ def file_extension(
 
 
 @router.post("/1040", response_model=TaxReturnOut)
-def file_1040(
+def save_1040_draft(
     data: Form1040,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -69,9 +69,32 @@ def file_1040(
     db.add(tax_return)
     db.commit()
     db.refresh(tax_return)
+    return tax_return
 
-    result = irs_efile.submit_1040(tax_return, data)
-    tax_return.submission_id = result.get("submission_id")
+
+@router.post("/returns/{return_id}/submit", response_model=TaxReturnOut)
+def submit_return(
+    return_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from datetime import datetime, timezone
+    tax_return = db.query(TaxReturn).filter(
+        TaxReturn.id == return_id,
+        TaxReturn.user_id == current_user.id
+    ).first()
+    if not tax_return:
+        raise HTTPException(status_code=404, detail="Return not found")
+    if tax_return.status != ReturnStatus.draft:
+        raise HTTPException(status_code=400, detail="Return has already been submitted")
+
+    if tax_return.return_type == ReturnType.individual_1040:
+        form_data = json.loads(tax_return.form_data or '{}')
+        data = Form1040(**form_data)
+        result = irs_efile.submit_1040(tax_return, data)
+        tax_return.submission_id = result.get("submission_id")
+
+    tax_return.irs_timestamp = datetime.now(timezone.utc)
     tax_return.status = ReturnStatus.submitted
     db.commit()
     db.refresh(tax_return)
@@ -201,7 +224,13 @@ def download_pdf(
             form_data["_balance_due"] = tax_return.tax_owed_cents / 100
             pdf_bytes = fill_1040(form_data)
             pdf_bytes = flatten_pdf(pdf_bytes)
-            pdf_bytes = add_watermark(pdf_bytes, "DRAFT - CLIENT COPY")
+            if tax_return.status == ReturnStatus.draft:
+                wm_text = "DRAFT - CLIENT COPY"
+            else:
+                ts = tax_return.irs_timestamp or tax_return.created_at
+                date_str = ts.strftime("%b %d, %Y") if ts else ""
+                wm_text = f"CLIENT COPY - Submitted {date_str}"
+            pdf_bytes = add_watermark(pdf_bytes, wm_text)
             filename = f"Form1040_{tax_return.tax_year}_{tax_return.id}.pdf"
         except FileNotFoundError:
             pdf_bytes = generate_pdf(tax_return)
@@ -240,11 +269,18 @@ def email_pdf(
 
     if tax_return.return_type == ReturnType.individual_1040:
         try:
-            from app.services.pdf_filler import fill_1040, flatten_pdf
+            from app.services.pdf_filler import fill_1040, flatten_pdf, add_watermark
             form_data["_refund"]      = tax_return.refund_amount_cents / 100
             form_data["_balance_due"] = tax_return.tax_owed_cents / 100
             pdf_bytes = fill_1040(form_data)
             pdf_bytes = flatten_pdf(pdf_bytes)
+            if tax_return.status == ReturnStatus.draft:
+                wm_text = "DRAFT - CLIENT COPY"
+            else:
+                ts = tax_return.irs_timestamp or tax_return.created_at
+                date_str = ts.strftime("%b %d, %Y") if ts else ""
+                wm_text = f"CLIENT COPY - Submitted {date_str}"
+            pdf_bytes = add_watermark(pdf_bytes, wm_text)
         except FileNotFoundError:
             pdf_bytes = generate_pdf(tax_return)
     else:
