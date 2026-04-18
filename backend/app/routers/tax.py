@@ -62,7 +62,7 @@ def file_1040(
         return_type=ReturnType.individual_1040,
         status=ReturnStatus.draft,
         total_income_cents=int(calc["total_income"] * 100),
-        tax_owed_cents=int(calc["tax_owed"] * 100),
+        tax_owed_cents=int(calc["balance_due"] * 100),
         refund_amount_cents=int(calc["refund"] * 100),
         form_data=json.dumps(data.model_dump()),
     )

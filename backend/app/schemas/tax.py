@@ -34,6 +34,7 @@ class Form1040(BaseModel):
     first_name: str
     last_name: str
     ssn: str
+    dob: str = ''               # YYYY-MM-DD or MM/DD/YYYY — used for PDF password
     spouse_first_name: Optional[str] = None
     spouse_last_name: Optional[str] = None
     spouse_ssn: Optional[str] = None
@@ -41,17 +42,29 @@ class Form1040(BaseModel):
     city: str
     state: str
     zip_code: str
-    # Income
+    dependent_count: int = 0    # qualifying children under 17
+    # W-2 Income
     wages: float = 0.0
-    interest: float = 0.0
-    dividends: float = 0.0
+    federal_withholding: float = 0.0        # W-2 Box 2
+    state_withholding: float = 0.0          # W-2 Box 17
+    # Other Income
+    interest: float = 0.0                   # 1099-INT
+    dividends: float = 0.0                  # 1099-DIV
+    unemployment_compensation: float = 0.0  # 1099-G
+    social_security_benefits: float = 0.0   # SSA-1099 (85% included in income)
+    ira_distributions: float = 0.0          # 1099-R
     other_income: float = 0.0
+    estimated_tax_payments: float = 0.0     # quarterly 1040-ES payments
+    # Above-the-line adjustments
+    student_loan_interest: float = 0.0      # max $2,500
+    ira_deduction: float = 0.0              # max $7,000 for 2024
     # Deductions
     standard_deduction: bool = True
     itemized_deductions: float = 0.0
     # Credits
     child_tax_credit: float = 0.0
     earned_income_credit: float = 0.0
+    other_credits: float = 0.0
 
 
 class ScheduleC(BaseModel):
