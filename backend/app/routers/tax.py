@@ -196,10 +196,11 @@ def download_pdf(
 
     if tax_return.return_type == ReturnType.individual_1040:
         try:
-            from app.services.pdf_filler import fill_1040, add_watermark
+            from app.services.pdf_filler import fill_1040, flatten_pdf, add_watermark
             form_data["_refund"]      = tax_return.refund_amount_cents / 100
             form_data["_balance_due"] = tax_return.tax_owed_cents / 100
             pdf_bytes = fill_1040(form_data)
+            pdf_bytes = flatten_pdf(pdf_bytes)
             pdf_bytes = add_watermark(pdf_bytes, "DRAFT - CLIENT COPY")
             filename = f"Form1040_{tax_return.tax_year}_{tax_return.id}.pdf"
         except FileNotFoundError:
@@ -239,10 +240,11 @@ def email_pdf(
 
     if tax_return.return_type == ReturnType.individual_1040:
         try:
-            from app.services.pdf_filler import fill_1040
+            from app.services.pdf_filler import fill_1040, flatten_pdf
             form_data["_refund"]      = tax_return.refund_amount_cents / 100
             form_data["_balance_due"] = tax_return.tax_owed_cents / 100
             pdf_bytes = fill_1040(form_data)
+            pdf_bytes = flatten_pdf(pdf_bytes)
         except FileNotFoundError:
             pdf_bytes = generate_pdf(tax_return)
     else:

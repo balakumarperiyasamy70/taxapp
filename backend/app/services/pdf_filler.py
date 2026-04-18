@@ -117,6 +117,28 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
     return buf.getvalue()
 
 
+def flatten_pdf(pdf_bytes: bytes) -> bytes:
+    """Flatten AcroForm fields into static page content (non-editable).
+    Requires pdftk-java: apt-get install -y pdftk-java
+    """
+    import subprocess, tempfile, os
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as src_f:
+        src_f.write(pdf_bytes)
+        src_path = src_f.name
+    dst_path = src_path + "_flat.pdf"
+    try:
+        subprocess.run(
+            ["pdftk", src_path, "flatten", "output", dst_path],
+            check=True, capture_output=True
+        )
+        with open(dst_path, "rb") as f:
+            return f.read()
+    finally:
+        os.unlink(src_path)
+        if os.path.exists(dst_path):
+            os.unlink(dst_path)
+
+
 def add_watermark(pdf_bytes: bytes, text: str = "DRAFT - CLIENT COPY") -> bytes:
     """Overlay a diagonal watermark on every page. Used for client/download copies."""
     from fpdf import FPDF
