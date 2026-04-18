@@ -11,7 +11,7 @@ Page 2 layout:  f2_01–f2_26 (tax, credits, payments, refund/owed)
 import io
 from pathlib import Path
 from pypdf import PdfReader, PdfWriter
-from app.services.tax_service import calculate_tax, STD_DEDUCTION
+from app.services.tax_service import calculate_tax, STANDARD_DEDUCTION
 
 FORMS_DIR = Path(__file__).parent.parent / "forms"
 
@@ -55,7 +55,7 @@ def _calc(d: dict) -> dict:
 
     fs = d.get("filing_status", "single")
     if d.get("standard_deduction", True):
-        ded = float(STD_DEDUCTION.get(fs, 14600))
+        ded = float(STANDARD_DEDUCTION.get(fs, 14600))
     else:
         ded = float(d.get("itemized_deductions") or 0)
 
