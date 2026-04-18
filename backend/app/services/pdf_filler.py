@@ -107,6 +107,36 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
     writer.append(reader)
     for page in writer.pages:
         writer.update_page_form_field_values(page, fields)
+    # NeedAppearances = True → PDF viewers regenerate field appearances so
+    # pre-filled values are visible while the form remains fillable/printable.
+    from pypdf.generic import NameObject, BooleanObject
+    if "/AcroForm" in writer._root_object:
+        writer._root_object["/AcroForm"][NameObject("/NeedAppearances")] = BooleanObject(True)
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
+
+
+def add_watermark(pdf_bytes: bytes, text: str = "DRAFT — CLIENT COPY") -> bytes:
+    """Overlay a diagonal watermark on every page. Used for client/download copies."""
+    from fpdf import FPDF
+
+    wm = FPDF(unit="pt", format=(612, 792))
+    wm.add_page()
+    wm.set_font("Helvetica", style="B", size=52)
+    wm.set_text_color(200, 200, 200)
+    with wm.rotation(angle=45, x=306, y=396):
+        w = wm.get_string_width(text)
+        wm.text(x=306 - w / 2, y=414, txt=text)
+
+    wm_page = PdfReader(io.BytesIO(bytes(wm.output()))).pages[0]
+
+    reader = PdfReader(io.BytesIO(pdf_bytes))
+    writer = PdfWriter()
+    writer.append(reader)          # preserves AcroForm + all interactive fields
+    for page in writer.pages:
+        page.merge_page(wm_page)   # stamp watermark on top of each page
+
     buf = io.BytesIO()
     writer.write(buf)
     return buf.getvalue()
@@ -250,6 +280,14 @@ def fill_1040(form_data: dict) -> bytes:
 
         # ── Page 2 SSN (signature area) ─────────────────────────────────────
         "f2_22[0]": d.get("ssn", ""),
+
+        # ── Paid Preparer Use Only ────────────────────────────────────────────
+        # Fields f2_34–f2_51 cover signature/preparer area at bottom of page 2.
+        # Approximate mapping (preparer name, PTIN, firm, phone):
+        "f2_41[0]": "TaxRefundLoan.us",
+        "f2_42[0]": "PENDING",            # PTIN — update when IRS registration complete
+        "f2_43[0]": "TaxRefundLoan.us",   # Firm name
+        "f2_46[0]": "",                    # Firm EIN (blank until registered)
     }
 
     return _fill_pdf(pdf_path, fields)
