@@ -10,7 +10,7 @@ cd /opt/taxapp/repo
 git pull origin master
 
 echo "==> Updating backend..."
-rsync -a --delete --exclude='venv/' --exclude='.env' /opt/taxapp/repo/backend/ /opt/taxapp/backend/
+rsync -a --delete --exclude='venv/' --exclude='.env' --exclude='app/forms/' /opt/taxapp/repo/backend/ /opt/taxapp/backend/
 cd /opt/taxapp/backend
 source venv/bin/activate
 pip install -r requirements.txt -q
