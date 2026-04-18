@@ -119,10 +119,9 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
 
 def flatten_pdf(pdf_bytes: bytes) -> bytes:
     """Flatten AcroForm fields into static page content (non-editable).
-    Requires pdftk-java: apt-get install -y pdftk-java
+    Uses ghostscript (gs), pre-installed on Ubuntu 24.04.
     """
     import subprocess, tempfile, os
-    from pypdf.generic import NameObject
 
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as src_f:
         src_f.write(pdf_bytes)
@@ -130,26 +129,19 @@ def flatten_pdf(pdf_bytes: bytes) -> bytes:
     dst_path = src_path + "_flat.pdf"
     try:
         subprocess.run(
-            ["pdftk", src_path, "flatten", "output", dst_path],
+            [
+                "gs", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
+                "-dCompatibilityLevel=1.4",
+                f"-sOutputFile={dst_path}", src_path,
+            ],
             check=True, capture_output=True
         )
         with open(dst_path, "rb") as f:
-            flattened = f.read()
+            return f.read()
     finally:
         os.unlink(src_path)
         if os.path.exists(dst_path):
             os.unlink(dst_path)
-
-    # pdftk may leave /AcroForm in the root; remove it so pypdf watermark
-    # step doesn't copy it back and re-enable interactive fields.
-    reader = PdfReader(io.BytesIO(flattened))
-    writer = PdfWriter()
-    writer.append(reader)
-    if "/AcroForm" in writer._root_object:
-        del writer._root_object[NameObject("/AcroForm")]
-    buf = io.BytesIO()
-    writer.write(buf)
-    return buf.getvalue()
 
 
 def add_watermark(pdf_bytes: bytes, text: str = "DRAFT - CLIENT COPY") -> bytes:
