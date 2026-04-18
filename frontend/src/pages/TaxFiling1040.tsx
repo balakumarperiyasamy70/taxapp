@@ -27,7 +27,7 @@ function formatSSN(v: string): string {
 const STEPS = ['Personal', 'Income', 'Adjustments', 'Credits', 'Review']
 
 const INIT = {
-  tax_year: 2024,
+  tax_year: 2025,
   filing_status: 'single',
   first_name: '', last_name: '', ssn: '', dob: '',
   spouse_first_name: '', spouse_last_name: '', spouse_ssn: '',
@@ -220,6 +220,7 @@ export default function TaxFiling1040() {
           <div className={styles.row}>
             <label>Tax Year
               <select value={form.tax_year} onChange={e => set('tax_year', parseInt(e.target.value))}>
+                <option value={2025}>2025</option>
                 <option value={2024}>2024</option>
                 <option value={2023}>2023</option>
                 <option value={2022}>2022</option>
