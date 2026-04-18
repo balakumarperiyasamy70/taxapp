@@ -200,7 +200,7 @@ def download_pdf(
             form_data["_refund"]      = tax_return.refund_amount_cents / 100
             form_data["_balance_due"] = tax_return.tax_owed_cents / 100
             pdf_bytes = fill_1040(form_data)
-            pdf_bytes = add_watermark(pdf_bytes, "DRAFT — CLIENT COPY")
+            pdf_bytes = add_watermark(pdf_bytes, "DRAFT - CLIENT COPY")
             filename = f"Form1040_{tax_return.tax_year}_{tax_return.id}.pdf"
         except FileNotFoundError:
             pdf_bytes = generate_pdf(tax_return)
