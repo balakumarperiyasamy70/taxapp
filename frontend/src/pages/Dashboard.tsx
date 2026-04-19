@@ -255,8 +255,8 @@ export default function Dashboard({ site }: Props) {
               A password-protected PDF will be sent to:<br />
               <strong>{user?.email}</strong><br /><br />
               To open the PDF, use:<br />
-              <strong>Tax year + last 4 digits of SSN/EIN</strong><br />
-              <em style={{ fontSize: '0.82rem' }}>Example: 20241234</em>
+              <strong>Birth year + last 4 digits of SSN/EIN</strong><br />
+              <em style={{ fontSize: '0.82rem' }}>Example: 19901234</em>
             </p>
             {emailStatus && (
               <div className={emailStatus.toLowerCase().includes('sent') ? formStyles.success : formStyles.error} style={{ marginBottom: '1rem' }}>
