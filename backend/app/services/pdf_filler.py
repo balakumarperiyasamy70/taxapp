@@ -104,11 +104,30 @@ def _calc(d: dict) -> dict:
 def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
     from pypdf.generic import NameObject, BooleanObject
     reader = PdfReader(str(pdf_path))
+
+    # pypdf.update_page_form_field_values matches by full qualified name
+    # (e.g. topmostSubform[0].Page1[0].f1_01[0]), not the leaf name.
+    # Build leaf→full-name map so callers can use short names.
+    all_fields = reader.get_fields() or {}
+    leaf_to_full: dict[str, str] = {}
+    for full_name in all_fields:
+        leaf = full_name.split(".")[-1]
+        if leaf not in leaf_to_full:          # first match wins
+            leaf_to_full[leaf] = full_name
+
+    translated = {}
+    for key, val in fields.items():
+        if key in all_fields:
+            translated[key] = val             # already a full name
+        elif key in leaf_to_full:
+            translated[leaf_to_full[key]] = val
+        else:
+            translated[key] = val             # unknown — pass through
+
     writer = PdfWriter()
     writer.append(reader)
-
     for page in writer.pages:
-        writer.update_page_form_field_values(page, fields, auto_regenerate=True)
+        writer.update_page_form_field_values(page, translated, auto_regenerate=True)
 
     if "/AcroForm" in writer._root_object:
         writer._root_object["/AcroForm"][NameObject("/NeedAppearances")] = BooleanObject(True)
