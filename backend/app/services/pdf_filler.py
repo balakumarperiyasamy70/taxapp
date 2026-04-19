@@ -129,31 +129,106 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
 
 def flatten_pdf(pdf_bytes: bytes) -> bytes:
     """Flatten AcroForm fields into static page content (non-editable).
-    GS renders directly to PNG — it computes field appearances from /V+/DA (handles
-    NeedAppearances) AND preserves the full IRS page background. img2pdf reassembles.
-    Requires: apt-get install -y ghostscript && pip install img2pdf
+
+    Strategy:
+      1. pdftoppm renders pages to PNG — correctly preserves IRS form backgrounds.
+      2. Fields that have /AP streams are rendered by pdftoppm automatically.
+      3. Fields WITHOUT /AP (e.g. IRS calculated fields like Line 24, 37) are drawn
+         directly onto the PNG using Pillow, reading coordinates from /Rect in the PDF.
+
+    Requires: apt-get install -y poppler-utils fonts-liberation
+              pip install img2pdf Pillow
     """
     import subprocess, tempfile, os, glob, img2pdf
+    from PIL import Image, ImageDraw, ImageFont
+    from pypdf import PdfReader as _R
 
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as src_f:
-        src_f.write(pdf_bytes)
-        src_path = src_f.name
+    DPI    = 150
+    SCALE  = DPI / 72.0  # PDF points → pixels
+
+    # ── Collect fields that have /V but no /AP (pdftoppm cannot render them) ──
+    reader   = _R(io.BytesIO(pdf_bytes))
+    overlays = {}  # page_idx → [(px_x, px_y, value_str)]
+
+    for pg_i, page in enumerate(reader.pages):
+        h_pts = float(page.mediabox.height)
+        for ref in page.get("/Annots", []):
+            annot = ref.get_object()
+            if annot.get("/Subtype") != "/Widget":
+                continue
+
+            # Skip if /AP already present (parent or self) — pdftoppm will render
+            has_ap = "/AP" in annot
+            if not has_ap and "/Parent" in annot:
+                has_ap = "/AP" in annot["/Parent"].get_object()
+            if has_ap:
+                continue
+
+            v = annot.get("/V")
+            if not v:
+                continue
+            val = str(v).strip("() \t")
+            if not val or val in ("Off", "Yes", "No"):
+                continue
+
+            rect = annot.get("/Rect")
+            if not rect:
+                continue
+            x1, y1, x2, y2 = (float(rect[i]) for i in range(4))
+            # PDF origin is bottom-left; image origin is top-left
+            px_x = int(x1 * SCALE) + 3
+            px_y = int((h_pts - y2) * SCALE) + 3
+            overlays.setdefault(pg_i, []).append((px_x, px_y, val))
+
+    # ── Render PDF pages to PNG ───────────────────────────────────────────────
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as sf:
+        sf.write(pdf_bytes)
+        src = sf.name
     out_dir  = tempfile.mkdtemp()
-    dst_path = src_path + "_flat.pdf"
+    dst_path = src + "_flat.pdf"
     try:
         subprocess.run(
-            ["gs", "-dNOPAUSE", "-dBATCH", "-sDEVICE=png16m", "-r150",
-             f"-sOutputFile={os.path.join(out_dir, 'page-%02d.png')}",
-             src_path],
+            ["pdftoppm", "-r", str(DPI), "-png", src, os.path.join(out_dir, "page")],
             check=True, capture_output=True
         )
         pages = sorted(glob.glob(os.path.join(out_dir, "*.png")))
+
+        # ── Overlay missing field values using Pillow ─────────────────────────
+        if overlays:
+            # Try system monospace font; fall back to Pillow default
+            _font_paths = [
+                "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+                "/usr/share/fonts/truetype/freefont/FreeMono.ttf",
+            ]
+            font = None
+            for fp in _font_paths:
+                try:
+                    font = ImageFont.truetype(fp, 12)
+                    break
+                except Exception:
+                    pass
+            if font is None:
+                try:
+                    font = ImageFont.load_default(size=12)
+                except Exception:
+                    font = ImageFont.load_default()
+
+            for i, png_path in enumerate(pages):
+                if i not in overlays:
+                    continue
+                img  = Image.open(png_path).convert("RGB")
+                draw = ImageDraw.Draw(img)
+                for px_x, px_y, val in overlays[i]:
+                    draw.text((px_x, px_y), val, fill=(0, 0, 0), font=font)
+                img.save(png_path)
+
         with open(dst_path, "wb") as f:
             f.write(img2pdf.convert(pages))
         with open(dst_path, "rb") as f:
             return f.read()
     finally:
-        os.unlink(src_path)
+        os.unlink(src)
         for p in glob.glob(os.path.join(out_dir, "*")):
             os.unlink(p)
         os.rmdir(out_dir)
