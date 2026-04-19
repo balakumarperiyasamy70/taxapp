@@ -102,16 +102,24 @@ def _calc(d: dict) -> dict:
 
 
 def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
+    from pypdf.generic import NameObject, BooleanObject, TextStringObject
     reader = PdfReader(str(pdf_path))
     writer = PdfWriter()
     writer.append(reader)
-    # auto_regenerate=False: only set /V values; do NOT let pypdf attempt to
-    # generate /AP streams (it can't access IRS-embedded fonts and produces
-    # blank appearances for some fields). NeedAppearances=True tells poppler
-    # to compute all appearances from /V using the correct embedded fonts.
+
+    # Some IRS fields lack /DA (default appearance); without it pypdf and
+    # poppler both skip appearance generation for that field. Add a fallback
+    # so every widget can have its value rendered.
+    DEFAULT_DA = "/Helv 10 Tf 0 g"
     for page in writer.pages:
-        writer.update_page_form_field_values(page, fields, auto_regenerate=False)
-    from pypdf.generic import NameObject, BooleanObject
+        for annot_ref in page.get("/Annots", []):
+            annot = annot_ref.get_object()
+            if annot.get("/Subtype") == "/Widget" and "/DA" not in annot:
+                annot[NameObject("/DA")] = TextStringObject(DEFAULT_DA)
+
+    for page in writer.pages:
+        writer.update_page_form_field_values(page, fields, auto_regenerate=True)
+
     if "/AcroForm" in writer._root_object:
         writer._root_object["/AcroForm"][NameObject("/NeedAppearances")] = BooleanObject(True)
     buf = io.BytesIO()
@@ -121,28 +129,20 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
 
 def flatten_pdf(pdf_bytes: bytes) -> bytes:
     """Flatten AcroForm fields into static page content (non-editable).
-    Two-stage: ghostscript bakes field appearances, poppler renders pages as images.
-    gs handles NeedAppearances correctly; poppler renders IRS form backgrounds correctly.
-    Requires: apt-get install -y poppler-utils ghostscript && pip install img2pdf
+    Uses poppler pdftoppm to render each page as PNG then reassemble with img2pdf.
+    NeedAppearances + /DA on all widgets (set in _fill_pdf) ensures poppler renders all fields.
+    Requires: apt-get install -y poppler-utils && pip install img2pdf
     """
     import subprocess, tempfile, os, glob, img2pdf
 
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as src_f:
         src_f.write(pdf_bytes)
         src_path = src_f.name
-    gs_path  = src_path + "_gs.pdf"
     out_dir  = tempfile.mkdtemp()
     dst_path = src_path + "_flat.pdf"
     try:
-        # Stage 1: ghostscript generates appearance streams for all AcroForm fields
         subprocess.run(
-            ["gs", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
-             "-dCompatibilityLevel=1.4", f"-sOutputFile={gs_path}", src_path],
-            check=True, capture_output=True
-        )
-        # Stage 2: poppler renders each page to PNG (correctly handles IRS backgrounds)
-        subprocess.run(
-            ["pdftoppm", "-r", "150", "-png", gs_path,
+            ["pdftoppm", "-r", "150", "-png", src_path,
              os.path.join(out_dir, "page")],
             check=True, capture_output=True
         )
@@ -153,8 +153,6 @@ def flatten_pdf(pdf_bytes: bytes) -> bytes:
             return f.read()
     finally:
         os.unlink(src_path)
-        if os.path.exists(gs_path):
-            os.unlink(gs_path)
         for p in glob.glob(os.path.join(out_dir, "*")):
             os.unlink(p)
         os.rmdir(out_dir)
