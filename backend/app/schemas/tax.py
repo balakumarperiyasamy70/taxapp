@@ -28,6 +28,14 @@ class Form4868(BaseModel):
     prev_year_agi: float        # prior year adjusted gross income
 
 
+class Dependent(BaseModel):
+    first_name: str
+    last_name: str
+    ssn: str
+    relationship: str
+    qualifying_child: bool = True   # True = child tax credit; False = credit for other dependents
+
+
 class Form1040(BaseModel):
     tax_year: int
     filing_status: str          # single, married_joint, married_separate, head_household
@@ -42,22 +50,42 @@ class Form1040(BaseModel):
     city: str
     state: str
     zip_code: str
-    dependent_count: int = 0    # qualifying children under 17
-    # W-2 Income
-    wages: float = 0.0
-    federal_withholding: float = 0.0        # W-2 Box 2
-    state_withholding: float = 0.0          # W-2 Box 17
-    # Other Income
-    interest: float = 0.0                   # 1099-INT
-    dividends: float = 0.0                  # 1099-DIV
+    dependents: list[Dependent] = []
+    # Line 1 — Wages
+    wages: float = 0.0                       # 1a  W-2 Box 1
+    household_wages: float = 0.0             # 1b  household employee wages
+    tip_income: float = 0.0                  # 1c  tip income not on W-2
+    medicaid_waiver: float = 0.0             # 1d  Medicaid waiver payments
+    dependent_care_benefits: float = 0.0    # 1e  Form 2441
+    adoption_benefits: float = 0.0           # 1f  Form 8839
+    wages_8919: float = 0.0                  # 1g  Form 8919
+    other_earned_income: float = 0.0         # 1h  other earned income
+    federal_withholding: float = 0.0         # W-2 Box 2
+    state_withholding: float = 0.0           # W-2 Box 17
+    # Line 2 — Interest
+    tax_exempt_interest: float = 0.0         # 2a  tax-exempt interest (not taxable)
+    taxable_interest: float = 0.0            # 2b  taxable interest (1099-INT)
+    # Line 3 — Dividends
+    qualified_dividends: float = 0.0         # 3a  qualified dividends
+    ordinary_dividends: float = 0.0          # 3b  ordinary dividends (1099-DIV)
+    # Line 4 — IRA Distributions
+    ira_distributions_total: float = 0.0     # 4a  total IRA distributions (1099-R)
+    ira_distributions_taxable: float = 0.0   # 4b  taxable portion
+    # Line 5 — Pensions & Annuities
+    pensions_total: float = 0.0              # 5a  total pensions/annuities
+    pensions_taxable: float = 0.0            # 5b  taxable portion
+    # Line 6 — Social Security
+    social_security_benefits: float = 0.0   # 6a  total SS benefits (SSA-1099)
+    # Line 7 — Capital Gain/Loss
+    capital_gain_loss: float = 0.0           # 7   net capital gain or loss
+    # Other income (flows to Schedule 1 → Line 8)
     unemployment_compensation: float = 0.0  # 1099-G
-    social_security_benefits: float = 0.0   # SSA-1099 (85% included in income)
-    ira_distributions: float = 0.0          # 1099-R
     other_income: float = 0.0
-    estimated_tax_payments: float = 0.0     # quarterly 1040-ES payments
+    # Payments
+    estimated_tax_payments: float = 0.0     # Line 26  quarterly 1040-ES
     # Above-the-line adjustments
     student_loan_interest: float = 0.0      # max $2,500
-    ira_deduction: float = 0.0              # max $7,000 for 2024
+    ira_deduction: float = 0.0              # max $7,000
     # Deductions
     standard_deduction: bool = True
     itemized_deductions: float = 0.0
@@ -65,6 +93,10 @@ class Form1040(BaseModel):
     child_tax_credit: float = 0.0
     earned_income_credit: float = 0.0
     other_credits: float = 0.0
+    # Direct deposit (optional)
+    refund_routing: str = ''
+    refund_account: str = ''
+    refund_account_type: str = 'checking'
 
 
 class ScheduleC(BaseModel):

@@ -63,18 +63,33 @@ def calculate_tax(taxable_income: float, filing_status: str) -> float:
 
 
 def calculate_1040(data) -> dict:
-    # Gross income — social security: 85% is taxable (simplified; actual depends on income level)
-    total_income = (
+    total_wages = (
         data.wages +
-        data.interest +
-        data.dividends +
-        getattr(data, "unemployment_compensation", 0.0) +
-        getattr(data, "ira_distributions", 0.0) +
-        getattr(data, "social_security_benefits", 0.0) * 0.85 +
-        data.other_income
+        getattr(data, "household_wages", 0.0) +
+        getattr(data, "tip_income", 0.0) +
+        getattr(data, "medicaid_waiver", 0.0) +
+        getattr(data, "dependent_care_benefits", 0.0) +
+        getattr(data, "adoption_benefits", 0.0) +
+        getattr(data, "wages_8919", 0.0) +
+        getattr(data, "other_earned_income", 0.0)
     )
 
-    # Above-the-line adjustments (reduce AGI before deductions)
+    taxable_interest  = getattr(data, "taxable_interest", getattr(data, "interest", 0.0))
+    ordinary_divs     = getattr(data, "ordinary_dividends", getattr(data, "dividends", 0.0))
+    ira_taxable       = getattr(data, "ira_distributions_taxable", getattr(data, "ira_distributions", 0.0))
+    pensions_taxable  = getattr(data, "pensions_taxable", 0.0)
+    ss_benefits       = getattr(data, "social_security_benefits", 0.0)
+    capital_gain      = getattr(data, "capital_gain_loss", 0.0)
+    unemployment      = getattr(data, "unemployment_compensation", 0.0)
+    other             = data.other_income
+    sched1_income     = unemployment + other   # flows to Line 8
+
+    total_income = (
+        total_wages + taxable_interest + ordinary_divs +
+        ira_taxable + pensions_taxable + ss_benefits * 0.85 +
+        capital_gain + sched1_income
+    )
+
     student_loan_adj = min(getattr(data, "student_loan_interest", 0.0), 2500.0)
     ira_adj = min(getattr(data, "ira_deduction", 0.0), 7000.0)
     adjusted_gross_income = max(0.0, total_income - student_loan_adj - ira_adj)
@@ -87,22 +102,24 @@ def calculate_1040(data) -> dict:
     taxable_income = max(0.0, adjusted_gross_income - deduction)
     gross_tax = calculate_tax(taxable_income, data.filing_status)
 
+    eic          = getattr(data, "earned_income_credit", 0.0)
     total_credits = (
-        getattr(data, "child_tax_credit", 0.0) +
-        getattr(data, "earned_income_credit", 0.0) +
+        getattr(data, "child_tax_credit", 0.0) + eic +
         getattr(data, "other_credits", 0.0)
     )
     tax_liability = max(0.0, gross_tax - total_credits)
 
     total_payments = (
         getattr(data, "federal_withholding", 0.0) +
-        getattr(data, "estimated_tax_payments", 0.0)
+        getattr(data, "estimated_tax_payments", 0.0) +
+        eic   # EIC is refundable
     )
 
     refund = round(max(0.0, total_payments - tax_liability), 2)
     balance_due = round(max(0.0, tax_liability - total_payments), 2)
 
     return {
+        "total_wages": round(total_wages, 2),
         "total_income": round(total_income, 2),
         "adjusted_gross_income": round(adjusted_gross_income, 2),
         "taxable_income": round(taxable_income, 2),

@@ -17,6 +17,12 @@ const STD_DEDUCTION: Record<string, number> = {
   head_household: 21900,
 }
 
+const RELATIONSHIPS = [
+  'Son','Daughter','Stepchild','Foster Child','Sibling','Half Sibling',
+  'Grandchild','Niece/Nephew','Parent','Stepparent','Grandparent',
+  'Other Relative','Other',
+]
+
 function formatSSN(v: string): string {
   const d = v.replace(/\D/g, '').slice(0, 9)
   if (d.length <= 3) return d
@@ -26,26 +32,74 @@ function formatSSN(v: string): string {
 
 const STEPS = ['Personal', 'Income', 'Adjustments', 'Credits', 'Review']
 
+interface Dependent {
+  first_name: string
+  last_name: string
+  ssn: string
+  relationship: string
+  qualifying_child: boolean
+}
+
+const EMPTY_DEP: Dependent = {
+  first_name: '', last_name: '', ssn: '', relationship: '', qualifying_child: true,
+}
+
 const INIT = {
   tax_year: 2025,
   filing_status: 'single',
   first_name: '', last_name: '', ssn: '', dob: '',
   spouse_first_name: '', spouse_last_name: '', spouse_ssn: '',
   address: '', city: '', state: '', zip_code: '',
-  dependent_count: '0',
-  wages: '', federal_withholding: '', state_withholding: '',
-  interest: '', dividends: '',
-  unemployment_compensation: '', social_security_benefits: '',
-  ira_distributions: '', other_income: '', estimated_tax_payments: '',
-  student_loan_interest: '', ira_deduction: '',
-  standard_deduction: true, itemized_deductions: '',
-  child_tax_credit: '', earned_income_credit: '', other_credits: '',
+  // Line 1 wages (1a–1h)
+  wages: '',
+  household_wages: '',
+  tip_income: '',
+  medicaid_waiver: '',
+  dependent_care_benefits: '',
+  adoption_benefits: '',
+  wages_8919: '',
+  other_earned_income: '',
+  federal_withholding: '',
+  state_withholding: '',
+  // Line 2 interest
+  tax_exempt_interest: '',
+  taxable_interest: '',
+  // Line 3 dividends
+  qualified_dividends: '',
+  ordinary_dividends: '',
+  // Line 4 IRA distributions
+  ira_distributions_total: '',
+  ira_distributions_taxable: '',
+  // Line 5 pensions
+  pensions_total: '',
+  pensions_taxable: '',
+  // Line 6 social security
+  social_security_benefits: '',
+  // Line 7 capital gain/loss
+  capital_gain_loss: '',
+  // Schedule 1 income
+  unemployment_compensation: '',
+  other_income: '',
+  estimated_tax_payments: '',
+  // Adjustments
+  student_loan_interest: '',
+  ira_deduction: '',
+  standard_deduction: true,
+  itemized_deductions: '',
+  // Credits
+  child_tax_credit: '',
+  earned_income_credit: '',
+  other_credits: '',
+  // Direct deposit
+  refund_routing: '',
+  refund_account: '',
+  refund_account_type: 'checking',
 }
 type F = typeof INIT
 
 function num(v: string | number) { return parseFloat(String(v)) || 0 }
 
-function validateStep(step: number, f: F): Record<string, string> {
+function validateStep(step: number, f: F, deps: Dependent[]): Record<string, string> {
   const e: Record<string, string> = {}
   if (step === 1) {
     if (!f.first_name.trim()) e.first_name = 'Required'
@@ -63,31 +117,28 @@ function validateStep(step: number, f: F): Record<string, string> {
       if (!f.spouse_last_name.trim()) e.spouse_last_name = 'Required'
       if (!/^\d{3}-\d{2}-\d{4}$/.test(f.spouse_ssn)) e.spouse_ssn = 'Valid SSN required'
     }
-    if (isNaN(parseInt(f.dependent_count)) || parseInt(f.dependent_count) < 0)
-      e.dependent_count = 'Enter 0 or more'
-  }
-  if (step === 2) {
-    const total = num(f.wages) + num(f.interest) + num(f.dividends) +
-      num(f.unemployment_compensation) + num(f.social_security_benefits) +
-      num(f.ira_distributions) + num(f.other_income)
-    if (total === 0) e.wages = 'At least one income source is required'
-    const numFields = ['wages','federal_withholding','state_withholding','interest',
-      'dividends','unemployment_compensation','social_security_benefits',
-      'ira_distributions','other_income','estimated_tax_payments']
-    numFields.forEach(k => {
-      const v = num((f as any)[k])
-      if ((f as any)[k] !== '' && v < 0) e[k] = 'Cannot be negative'
+    deps.forEach((d, i) => {
+      if (!d.first_name.trim()) e[`dep_${i}_first_name`] = 'Required'
+      if (!d.last_name.trim()) e[`dep_${i}_last_name`] = 'Required'
+      if (!/^\d{3}-\d{2}-\d{4}$/.test(d.ssn)) e[`dep_${i}_ssn`] = 'Valid SSN required'
+      if (!d.relationship) e[`dep_${i}_relationship`] = 'Required'
     })
   }
+  if (step === 2) {
+    const total = num(f.wages) + num(f.household_wages) + num(f.tip_income) +
+      num(f.medicaid_waiver) + num(f.dependent_care_benefits) + num(f.adoption_benefits) +
+      num(f.wages_8919) + num(f.other_earned_income) +
+      num(f.taxable_interest) + num(f.ordinary_dividends) +
+      num(f.ira_distributions_taxable) + num(f.pensions_taxable) +
+      num(f.social_security_benefits) + num(f.capital_gain_loss) +
+      num(f.unemployment_compensation) + num(f.other_income)
+    if (total === 0) e._income = 'At least one income source is required'
+  }
   if (step === 3) {
-    if (num(f.student_loan_interest) > 2500)
-      e.student_loan_interest = 'Maximum deduction is $2,500'
-    if (num(f.student_loan_interest) < 0)
-      e.student_loan_interest = 'Cannot be negative'
-    if (num(f.ira_deduction) > 7000)
-      e.ira_deduction = 'Maximum is $7,000 for 2024'
-    if (num(f.ira_deduction) < 0)
-      e.ira_deduction = 'Cannot be negative'
+    if (num(f.student_loan_interest) > 2500) e.student_loan_interest = 'Maximum is $2,500'
+    if (num(f.student_loan_interest) < 0) e.student_loan_interest = 'Cannot be negative'
+    if (num(f.ira_deduction) > 7000) e.ira_deduction = 'Maximum is $7,000 for 2024'
+    if (num(f.ira_deduction) < 0) e.ira_deduction = 'Cannot be negative'
     if (!f.standard_deduction && num(f.itemized_deductions) <= 0)
       e.itemized_deductions = 'Enter your total itemized deductions'
   }
@@ -97,6 +148,7 @@ function validateStep(step: number, f: F): Record<string, string> {
 export default function TaxFiling1040() {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState<F>(INIT)
+  const [deps, setDeps] = useState<Dependent[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -104,15 +156,24 @@ export default function TaxFiling1040() {
 
   const isMarried = form.filing_status.startsWith('married')
   const stdDed = STD_DEDUCTION[form.filing_status] || 14600
-  const autoChildCredit = (parseInt(form.dependent_count) || 0) * 2000
+  const qualifyingCount = deps.filter(d => d.qualifying_child).length
+  const autoChildCredit = qualifyingCount * 2000
 
   const set = (k: string, v: any) => {
     setForm(f => ({ ...f, [k]: v }))
     setErrors(e => { const n = { ...e }; delete n[k]; return n })
   }
 
+  const setDep = (i: number, k: keyof Dependent, v: any) => {
+    setDeps(ds => ds.map((d, idx) => idx === i ? { ...d, [k]: v } : d))
+    setErrors(e => { const n = { ...e }; delete n[`dep_${i}_${k}`]; return n })
+  }
+
+  const addDep = () => setDeps(ds => [...ds, { ...EMPTY_DEP }])
+  const removeDep = (i: number) => setDeps(ds => ds.filter((_, idx) => idx !== i))
+
   const goNext = () => {
-    const errs = validateStep(step, form)
+    const errs = validateStep(step, form, deps)
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
     if (step === 3 && autoChildCredit > 0 && !form.child_tax_credit)
       setForm(f => ({ ...f, child_tax_credit: String(autoChildCredit) }))
@@ -139,15 +200,28 @@ export default function TaxFiling1040() {
         city: form.city,
         state: form.state,
         zip_code: form.zip_code,
-        dependent_count: parseInt(form.dependent_count) || 0,
+        dependents: deps,
         wages: num(form.wages),
+        household_wages: num(form.household_wages),
+        tip_income: num(form.tip_income),
+        medicaid_waiver: num(form.medicaid_waiver),
+        dependent_care_benefits: num(form.dependent_care_benefits),
+        adoption_benefits: num(form.adoption_benefits),
+        wages_8919: num(form.wages_8919),
+        other_earned_income: num(form.other_earned_income),
         federal_withholding: num(form.federal_withholding),
         state_withholding: num(form.state_withholding),
-        interest: num(form.interest),
-        dividends: num(form.dividends),
-        unemployment_compensation: num(form.unemployment_compensation),
+        tax_exempt_interest: num(form.tax_exempt_interest),
+        taxable_interest: num(form.taxable_interest),
+        qualified_dividends: num(form.qualified_dividends),
+        ordinary_dividends: num(form.ordinary_dividends),
+        ira_distributions_total: num(form.ira_distributions_total),
+        ira_distributions_taxable: num(form.ira_distributions_taxable),
+        pensions_total: num(form.pensions_total),
+        pensions_taxable: num(form.pensions_taxable),
         social_security_benefits: num(form.social_security_benefits),
-        ira_distributions: num(form.ira_distributions),
+        capital_gain_loss: num(form.capital_gain_loss),
+        unemployment_compensation: num(form.unemployment_compensation),
         other_income: num(form.other_income),
         estimated_tax_payments: num(form.estimated_tax_payments),
         student_loan_interest: num(form.student_loan_interest),
@@ -157,6 +231,9 @@ export default function TaxFiling1040() {
         child_tax_credit: num(form.child_tax_credit),
         earned_income_credit: num(form.earned_income_credit),
         other_credits: num(form.other_credits),
+        refund_routing: form.refund_routing,
+        refund_account: form.refund_account,
+        refund_account_type: form.refund_account_type,
       })
       setResult(res.data)
     } catch (err: any) {
@@ -194,8 +271,8 @@ export default function TaxFiling1040() {
         )}
       </div>
       <p className={styles.disclaimer}>
-        Your draft has been saved. Download or email your <strong>DRAFT PDF</strong> from the dashboard to review with your advisor.
-        When ready, click <strong>"Submit for Filing"</strong> on the dashboard to file your return.
+        Your draft has been saved. Download or email your <strong>DRAFT PDF</strong> from the dashboard
+        to review. When ready, click <strong>"Submit for Filing"</strong> on the dashboard.
       </p>
     </div>
   )
@@ -263,31 +340,29 @@ export default function TaxFiling1040() {
             </label>
           </div>
 
-          {isMarried && (
-            <>
-              <h3 className={styles.sectionTitle}>Spouse Information</h3>
-              <div className={styles.row}>
-                <label>Spouse First Name
-                  <input value={form.spouse_first_name}
-                    onChange={e => set('spouse_first_name', e.target.value)}
-                    className={ic('spouse_first_name')} />
-                  {fe('spouse_first_name')}
-                </label>
-                <label>Spouse Last Name
-                  <input value={form.spouse_last_name}
-                    onChange={e => set('spouse_last_name', e.target.value)}
-                    className={ic('spouse_last_name')} />
-                  {fe('spouse_last_name')}
-                </label>
-              </div>
-              <label>Spouse SSN
-                <input placeholder="XXX-XX-XXXX" value={form.spouse_ssn}
-                  onChange={e => set('spouse_ssn', formatSSN(e.target.value))}
-                  className={ic('spouse_ssn')} inputMode="numeric" maxLength={11} />
-                {fe('spouse_ssn')}
+          {isMarried && (<>
+            <h3 className={styles.sectionTitle}>Spouse Information</h3>
+            <div className={styles.row}>
+              <label>Spouse First Name
+                <input value={form.spouse_first_name}
+                  onChange={e => set('spouse_first_name', e.target.value)}
+                  className={ic('spouse_first_name')} />
+                {fe('spouse_first_name')}
               </label>
-            </>
-          )}
+              <label>Spouse Last Name
+                <input value={form.spouse_last_name}
+                  onChange={e => set('spouse_last_name', e.target.value)}
+                  className={ic('spouse_last_name')} />
+                {fe('spouse_last_name')}
+              </label>
+            </div>
+            <label>Spouse SSN
+              <input placeholder="XXX-XX-XXXX" value={form.spouse_ssn}
+                onChange={e => set('spouse_ssn', formatSSN(e.target.value))}
+                className={ic('spouse_ssn')} inputMode="numeric" maxLength={11} />
+              {fe('spouse_ssn')}
+            </label>
+          </>)}
 
           <h3 className={styles.sectionTitle}>Home Address</h3>
           <label>Street Address
@@ -317,72 +392,192 @@ export default function TaxFiling1040() {
           </div>
 
           <h3 className={styles.sectionTitle}>Dependents</h3>
-          <label>Qualifying children under age 17
-            <input type="number" min="0" max="20" value={form.dependent_count}
-              onChange={e => set('dependent_count', e.target.value)}
-              className={ic('dependent_count')} style={{ maxWidth: '120px' }} />
-            {fe('dependent_count')}
-          </label>
+          {deps.map((dep, i) => (
+            <div key={i} className={styles.depCard}>
+              <div className={styles.depHeader}>
+                <strong>Dependent {i + 1}</strong>
+                <button type="button" className={styles.btnRemove} onClick={() => removeDep(i)}>Remove</button>
+              </div>
+              <div className={styles.row}>
+                <label>First Name
+                  <input value={dep.first_name}
+                    onChange={e => setDep(i, 'first_name', e.target.value)}
+                    className={ic(`dep_${i}_first_name`)} />
+                  {fe(`dep_${i}_first_name`)}
+                </label>
+                <label>Last Name
+                  <input value={dep.last_name}
+                    onChange={e => setDep(i, 'last_name', e.target.value)}
+                    className={ic(`dep_${i}_last_name`)} />
+                  {fe(`dep_${i}_last_name`)}
+                </label>
+              </div>
+              <div className={styles.row}>
+                <label>SSN
+                  <input placeholder="XXX-XX-XXXX" value={dep.ssn}
+                    onChange={e => setDep(i, 'ssn', formatSSN(e.target.value))}
+                    className={ic(`dep_${i}_ssn`)} inputMode="numeric" maxLength={11} />
+                  {fe(`dep_${i}_ssn`)}
+                </label>
+                <label>Relationship to You
+                  <select value={dep.relationship}
+                    onChange={e => setDep(i, 'relationship', e.target.value)}
+                    className={ic(`dep_${i}_relationship`)}>
+                    <option value="">Select...</option>
+                    {RELATIONSHIPS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                  {fe(`dep_${i}_relationship`)}
+                </label>
+              </div>
+              <label className={styles.checkbox}>
+                <input type="checkbox" checked={dep.qualifying_child}
+                  onChange={e => setDep(i, 'qualifying_child', e.target.checked)} />
+                Qualifies for Child Tax Credit (under age 17)
+              </label>
+            </div>
+          ))}
+          {deps.length < 4 && (
+            <button type="button" className={styles.btnAddDep} onClick={addDep}>
+              + Add Dependent
+            </button>
+          )}
         </div>
       )}
 
       {/* ── Step 2: Income ── */}
       {step === 2 && (
         <div className={styles.stepContent}>
-          <h3 className={styles.sectionTitle}>W-2 Employment Income</h3>
-          <label>Wages, Salaries, Tips <span className={styles.hint}>(W-2 Box 1)</span>
+          {errors._income && <div className={styles.error}>{errors._income}</div>}
+
+          <h3 className={styles.sectionTitle}>Line 1 — Wages, Salaries, Tips</h3>
+          <label>1a Wages, Salaries, Tips <span className={styles.hint}>(W-2 Box 1)</span>
             <input type="number" step="0.01" min="0" value={form.wages}
-              onChange={e => set('wages', e.target.value)}
-              className={ic('wages')} placeholder="0.00" />
-            {fe('wages')}
+              onChange={e => set('wages', e.target.value)} placeholder="0.00" />
           </label>
           <div className={styles.row}>
-            <label>Federal Income Tax Withheld <span className={styles.hint}>(W-2 Box 2)</span>
+            <label>Federal Tax Withheld <span className={styles.hint}>(W-2 Box 2)</span>
               <input type="number" step="0.01" min="0" value={form.federal_withholding}
-                onChange={e => set('federal_withholding', e.target.value)}
-                className={ic('federal_withholding')} placeholder="0.00" />
-              {fe('federal_withholding')}
+                onChange={e => set('federal_withholding', e.target.value)} placeholder="0.00" />
             </label>
-            <label>State Income Tax Withheld <span className={styles.hint}>(W-2 Box 17)</span>
+            <label>State Tax Withheld <span className={styles.hint}>(W-2 Box 17)</span>
               <input type="number" step="0.01" min="0" value={form.state_withholding}
                 onChange={e => set('state_withholding', e.target.value)} placeholder="0.00" />
             </label>
           </div>
 
-          <h3 className={styles.sectionTitle}>Other Income <span className={styles.hint}>— leave blank if none</span></h3>
+          <details className={styles.expandable}>
+            <summary>Other wage types (Lines 1b–1h) — expand if applicable</summary>
+            <div className={styles.expandContent}>
+              <div className={styles.row}>
+                <label>1b Household employee wages
+                  <input type="number" step="0.01" min="0" value={form.household_wages}
+                    onChange={e => set('household_wages', e.target.value)} placeholder="0.00" />
+                </label>
+                <label>1c Tip income not on W-2
+                  <input type="number" step="0.01" min="0" value={form.tip_income}
+                    onChange={e => set('tip_income', e.target.value)} placeholder="0.00" />
+                </label>
+              </div>
+              <div className={styles.row}>
+                <label>1d Medicaid waiver payments
+                  <input type="number" step="0.01" min="0" value={form.medicaid_waiver}
+                    onChange={e => set('medicaid_waiver', e.target.value)} placeholder="0.00" />
+                </label>
+                <label>1e Dependent care benefits <span className={styles.hint}>(Form 2441)</span>
+                  <input type="number" step="0.01" min="0" value={form.dependent_care_benefits}
+                    onChange={e => set('dependent_care_benefits', e.target.value)} placeholder="0.00" />
+                </label>
+              </div>
+              <div className={styles.row}>
+                <label>1f Employer adoption benefits <span className={styles.hint}>(Form 8839)</span>
+                  <input type="number" step="0.01" min="0" value={form.adoption_benefits}
+                    onChange={e => set('adoption_benefits', e.target.value)} placeholder="0.00" />
+                </label>
+                <label>1g Wages from Form 8919
+                  <input type="number" step="0.01" min="0" value={form.wages_8919}
+                    onChange={e => set('wages_8919', e.target.value)} placeholder="0.00" />
+                </label>
+              </div>
+              <label>1h Other earned income
+                <input type="number" step="0.01" min="0" value={form.other_earned_income}
+                  onChange={e => set('other_earned_income', e.target.value)} placeholder="0.00"
+                  style={{ maxWidth: '200px' }} />
+              </label>
+            </div>
+          </details>
+
+          <h3 className={styles.sectionTitle}>Lines 2–3 — Interest &amp; Dividends</h3>
           <div className={styles.row}>
-            <label>Interest Income <span className={styles.hint}>(1099-INT)</span>
-              <input type="number" step="0.01" min="0" value={form.interest}
-                onChange={e => set('interest', e.target.value)} placeholder="0.00" />
+            <label>2a Tax-exempt interest <span className={styles.hint}>(not taxable)</span>
+              <input type="number" step="0.01" min="0" value={form.tax_exempt_interest}
+                onChange={e => set('tax_exempt_interest', e.target.value)} placeholder="0.00" />
             </label>
-            <label>Dividends <span className={styles.hint}>(1099-DIV)</span>
-              <input type="number" step="0.01" min="0" value={form.dividends}
-                onChange={e => set('dividends', e.target.value)} placeholder="0.00" />
+            <label>2b Taxable interest <span className={styles.hint}>(1099-INT)</span>
+              <input type="number" step="0.01" min="0" value={form.taxable_interest}
+                onChange={e => set('taxable_interest', e.target.value)} placeholder="0.00" />
             </label>
           </div>
           <div className={styles.row}>
-            <label>Unemployment Compensation <span className={styles.hint}>(1099-G)</span>
+            <label>3a Qualified dividends <span className={styles.hint}>(1099-DIV Box 1b)</span>
+              <input type="number" step="0.01" min="0" value={form.qualified_dividends}
+                onChange={e => set('qualified_dividends', e.target.value)} placeholder="0.00" />
+            </label>
+            <label>3b Ordinary dividends <span className={styles.hint}>(1099-DIV Box 1a)</span>
+              <input type="number" step="0.01" min="0" value={form.ordinary_dividends}
+                onChange={e => set('ordinary_dividends', e.target.value)} placeholder="0.00" />
+            </label>
+          </div>
+
+          <h3 className={styles.sectionTitle}>Lines 4–5 — IRA &amp; Pension Distributions</h3>
+          <div className={styles.row}>
+            <label>4a IRA distributions — total <span className={styles.hint}>(1099-R Box 1)</span>
+              <input type="number" step="0.01" min="0" value={form.ira_distributions_total}
+                onChange={e => set('ira_distributions_total', e.target.value)} placeholder="0.00" />
+            </label>
+            <label>4b Taxable amount <span className={styles.hint}>(1099-R Box 2a)</span>
+              <input type="number" step="0.01" min="0" value={form.ira_distributions_taxable}
+                onChange={e => set('ira_distributions_taxable', e.target.value)} placeholder="0.00" />
+            </label>
+          </div>
+          <div className={styles.row}>
+            <label>5a Pensions &amp; annuities — total
+              <input type="number" step="0.01" min="0" value={form.pensions_total}
+                onChange={e => set('pensions_total', e.target.value)} placeholder="0.00" />
+            </label>
+            <label>5b Taxable amount
+              <input type="number" step="0.01" min="0" value={form.pensions_taxable}
+                onChange={e => set('pensions_taxable', e.target.value)} placeholder="0.00" />
+            </label>
+          </div>
+
+          <h3 className={styles.sectionTitle}>Line 6 — Social Security Benefits</h3>
+          <label>6a Total SS benefits received <span className={styles.hint}>(SSA-1099 Box 5)</span>
+            <input type="number" step="0.01" min="0" value={form.social_security_benefits}
+              onChange={e => set('social_security_benefits', e.target.value)} placeholder="0.00"
+              style={{ maxWidth: '220px' }} />
+          </label>
+
+          <h3 className={styles.sectionTitle}>Line 7 — Capital Gain or (Loss)</h3>
+          <label>7 Net capital gain or (loss) <span className={styles.hint}>(Schedule D / 1099-B)</span>
+            <input type="number" step="0.01" value={form.capital_gain_loss}
+              onChange={e => set('capital_gain_loss', e.target.value)} placeholder="0.00"
+              style={{ maxWidth: '220px' }} />
+          </label>
+
+          <h3 className={styles.sectionTitle}>Other Income <span className={styles.hint}>(Schedule 1)</span></h3>
+          <div className={styles.row}>
+            <label>Unemployment compensation <span className={styles.hint}>(1099-G)</span>
               <input type="number" step="0.01" min="0" value={form.unemployment_compensation}
                 onChange={e => set('unemployment_compensation', e.target.value)} placeholder="0.00" />
             </label>
-            <label>IRA / Pension Distributions <span className={styles.hint}>(1099-R)</span>
-              <input type="number" step="0.01" min="0" value={form.ira_distributions}
-                onChange={e => set('ira_distributions', e.target.value)} placeholder="0.00" />
-            </label>
-          </div>
-          <div className={styles.row}>
-            <label>Social Security Benefits <span className={styles.hint}>(SSA-1099, full amount)</span>
-              <input type="number" step="0.01" min="0" value={form.social_security_benefits}
-                onChange={e => set('social_security_benefits', e.target.value)} placeholder="0.00" />
-            </label>
-            <label>Other Income
+            <label>Other income
               <input type="number" step="0.01" min="0" value={form.other_income}
                 onChange={e => set('other_income', e.target.value)} placeholder="0.00" />
             </label>
           </div>
 
           <h3 className={styles.sectionTitle}>Prior Payments</h3>
-          <label>Quarterly Estimated Tax Payments <span className={styles.hint}>(Form 1040-ES)</span>
+          <label>Quarterly estimated tax payments <span className={styles.hint}>(Form 1040-ES)</span>
             <input type="number" step="0.01" min="0" value={form.estimated_tax_payments}
               onChange={e => set('estimated_tax_payments', e.target.value)}
               placeholder="0.00" style={{ maxWidth: '200px' }} />
@@ -431,9 +626,9 @@ export default function TaxFiling1040() {
       {step === 4 && (
         <div className={styles.stepContent}>
           <h3 className={styles.sectionTitle}>Tax Credits</h3>
-          {autoChildCredit > 0 && (
+          {qualifyingCount > 0 && (
             <div className={styles.infoBox}>
-              Based on {form.dependent_count} qualifying {parseInt(form.dependent_count) === 1 ? 'child' : 'children'},
+              Based on {qualifyingCount} qualifying {qualifyingCount === 1 ? 'child' : 'children'},
               your Child Tax Credit is estimated at <strong>${autoChildCredit.toLocaleString()}</strong>. Adjust if needed.
             </div>
           )}
@@ -466,21 +661,21 @@ export default function TaxFiling1040() {
               <div className={styles.summaryRow}><span>Tax Year</span><span>{form.tax_year}</span></div>
               <div className={styles.summaryRow}><span>Filing Status</span><span>{form.filing_status.replace(/_/g, ' ')}</span></div>
               <div className={styles.summaryRow}><span>Name</span><span>{form.first_name} {form.last_name}</span></div>
-              <div className={styles.summaryRow}><span>Dependents (under 17)</span><span>{form.dependent_count}</span></div>
+              <div className={styles.summaryRow}><span>Dependents</span><span>{deps.length} ({qualifyingCount} qualifying for CTC)</span></div>
               <div className={styles.summaryRow}><span>Address</span><span>{form.city}, {form.state} {form.zip_code}</span></div>
             </div>
 
             <div className={styles.summarySection}>
               <h4>Income</h4>
-              {num(form.wages) > 0 && <div className={styles.summaryRow}><span>Wages</span><span>${num(form.wages).toLocaleString()}</span></div>}
+              {num(form.wages) > 0 && <div className={styles.summaryRow}><span>1a Wages</span><span>${num(form.wages).toLocaleString()}</span></div>}
               {num(form.federal_withholding) > 0 && <div className={styles.summaryRow}><span>Federal Withheld</span><span>${num(form.federal_withholding).toLocaleString()}</span></div>}
-              {num(form.state_withholding) > 0 && <div className={styles.summaryRow}><span>State Withheld</span><span>${num(form.state_withholding).toLocaleString()}</span></div>}
-              {num(form.interest) > 0 && <div className={styles.summaryRow}><span>Interest</span><span>${num(form.interest).toLocaleString()}</span></div>}
-              {num(form.dividends) > 0 && <div className={styles.summaryRow}><span>Dividends</span><span>${num(form.dividends).toLocaleString()}</span></div>}
+              {num(form.taxable_interest) > 0 && <div className={styles.summaryRow}><span>2b Interest</span><span>${num(form.taxable_interest).toLocaleString()}</span></div>}
+              {num(form.ordinary_dividends) > 0 && <div className={styles.summaryRow}><span>3b Dividends</span><span>${num(form.ordinary_dividends).toLocaleString()}</span></div>}
+              {num(form.ira_distributions_taxable) > 0 && <div className={styles.summaryRow}><span>4b IRA (taxable)</span><span>${num(form.ira_distributions_taxable).toLocaleString()}</span></div>}
+              {num(form.pensions_taxable) > 0 && <div className={styles.summaryRow}><span>5b Pensions (taxable)</span><span>${num(form.pensions_taxable).toLocaleString()}</span></div>}
+              {num(form.social_security_benefits) > 0 && <div className={styles.summaryRow}><span>6a Social Security</span><span>${num(form.social_security_benefits).toLocaleString()}</span></div>}
+              {num(form.capital_gain_loss) !== 0 && <div className={styles.summaryRow}><span>7 Capital Gain/Loss</span><span>${num(form.capital_gain_loss).toLocaleString()}</span></div>}
               {num(form.unemployment_compensation) > 0 && <div className={styles.summaryRow}><span>Unemployment</span><span>${num(form.unemployment_compensation).toLocaleString()}</span></div>}
-              {num(form.ira_distributions) > 0 && <div className={styles.summaryRow}><span>IRA Distributions</span><span>${num(form.ira_distributions).toLocaleString()}</span></div>}
-              {num(form.social_security_benefits) > 0 && <div className={styles.summaryRow}><span>Social Security</span><span>${num(form.social_security_benefits).toLocaleString()}</span></div>}
-              {num(form.other_income) > 0 && <div className={styles.summaryRow}><span>Other Income</span><span>${num(form.other_income).toLocaleString()}</span></div>}
               {num(form.estimated_tax_payments) > 0 && <div className={styles.summaryRow}><span>Est. Tax Payments</span><span>${num(form.estimated_tax_payments).toLocaleString()}</span></div>}
             </div>
 
@@ -490,16 +685,36 @@ export default function TaxFiling1040() {
                 <span>Deduction</span>
                 <span>{form.standard_deduction ? `Standard ($${stdDed.toLocaleString()})` : `Itemized ($${num(form.itemized_deductions).toLocaleString()})`}</span>
               </div>
-              {num(form.student_loan_interest) > 0 && <div className={styles.summaryRow}><span>Student Loan Interest</span><span>${num(form.student_loan_interest).toLocaleString()}</span></div>}
-              {num(form.ira_deduction) > 0 && <div className={styles.summaryRow}><span>IRA Deduction</span><span>${num(form.ira_deduction).toLocaleString()}</span></div>}
+              {num(form.student_loan_interest) > 0 && <div className={styles.summaryRow}><span>Student Loan Adj.</span><span>${num(form.student_loan_interest).toLocaleString()}</span></div>}
               {num(form.child_tax_credit) > 0 && <div className={styles.summaryRow}><span>Child Tax Credit</span><span>${num(form.child_tax_credit).toLocaleString()}</span></div>}
               {num(form.earned_income_credit) > 0 && <div className={styles.summaryRow}><span>Earned Income Credit</span><span>${num(form.earned_income_credit).toLocaleString()}</span></div>}
               {num(form.other_credits) > 0 && <div className={styles.summaryRow}><span>Other Credits</span><span>${num(form.other_credits).toLocaleString()}</span></div>}
             </div>
           </div>
 
+          <h3 className={styles.sectionTitle}>Direct Deposit <span className={styles.hint}>(optional — for refunds)</span></h3>
+          <div className={styles.row3}>
+            <label>Routing Number <span className={styles.hint}>(9 digits)</span>
+              <input value={form.refund_routing}
+                onChange={e => set('refund_routing', e.target.value.replace(/\D/g, '').slice(0, 9))}
+                inputMode="numeric" maxLength={9} placeholder="000000000" />
+            </label>
+            <label>Account Number
+              <input value={form.refund_account}
+                onChange={e => set('refund_account', e.target.value.replace(/\D/g, '').slice(0, 17))}
+                inputMode="numeric" maxLength={17} placeholder="Account number" />
+            </label>
+            <label>Type
+              <select value={form.refund_account_type}
+                onChange={e => set('refund_account_type', e.target.value)}>
+                <option value="checking">Checking</option>
+                <option value="savings">Savings</option>
+              </select>
+            </label>
+          </div>
+
           <button className={styles.btnSubmit} onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit Tax Return'}
+            {loading ? 'Saving...' : 'Save Draft Return'}
           </button>
         </div>
       )}
@@ -510,7 +725,8 @@ export default function TaxFiling1040() {
           <button className={styles.btnBack} onClick={goBack}>← Back</button>
         )}
         {step < 5 && (
-          <button className={styles.btnSubmit} onClick={goNext} style={{ marginLeft: step === 1 ? 'auto' : undefined }}>
+          <button className={styles.btnSubmit} onClick={goNext}
+            style={{ marginLeft: step === 1 ? 'auto' : undefined }}>
             Continue →
           </button>
         )}
