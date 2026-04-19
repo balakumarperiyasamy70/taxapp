@@ -121,20 +121,28 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
 
 def flatten_pdf(pdf_bytes: bytes) -> bytes:
     """Flatten AcroForm fields into static page content (non-editable).
-    Uses pdftoppm (poppler-utils) + img2pdf for reliable IRS PDF rendering.
-    Requires: apt-get install -y poppler-utils && pip install img2pdf
+    Two-stage: ghostscript bakes field appearances, poppler renders pages as images.
+    gs handles NeedAppearances correctly; poppler renders IRS form backgrounds correctly.
+    Requires: apt-get install -y poppler-utils ghostscript && pip install img2pdf
     """
     import subprocess, tempfile, os, glob, img2pdf
 
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as src_f:
         src_f.write(pdf_bytes)
         src_path = src_f.name
-    out_dir = tempfile.mkdtemp()
+    gs_path  = src_path + "_gs.pdf"
+    out_dir  = tempfile.mkdtemp()
     dst_path = src_path + "_flat.pdf"
     try:
-        # Render each page to PNG at 150 DPI using poppler
+        # Stage 1: ghostscript generates appearance streams for all AcroForm fields
         subprocess.run(
-            ["pdftoppm", "-r", "150", "-png", src_path,
+            ["gs", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
+             "-dCompatibilityLevel=1.4", f"-sOutputFile={gs_path}", src_path],
+            check=True, capture_output=True
+        )
+        # Stage 2: poppler renders each page to PNG (correctly handles IRS backgrounds)
+        subprocess.run(
+            ["pdftoppm", "-r", "150", "-png", gs_path,
              os.path.join(out_dir, "page")],
             check=True, capture_output=True
         )
@@ -145,6 +153,8 @@ def flatten_pdf(pdf_bytes: bytes) -> bytes:
             return f.read()
     finally:
         os.unlink(src_path)
+        if os.path.exists(gs_path):
+            os.unlink(gs_path)
         for p in glob.glob(os.path.join(out_dir, "*")):
             os.unlink(p)
         os.rmdir(out_dir)
