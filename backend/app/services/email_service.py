@@ -17,7 +17,7 @@ Your tax document is attached to this email as a password-protected PDF.
 To open the file, use this password:
   {password}
 
-(Your password is: tax year + last 4 digits of your SSN or EIN)
+(Your password is: birth year + last 4 digits of your SSN or EIN)
 
 Return Type : {return_type}
 Tax Year    : {tax_year}

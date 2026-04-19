@@ -105,10 +105,12 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
     reader = PdfReader(str(pdf_path))
     writer = PdfWriter()
     writer.append(reader)
+    # auto_regenerate=False: only set /V values; do NOT let pypdf attempt to
+    # generate /AP streams (it can't access IRS-embedded fonts and produces
+    # blank appearances for some fields). NeedAppearances=True tells poppler
+    # to compute all appearances from /V using the correct embedded fonts.
     for page in writer.pages:
-        writer.update_page_form_field_values(page, fields)
-    # NeedAppearances = True → PDF viewers regenerate field appearances so
-    # pre-filled values are visible while the form remains fillable/printable.
+        writer.update_page_form_field_values(page, fields, auto_regenerate=False)
     from pypdf.generic import NameObject, BooleanObject
     if "/AcroForm" in writer._root_object:
         writer._root_object["/AcroForm"][NameObject("/NeedAppearances")] = BooleanObject(True)
