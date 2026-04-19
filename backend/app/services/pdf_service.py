@@ -179,13 +179,8 @@ def protect_pdf(pdf_bytes: bytes, password: str) -> bytes:
     return out.getvalue()
 
 
-def make_password(dob: str, ssn_or_ein: str) -> str:
-    """birthyear + last 4 digits of SSN/EIN. e.g. 19700078"""
-    try:
-        parts = dob.strip().split('/')
-        birth_year = parts[2] if len(parts) == 3 else parts[0]
-    except Exception:
-        birth_year = "0000"
+def make_password(tax_year: int, ssn_or_ein: str) -> str:
+    """Tax year + last 4 digits of SSN/EIN. e.g. 20241234"""
     digits = ssn_or_ein.replace('-', '').replace(' ', '')
     last4 = digits[-4:] if len(digits) >= 4 else digits.zfill(4)
-    return f"{birth_year}{last4}"
+    return f"{tax_year}{last4}"

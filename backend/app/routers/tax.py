@@ -263,9 +263,7 @@ def email_pdf(
     if not ssn_or_ein:
         raise HTTPException(status_code=400, detail="No SSN or EIN found on this return")
 
-    # Auto-extract DOB from form_data if available, otherwise use 0000
-    dob = form_data.get('dob', '')
-    password = make_password(dob, ssn_or_ein)
+    password = make_password(tax_return.tax_year, ssn_or_ein)
 
     if tax_return.return_type == ReturnType.individual_1040:
         try:
@@ -303,4 +301,4 @@ def email_pdf(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Email failed: {str(e)}")
 
-    return {"message": f"PDF sent to {current_user.email}", "password_hint": "birth year + last 4 of SSN/EIN"}
+    return {"message": f"PDF sent to {current_user.email}", "password_hint": "tax year + last 4 of SSN/EIN"}

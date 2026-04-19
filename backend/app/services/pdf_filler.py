@@ -119,27 +119,33 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
 
 def flatten_pdf(pdf_bytes: bytes) -> bytes:
     """Flatten AcroForm fields into static page content (non-editable).
-    Uses ghostscript (gs), pre-installed on Ubuntu 24.04.
+    Uses pdftoppm (poppler-utils) + img2pdf for reliable IRS PDF rendering.
+    Requires: apt-get install -y poppler-utils && pip install img2pdf
     """
-    import subprocess, tempfile, os
+    import subprocess, tempfile, os, glob, img2pdf
 
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as src_f:
         src_f.write(pdf_bytes)
         src_path = src_f.name
+    out_dir = tempfile.mkdtemp()
     dst_path = src_path + "_flat.pdf"
     try:
+        # Render each page to PNG at 150 DPI using poppler
         subprocess.run(
-            [
-                "gs", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
-                "-dCompatibilityLevel=1.4",
-                f"-sOutputFile={dst_path}", src_path,
-            ],
+            ["pdftoppm", "-r", "150", "-png", src_path,
+             os.path.join(out_dir, "page")],
             check=True, capture_output=True
         )
+        pages = sorted(glob.glob(os.path.join(out_dir, "*.png")))
+        with open(dst_path, "wb") as f:
+            f.write(img2pdf.convert(pages))
         with open(dst_path, "rb") as f:
             return f.read()
     finally:
         os.unlink(src_path)
+        for p in glob.glob(os.path.join(out_dir, "*")):
+            os.unlink(p)
+        os.rmdir(out_dir)
         if os.path.exists(dst_path):
             os.unlink(dst_path)
 
