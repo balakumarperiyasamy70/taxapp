@@ -102,20 +102,10 @@ def _calc(d: dict) -> dict:
 
 
 def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
-    from pypdf.generic import NameObject, BooleanObject, TextStringObject
+    from pypdf.generic import NameObject, BooleanObject
     reader = PdfReader(str(pdf_path))
     writer = PdfWriter()
     writer.append(reader)
-
-    # Some IRS fields lack /DA (default appearance); without it pypdf and
-    # poppler both skip appearance generation for that field. Add a fallback
-    # so every widget can have its value rendered.
-    DEFAULT_DA = "/Helv 10 Tf 0 g"
-    for page in writer.pages:
-        for annot_ref in page.get("/Annots", []):
-            annot = annot_ref.get_object()
-            if annot.get("/Subtype") == "/Widget" and "/DA" not in annot:
-                annot[NameObject("/DA")] = TextStringObject(DEFAULT_DA)
 
     for page in writer.pages:
         writer.update_page_form_field_values(page, fields, auto_regenerate=True)
@@ -168,7 +158,8 @@ def flatten_pdf(pdf_bytes: bytes) -> bytes:
             if not v:
                 continue
             val = str(v).strip("() \t")
-            if not val or val in ("Off", "Yes", "No"):
+            # Skip empty, PDF name objects (/Yes, /Off), and checkbox literals
+            if not val or val.startswith("/") or val.lower() in ("off", "yes", "no"):
                 continue
 
             rect = annot.get("/Rect")
