@@ -35,10 +35,15 @@ if acroform:
 
 probe = {}
 
-# Personal info + address area (f1_03 through f1_19)
+# Personal info area (f1_03 through f1_19)
 # Value = "N03", "N04" … easy to spot in name/SSN boxes
 for n in range(3, 20):
     probe[f"f1_{n:02d}[0]"] = f"N{n:02d}"
+
+# Address + dependents gap (f1_20 through f1_46)
+# Value = "A20", "A21" … lets us see exactly which cell each field occupies
+for n in range(20, 47):
+    probe[f"f1_{n:02d}[0]"] = f"A{n:02d}"
 
 # Page 1 income area (f1_47 through f1_82)
 # Value = field_number × 100  →  f1_47 = "4700.00",  f1_56 = "5600.00" …
