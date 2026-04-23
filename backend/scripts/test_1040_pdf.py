@@ -66,6 +66,7 @@ from app.services.pdf_filler import fill_1040, flatten_pdf, add_watermark
 
 test_data = {
     "filing_status": "married_joint",
+    "digital_assets": False,
     "first_name": "John", "last_name": "Smith",
     "ssn": "123-45-6789", "dob": "1985-06-15",
     "spouse_first_name": "Jane", "spouse_last_name": "Smith",

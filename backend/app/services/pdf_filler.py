@@ -351,11 +351,15 @@ def fill_1040(form_data: dict) -> bytes:
     fs = d.get("filing_status", "single")
     c  = _calc(d)
 
-    # Build dependent fields (up to 4 dependents, 4 text fields each)
+    # Build dependent fields (up to 4 dependents).
+    # PDF layout: each attribute fills ONE ROW across all 4 columns (not all fields for dep1, then dep2…).
+    #   f1_31–f1_34 = first names of dep1, dep2, dep3, dep4
+    #   f1_35–f1_38 = last names
+    #   f1_39–f1_42 = SSNs
+    #   f1_43–f1_46 = relationships
     dep_fields: dict = {}
-    dep_bases = [31, 35, 39, 43]
     deps = d.get("dependents") or []
-    for dep, base in zip(deps[:4], dep_bases):
+    for i, dep in enumerate(deps[:4]):
         if isinstance(dep, dict):
             fn  = dep.get("first_name", "")
             ln  = dep.get("last_name", "")
@@ -366,10 +370,10 @@ def fill_1040(form_data: dict) -> bytes:
             ln  = getattr(dep, "last_name", "")
             ssn = getattr(dep, "ssn", "")
             rel = getattr(dep, "relationship", "")
-        dep_fields[f"f1_{base}[0]"]   = fn
-        dep_fields[f"f1_{base+1}[0]"] = ln
-        dep_fields[f"f1_{base+2}[0]"] = ssn
-        dep_fields[f"f1_{base+3}[0]"] = rel
+        dep_fields[f"f1_{31+i}[0]"] = fn
+        dep_fields[f"f1_{35+i}[0]"] = ln
+        dep_fields[f"f1_{39+i}[0]"] = ssn
+        dep_fields[f"f1_{43+i}[0]"] = rel
 
     fields = {
         # ── Personal Info (probe-confirmed: names at f1_14–f1_19) ──────────
@@ -386,6 +390,10 @@ def fill_1040(form_data: dict) -> bytes:
         "c1_6[0]": "/Yes" if fs == "married_separate" else "/Off",
         "c1_7[0]": "/Yes" if fs == "head_household" else "/Off",
         "c1_8[0]": "/Off",
+
+        # ── Digital Assets Yes/No ───────────────────────────────────────────
+        "c1_9[0]":  "/Yes" if d.get("digital_assets") else "/Off",
+        "c1_10[0]": "/Off" if d.get("digital_assets") else "/Yes",
 
         # ── Address ────────────────────────────────────────────────────────
         "f1_20[0]": d.get("address", ""),

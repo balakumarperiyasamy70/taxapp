@@ -51,6 +51,7 @@ class Form1040(BaseModel):
     state: str
     zip_code: str
     dependents: list[Dependent] = []
+    digital_assets: bool = False             # Did you receive/sell digital assets in 2025?
     # Line 1 — Wages
     wages: float = 0.0                       # 1a  W-2 Box 1
     household_wages: float = 0.0             # 1b  household employee wages
