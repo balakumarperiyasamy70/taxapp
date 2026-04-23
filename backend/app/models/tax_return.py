@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum, Text
+from sqlalchemy import Column, Integer, BigInteger, String, Float, ForeignKey, DateTime, Enum, Text
 from sqlalchemy.sql import func
 from app.database import Base
 import enum
@@ -29,10 +29,10 @@ class TaxReturn(Base):
     status = Column(Enum(ReturnStatus), default=ReturnStatus.draft)
 
     # Financial fields (stored as cents to avoid float issues)
-    estimated_tax_cents = Column(Integer, default=0)
-    tax_owed_cents = Column(Integer, default=0)
-    refund_amount_cents = Column(Integer, default=0)
-    total_income_cents = Column(Integer, default=0)
+    estimated_tax_cents = Column(BigInteger, default=0)
+    tax_owed_cents = Column(BigInteger, default=0)
+    refund_amount_cents = Column(BigInteger, default=0)
+    total_income_cents = Column(BigInteger, default=0)
 
     # IRS e-file tracking
     submission_id = Column(String)

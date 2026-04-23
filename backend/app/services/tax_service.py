@@ -102,17 +102,16 @@ def calculate_1040(data) -> dict:
     taxable_income = max(0.0, adjusted_gross_income - deduction)
     gross_tax = calculate_tax(taxable_income, data.filing_status)
 
-    eic          = getattr(data, "earned_income_credit", 0.0)
-    total_credits = (
-        getattr(data, "child_tax_credit", 0.0) + eic +
-        getattr(data, "other_credits", 0.0)
-    )
-    tax_liability = max(0.0, gross_tax - total_credits)
+    eic               = getattr(data, "earned_income_credit", 0.0)
+    child_cr          = getattr(data, "child_tax_credit", 0.0)
+    other_cr          = getattr(data, "other_credits", 0.0)
+    non_ref_credits   = child_cr + other_cr   # EIC is refundable — excluded here
+    tax_liability     = max(0.0, gross_tax - non_ref_credits)
 
     total_payments = (
         getattr(data, "federal_withholding", 0.0) +
         getattr(data, "estimated_tax_payments", 0.0) +
-        eic   # EIC is refundable
+        eic   # EIC is refundable credit — counts as payment, not credit against tax
     )
 
     refund = round(max(0.0, total_payments - tax_liability), 2)
@@ -124,7 +123,7 @@ def calculate_1040(data) -> dict:
         "adjusted_gross_income": round(adjusted_gross_income, 2),
         "taxable_income": round(taxable_income, 2),
         "gross_tax": gross_tax,
-        "total_credits": round(total_credits, 2),
+        "total_credits": round(non_ref_credits, 2),
         "tax_liability": round(tax_liability, 2),
         "total_payments": round(total_payments, 2),
         "refund": refund,

@@ -78,15 +78,15 @@ def _calc(d: dict) -> dict:
     taxable   = max(0.0, agi - ded)
     gross_tax = calculate_tax(taxable, fs)
 
-    child_cr = float(d.get("child_tax_credit") or 0)
-    eic      = float(d.get("earned_income_credit") or 0)
-    other_cr = float(d.get("other_credits") or 0)
-    total_cr = child_cr + eic + other_cr
+    child_cr    = float(d.get("child_tax_credit") or 0)
+    eic         = float(d.get("earned_income_credit") or 0)
+    other_cr    = float(d.get("other_credits") or 0)
+    non_ref_cr  = child_cr + other_cr   # EIC is refundable — not here
 
-    tax_after_cr  = max(0.0, gross_tax - total_cr)
+    tax_after_cr  = max(0.0, gross_tax - non_ref_cr)
     tax_liability = tax_after_cr
 
-    total_pmts  = fed_wh + est_pmts + eic
+    total_pmts  = fed_wh + est_pmts + eic   # EIC is refundable → payment
     refund      = max(0.0, total_pmts - tax_liability)
     balance_due = max(0.0, tax_liability - total_pmts)
 
@@ -106,7 +106,7 @@ def _calc(d: dict) -> dict:
         "total_income": total_income,
         "adj": adj, "agi": agi, "ded": ded, "taxable": taxable,
         "gross_tax": gross_tax,
-        "child_cr": child_cr, "eic": eic, "total_cr": total_cr,
+        "child_cr": child_cr, "eic": eic, "non_ref_cr": non_ref_cr,
         "tax_after_cr": tax_after_cr, "tax_liability": tax_liability,
         "fed_wh": fed_wh, "est_pmts": est_pmts, "total_pmts": total_pmts,
         "refund": refund, "balance_due": balance_due,
@@ -116,11 +116,10 @@ def _calc(d: dict) -> dict:
 def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
     """Fill AcroForm fields by leaf /T name.
 
-    Directly sets /V on every matching Widget annotation.  For text fields
-    the /AP appearance stream is deleted so flatten_pdf's Pillow overlay
-    renders the value — this prevents blank fields caused by stale /AP
-    streams that pypdf cannot regenerate for IRS calculated fields.
-    Checkboxes keep their /AP graphics; only /V and /AS are written.
+    Sets /V on every matching Widget annotation and sets NeedAppearances=True
+    so Poppler/pdftoppm regenerates appearances from /V values.  For text
+    fields the /AP stream is also deleted so flatten_pdf's Pillow overlay
+    picks them up as a secondary rendering path.  Checkboxes keep /AP.
     """
     from pypdf.generic import NameObject, BooleanObject, create_string_object
 
@@ -128,7 +127,13 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
     writer = PdfWriter()
     writer.append(reader)
 
-    # Callers use leaf names (e.g. "f1_03[0]"); strip any dotted prefix.
+    # Tell PDF renderers to regenerate appearances from /V values
+    acroform = writer._root_object.get("/AcroForm")
+    if acroform:
+        acroform = acroform.get_object()
+        acroform[NameObject("/NeedAppearances")] = BooleanObject(True)
+
+    # Callers use leaf names (e.g. "f1_04[0]"); strip any dotted prefix.
     leaf_map = {k.split(".")[-1]: v for k, v in fields.items()}
 
     for page in writer.pages:
@@ -152,8 +157,6 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
                 if "/AP" in annot:
                     del annot["/AP"]
 
-    if "/AcroForm" in writer._root_object:
-        writer._root_object["/AcroForm"][NameObject("/NeedAppearances")] = BooleanObject(True)
     buf = io.BytesIO()
     writer.write(buf)
     return buf.getvalue()
@@ -189,11 +192,11 @@ def flatten_pdf(pdf_bytes: bytes) -> bytes:
             if annot.get("/Subtype") != "/Widget":
                 continue
 
-            # Skip if /AP already present (parent or self) — pdftoppm will render
-            has_ap = "/AP" in annot
-            if not has_ap and "/Parent" in annot:
-                has_ap = "/AP" in annot["/Parent"].get_object()
-            if has_ap:
+            # Skip if this widget has its own /AP — pdftoppm will render it.
+            # Do NOT check parent: IRS name/address fields are children of ReadOrder
+            # groups that have a parent /AP (border/shading). We deleted the child
+            # /AP in _fill_pdf so pdftoppm cannot render the text; Pillow must do it.
+            if "/AP" in annot:
                 continue
 
             v = annot.get("/V")
@@ -298,12 +301,13 @@ def add_watermark(pdf_bytes: bytes, text: str = "DRAFT - CLIENT COPY") -> bytes:
 #
 # Field name reference (2024/2025 IRS Form 1040, verified via inspect_fields.py):
 #
-# Page 1 — Personal Info
+# Page 1 — Personal Info  (verified against 2025 IRS f1040.pdf via test_1040_pdf.py)
 # f1_01  Fiscal year begin (date)   f1_02  Fiscal year end (date)
-# f1_03  Your first name & MI       f1_04  Your last name
-# f1_05  Your SSN                   f1_06  Spouse first name & MI
-# f1_07  Spouse last name           f1_08  Spouse SSN
-# f1_09–f1_19  MFS/HOH name fields, digital assets, phone, email, etc.
+# f1_03  (fiscal-year area — DO NOT use for names)
+# f1_04  Your first name & MI       f1_05  Your last name
+# f1_06  Your SSN                   f1_07  Spouse first name & MI
+# f1_08  Spouse last name           f1_09  Spouse SSN
+# f1_10–f1_19  MFS/HOH name fields, digital assets, phone, email, etc.
 #
 # Address_ReadOrder group:
 # f1_20  Street address             f1_21  Apt no
@@ -317,39 +321,43 @@ def add_watermark(pdf_bytes: bytes, text: str = "DRAFT - CLIENT COPY") -> bytes:
 # f1_47  Line 1a  Wages (W-2)       f1_48  Line 1b  Household employee wages
 # f1_49  Line 1c  Tip income        f1_50  Line 1d  Medicaid waiver
 # f1_51  Line 1e  Dependent care    f1_52  Line 1f  Adoption benefits
-# f1_53  Line 1g  Form 8919 wages   f1_54  Line 1h  Other earned income
-# f1_55  Line 1z  Total wages
-# f1_56  Line 2a  Tax-exempt int    f1_57  Line 2b  Taxable interest
-# f1_58  Line 3a  Qualified divs    f1_59  Line 3b  Ordinary dividends
-# f1_60  Line 4a  IRA distribs      f1_61  Line 4b  Taxable IRA amount
-# f1_62  Line 5a  Pensions          f1_63  Line 5b  Taxable pensions
-# f1_64  Line 6a  SS benefits       f1_65  Line 6b  Taxable SS
-# f1_66  Line 7   Capital gain/loss
-# f1_67  Line 8   Additional income (Sch 1 — unemployment + other)
-# f1_68  Line 9   Total income
-# f1_69  Line 10  Adjustments (Sch 1)
-# f1_70  Line 11  AGI
-# f1_71  Line 12  Std/itemized deduction
-# f1_72  Line 13  QBI deduction
-# f1_73  Line 14  Add lines 12+13
-# f1_74  Line 15  Taxable income
+# f1_53  Line 1g  Form 8919 wages
+# f1_54  Line 1h  Description text  f1_55  Line 1h  Other earned income (amount)
+# f1_56  Line 1z  Total wages
+# f1_57  Line 2a  Tax-exempt int    f1_58  Line 2b  Taxable interest
+# f1_59  Line 3a  Qualified divs    f1_60  Line 3b  Ordinary dividends
+# f1_61  Line 4a  IRA distribs      f1_62  Line 4b  Taxable IRA amount
+# f1_63  Line 5a  Pensions          f1_64  Line 5b  Taxable pensions
+# f1_65  Line 6a  SS benefits       f1_66  Line 6b  Taxable SS
+# f1_67  Line 7   Capital gain/loss
+# f1_68  Line 8   Additional income (Sch 1 — unemployment + other)
+# f1_69  Line 9   Total income
+# f1_70  Line 10  Adjustments (Sch 1)
+# f1_71  Line 11  AGI
+# f1_72  Line 12  Std/itemized deduction
+# f1_73  Line 13  QBI deduction
+# f1_74  Line 14  Add lines 12+13
+# f1_75  Line 15  Taxable income
 #
-# Page 2
+# Page 2  (verified against actual PDF — 229 fields total)
 # f2_01  Line 16  Tax               f2_02  Line 17  AMT
-# f2_03  Line 18  Add 16+17         f2_04  Line 19  Child tax credit
-# f2_05  Line 20  Sch 3 credits     f2_06  Line 21  Total credits
+# f2_03  Line 18  Add 16+17         f2_04  Line 19  Child tax credit (non-refundable)
+# f2_05  Line 20  Sch 3 credits     f2_06  Line 21  Total non-refundable credits
 # f2_07  Line 22  Tax minus credits f2_08  Line 23  Other taxes (Sch 2)
 # f2_09  Line 24  Total tax
 # f2_10  Line 25a W-2 withheld      f2_11  Line 25b 1099 withheld
 # f2_12  Line 25c Other withheld    f2_13  Line 25d Total withheld
-# f2_14  Line 26  Estimated pmts    f2_15  Line 27  EIC
-# f2_22  SSN (signature area)
-# f2_23  Line 34  Total payments    f2_24  Line 35a Refund
-# f2_25  Line 36  Apply to next yr  f2_26  Line 37  Amount owed
-# f2_32  Routing number             f2_33  Account number
+# f2_14  Line 26  Estimated pmts    f2_15  Line 27  EIC (refundable)
+# f2_16  Line 28  Additional CTC    f2_17  Line 29  AOC (Form 8863)
+# f2_18  Line 30  Reserved          f2_19  Line 31  Sch 3 line 15
+# f2_20  Line 32  Total other pmts  f2_21  Line 33  Total payments
+# f2_22  SSN (signature area — under SSN_ReadOrder group)
+# f2_23  Line 35a Refund            f2_24  Line 36  Apply to next yr
+# f2_25  Line 37  Amount owed       f2_26  Line 38  Penalty
+# f2_32  Routing number (RoutingNo group)
+# f2_33  Account number (AccountNo group)
 #
-# Filing status checkboxes (Page 1):
-# c1_1–c1_3  Top-of-form checkboxes (fiscal/combat zone — not filing status)
+# Filing status checkboxes (Page 1, standalone):
 # c1_4  Single          c1_5  Married filing jointly
 # c1_6  MFS             c1_7  Head of household    c1_8  QSS
 #
@@ -387,12 +395,13 @@ def fill_1040(form_data: dict) -> bytes:
 
     fields = {
         # ── Personal Info ──────────────────────────────────────────────────
-        "f1_03[0]": d.get("first_name", ""),
-        "f1_04[0]": d.get("last_name", ""),
-        "f1_05[0]": d.get("ssn", ""),
-        "f1_06[0]": d.get("spouse_first_name") or "",
-        "f1_07[0]": d.get("spouse_last_name") or "",
-        "f1_08[0]": d.get("spouse_ssn") or "",
+        # f1_03 is in the fiscal-year row — names start at f1_04
+        "f1_04[0]": d.get("first_name", ""),
+        "f1_05[0]": d.get("last_name", ""),
+        "f1_06[0]": d.get("ssn", ""),
+        "f1_07[0]": d.get("spouse_first_name") or "",
+        "f1_08[0]": d.get("spouse_last_name") or "",
+        "f1_09[0]": d.get("spouse_ssn") or "",
 
         # ── Filing Status ──────────────────────────────────────────────────
         "c1_4[0]": "/Yes" if fs == "single" else "/Off",
@@ -409,6 +418,7 @@ def fill_1040(form_data: dict) -> bytes:
         "f1_24[0]": d.get("zip_code", ""),
 
         # ── Income — Page 1 ────────────────────────────────────────────────
+        # 2025 form: f1_54 is 1h description text, f1_55 is 1h amount → cascade +1
         "f1_47[0]": _f(c["wages_1a"]),           # 1a  W-2 wages
         "f1_48[0]": _f(c["wages_1b"]),           # 1b  household employee wages
         "f1_49[0]": _f(c["wages_1c"]),           # 1c  tip income
@@ -416,45 +426,50 @@ def fill_1040(form_data: dict) -> bytes:
         "f1_51[0]": _f(c["wages_1e"]),           # 1e  dependent care benefits
         "f1_52[0]": _f(c["wages_1f"]),           # 1f  adoption benefits
         "f1_53[0]": _f(c["wages_1g"]),           # 1g  Form 8919 wages
-        "f1_54[0]": _f(c["wages_1h"]),           # 1h  other earned income
-        "f1_55[0]": _f(c["total_wages"]),        # 1z  total wages
-        "f1_56[0]": _f(c["tax_exempt_int"]),     # 2a  tax-exempt interest
-        "f1_57[0]": _f(c["taxable_int"]),        # 2b  taxable interest
-        "f1_58[0]": _f(c["qualified_divs"]),     # 3a  qualified dividends
-        "f1_59[0]": _f(c["ordinary_divs"]),      # 3b  ordinary dividends
-        "f1_60[0]": _f(c["ira_total"]),          # 4a  IRA distributions (total)
-        "f1_61[0]": _f(c["ira_taxable"]),        # 4b  taxable IRA amount
-        "f1_62[0]": _f(c["pensions_total"]),     # 5a  pensions/annuities total
-        "f1_63[0]": _f(c["pensions_tax"]),       # 5b  taxable pensions
-        "f1_64[0]": _f(c["ss_full"]),            # 6a  SS benefits (full)
-        "f1_65[0]": _f(c["ss_taxable"]),         # 6b  taxable SS (85%)
-        "f1_66[0]": _f(c["capital_gain"]),       # 7   capital gain/loss
-        "f1_67[0]": _f(c["sched1_income"]),      # 8   additional income (Sch 1)
-        "f1_68[0]": _f(c["total_income"]),       # 9   total income
-        "f1_69[0]": _f(c["adj"]),                # 10  adjustments
-        "f1_70[0]": _f(c["agi"]),                # 11  AGI
-        "f1_71[0]": _f(c["ded"]),                # 12  std/itemized deduction
-        "f1_73[0]": _f(c["ded"]),                # 14  add 12+13 (QBI=0, same as 12)
-        "f1_74[0]": _f(c["taxable"]),            # 15  taxable income
+        # f1_54 = 1h description text — leave blank
+        "f1_55[0]": _f(c["wages_1h"]),           # 1h  other earned income (amount)
+        "f1_56[0]": _f(c["total_wages"]),        # 1z  total wages
+        "f1_57[0]": _f(c["tax_exempt_int"]),     # 2a  tax-exempt interest
+        "f1_58[0]": _f(c["taxable_int"]),        # 2b  taxable interest
+        "f1_59[0]": _f(c["qualified_divs"]),     # 3a  qualified dividends
+        "f1_60[0]": _f(c["ordinary_divs"]),      # 3b  ordinary dividends
+        "f1_61[0]": _f(c["ira_total"]),          # 4a  IRA distributions (total)
+        "f1_62[0]": _f(c["ira_taxable"]),        # 4b  taxable IRA amount
+        "f1_63[0]": _f(c["pensions_total"]),     # 5a  pensions/annuities total
+        "f1_64[0]": _f(c["pensions_tax"]),       # 5b  taxable pensions
+        "f1_65[0]": _f(c["ss_full"]),            # 6a  SS benefits (full)
+        "f1_66[0]": _f(c["ss_taxable"]),         # 6b  taxable SS (85%)
+        "f1_67[0]": _f(c["capital_gain"]),       # 7   capital gain/loss
+        "f1_68[0]": _f(c["sched1_income"]),      # 8   additional income (Sch 1)
+        "f1_69[0]": _f(c["total_income"]),       # 9   total income
+        "f1_70[0]": _f(c["adj"]),                # 10  adjustments
+        "f1_71[0]": _f(c["agi"]),                # 11  AGI
+        "f1_72[0]": _f(c["ded"]),                # 12  std/itemized deduction
+        # f1_73 = Line 13 QBI deduction — leave blank (QBI=0)
+        "f1_74[0]": _f(c["ded"]),                # 14  add 12+13 (QBI=0, same as 12)
+        "f1_75[0]": _f(c["taxable"]),            # 15  taxable income
 
         # ── Tax & Credits — Page 2 ─────────────────────────────────────────
+        # Lines 16–24  (f2_01–f2_09)
         "f2_01[0]": _f(c["gross_tax"]),          # 16  tax
         "f2_03[0]": _f(c["gross_tax"]),          # 18  add 16+17 (AMT=0)
-        "f2_04[0]": _f(c["child_cr"]),           # 19  child tax credit
-        "f2_06[0]": _f(c["total_cr"]),           # 21  total credits
+        "f2_04[0]": _f(c["child_cr"]),           # 19  child tax credit (non-refundable)
+        "f2_06[0]": _f(c["non_ref_cr"]),         # 21  total non-refundable credits
         "f2_07[0]": _f(c["tax_after_cr"]),       # 22  tax minus credits
         "f2_09[0]": _f(c["tax_liability"]),      # 24  total tax
 
-        # ── Payments ────────────────────────────────────────────────────────
-        "f2_10[0]": _f(c["fed_wh"]),             # 25a W-2 federal withholding
-        "f2_13[0]": _f(c["fed_wh"]),             # 25d total withholding
-        "f2_14[0]": _f(c["est_pmts"]),           # 26  estimated tax payments
-        "f2_15[0]": _f(c["eic"]),                # 27  earned income credit
-        "f2_23[0]": _f(c["total_pmts"]),         # 34  total payments
+        # ── Payments — Lines 25a–33 (f2_10–f2_21) ──────────────────────────
+        # PDF fields f2_16–f2_20 cover Lines 28–32 (additional CTC, AOC, Sch3)
+        # We leave those blank — our credits flow through Lines 19/21 above.
+        "f2_10[0]": _f(c["fed_wh"]),             # 25a  W-2 federal withholding
+        "f2_13[0]": _f(c["fed_wh"]),             # 25d  total withholding (=25a, no 25b/c)
+        "f2_14[0]": _f(c["est_pmts"]),           # 26   estimated tax payments
+        "f2_15[0]": _f(c["eic"]),                # 27   earned income credit (refundable)
+        "f2_21[0]": _f(c["total_pmts"]),         # 33   total payments
 
-        # ── Refund / Amount Owed ────────────────────────────────────────────
-        "f2_24[0]": _f(c["refund"]),             # 35a refund
-        "f2_26[0]": _f(c["balance_due"]),        # 37  amount owed
+        # ── Refund / Amount Owed — Lines 35a & 37 ──────────────────────────
+        "f2_23[0]": _f(c["refund"]),             # 35a  refund
+        "f2_25[0]": _f(c["balance_due"]),        # 37   amount owed
 
         # ── Direct Deposit ──────────────────────────────────────────────────
         "f2_32[0]": d.get("refund_routing") or "",
