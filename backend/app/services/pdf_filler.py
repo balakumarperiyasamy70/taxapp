@@ -391,9 +391,13 @@ def fill_1040(form_data: dict) -> bytes:
         "c1_7[0]": "/Yes" if fs == "head_household" else "/Off",
         "c1_8[0]": "/Off",
 
-        # ── Digital Assets Yes/No (c1_11=Yes, c1_12=No; c1_9/c1_10=Presidential Election) ──
-        "c1_11[0]": "/Yes" if d.get("digital_assets") else "/Off",
-        "c1_12[0]": "/Off" if d.get("digital_assets") else "/Yes",
+        # ── Presidential Election Campaign — uncheck both (original IRS PDF defaults them on) ──
+        "c1_9[0]":  "/Off",
+        "c1_10[0]": "/Off",
+
+        # ── Digital Assets Yes/No (c1_12=Yes checkbox, c1_11=No checkbox) ──
+        "c1_11[0]": "/Off" if d.get("digital_assets") else "/Yes",
+        "c1_12[0]": "/Yes" if d.get("digital_assets") else "/Off",
 
         # ── Address ────────────────────────────────────────────────────────
         "f1_20[0]": d.get("address", ""),
