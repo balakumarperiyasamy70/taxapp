@@ -52,6 +52,14 @@ class Form1040(BaseModel):
     zip_code: str
     dependents: list[Dependent] = []
     digital_assets: bool = False             # Did you receive/sell digital assets in 2025?
+    # Above-the-line QBI deduction (line 13a)
+    qbi_deduction: float = 0.0
+    # Additional taxes from Schedule 2 (line 17) and other sources (line 23)
+    schedule2_tax: float = 0.0
+    other_taxes: float = 0.0
+    # Additional withholding — Form 1099 (25b) and other (25c)
+    withholding_1099: float = 0.0
+    other_withholding: float = 0.0
     # Line 1 — Wages
     wages: float = 0.0                       # 1a  W-2 Box 1
     household_wages: float = 0.0             # 1b  household employee wages
@@ -61,6 +69,7 @@ class Form1040(BaseModel):
     adoption_benefits: float = 0.0           # 1f  Form 8839
     wages_8919: float = 0.0                  # 1g  Form 8919
     other_earned_income: float = 0.0         # 1h  other earned income
+    combat_pay: float = 0.0                  # 1i  nontaxable combat pay election
     federal_withholding: float = 0.0         # W-2 Box 2
     state_withholding: float = 0.0           # W-2 Box 17
     # Line 2 — Interest

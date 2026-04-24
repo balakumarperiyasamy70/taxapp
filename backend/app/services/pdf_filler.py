@@ -75,18 +75,24 @@ def _calc(d: dict) -> dict:
     else:
         ded = float(d.get("itemized_deductions") or 0)
 
-    taxable   = max(0.0, agi - ded)
+    qbi_ded   = float(d.get("qbi_deduction") or 0)
+    taxable   = max(0.0, agi - ded - qbi_ded)
     gross_tax = calculate_tax(taxable, fs)
 
     child_cr    = float(d.get("child_tax_credit") or 0)
     eic         = float(d.get("earned_income_credit") or 0)
     other_cr    = float(d.get("other_credits") or 0)
-    non_ref_cr  = child_cr + other_cr   # EIC is refundable — not here
+    non_ref_cr  = child_cr + other_cr
 
-    tax_after_cr  = max(0.0, gross_tax - non_ref_cr)
-    tax_liability = tax_after_cr
+    sched2_tax  = float(d.get("schedule2_tax") or 0)
+    other_tax   = float(d.get("other_taxes") or 0)
+    wh_1099     = float(d.get("withholding_1099") or 0)
+    other_wh    = float(d.get("other_withholding") or 0)
 
-    total_pmts  = fed_wh + est_pmts + eic   # EIC is refundable → payment
+    tax_after_cr  = max(0.0, (gross_tax + sched2_tax) - non_ref_cr)
+    tax_liability = tax_after_cr + other_tax
+
+    total_pmts  = fed_wh + wh_1099 + other_wh + est_pmts + eic
     refund      = max(0.0, total_pmts - tax_liability)
     balance_due = max(0.0, tax_liability - total_pmts)
 
@@ -104,11 +110,12 @@ def _calc(d: dict) -> dict:
         "capital_gain": capital_gain,
         "sched1_income": sched1_income,
         "total_income": total_income,
-        "adj": adj, "agi": agi, "ded": ded, "taxable": taxable,
-        "gross_tax": gross_tax,
+        "adj": adj, "agi": agi, "ded": ded, "qbi_ded": qbi_ded, "taxable": taxable,
+        "gross_tax": gross_tax, "sched2_tax": sched2_tax, "other_tax": other_tax,
         "child_cr": child_cr, "eic": eic, "non_ref_cr": non_ref_cr,
         "tax_after_cr": tax_after_cr, "tax_liability": tax_liability,
-        "fed_wh": fed_wh, "est_pmts": est_pmts, "total_pmts": total_pmts,
+        "fed_wh": fed_wh, "wh_1099": wh_1099, "other_wh": other_wh,
+        "est_pmts": est_pmts, "total_pmts": total_pmts,
         "refund": refund, "balance_due": balance_due,
     }
 
@@ -150,10 +157,10 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
             val = leaf_map[key]
             ft = str(annot.get("/FT", ""))
             if ft == "/Btn":
-                # Auto-detect the checkbox's actual "on" state name from its /AP dict.
-                # IRS PDFs use state names like "/1" or "/Yes" — reading it avoids hardcoding.
                 if val not in ("/Off", ""):
+                    # Read the actual on-state name from /AP[/N] dict.
                     ap = annot.get("/AP")
+                    on_state = None
                     if ap:
                         ap_obj = ap.get_object()
                         n_dict = ap_obj.get("/N")
@@ -161,10 +168,18 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
                             n_obj = n_dict.get_object()
                             for k in n_obj.keys():
                                 if str(k) != "/Off":
-                                    val = str(k)
+                                    on_state = str(k)
                                     break
-                annot[NameObject("/V")]  = NameObject(val)
-                annot[NameObject("/AS")] = NameObject(val)
+                    actual = on_state or val
+                    annot[NameObject("/V")]  = NameObject(actual)
+                    annot[NameObject("/AS")] = NameObject(actual)
+                    # Propagate to parent field — radio button groups require parent /V
+                    parent_ref = annot.get("/Parent")
+                    if parent_ref:
+                        parent_ref.get_object()[NameObject("/V")] = NameObject(actual)
+                else:
+                    annot[NameObject("/V")]  = NameObject("/Off")
+                    annot[NameObject("/AS")] = NameObject("/Off")
             else:
                 annot[NameObject("/V")] = create_string_object(str(val))
                 if "/AP" in annot:
@@ -176,60 +191,20 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
 
 
 def flatten_pdf(pdf_bytes: bytes) -> bytes:
-    """Flatten AcroForm fields into static page content (non-editable).
+    """Render AcroForm fields into static page content (non-editable).
 
-    Strategy:
-      1. pdftoppm renders pages to PNG — correctly preserves IRS form backgrounds.
-      2. Fields that have /AP streams are rendered by pdftoppm automatically.
-      3. Fields WITHOUT /AP (e.g. IRS calculated fields like Line 24, 37) are drawn
-         directly onto the PNG using Pillow, reading coordinates from /Rect in the PDF.
+    pdftoppm renders each page to PNG at 150 DPI.  With NeedAppearances=True
+    set by _fill_pdf(), Poppler regenerates field appearances from /V values
+    using each field's /DA (the IRS blue-text style).  img2pdf assembles the
+    PNGs into a flat PDF with no interactive fields.
 
-    Requires: apt-get install -y poppler-utils fonts-liberation
-              pip install img2pdf Pillow
+    Requires: apt-get install -y poppler-utils
+              pip install img2pdf
     """
     import subprocess, tempfile, os, glob, img2pdf
-    from PIL import Image, ImageDraw, ImageFont
-    from pypdf import PdfReader as _R
 
-    DPI    = 150
-    SCALE  = DPI / 72.0  # PDF points → pixels
+    DPI = 150
 
-    # ── Collect fields that have /V but no /AP (pdftoppm cannot render them) ──
-    reader   = _R(io.BytesIO(pdf_bytes))
-    overlays = {}  # page_idx → [(px_x, px_y, value_str)]
-
-    for pg_i, page in enumerate(reader.pages):
-        h_pts = float(page.mediabox.height)
-        for ref in page.get("/Annots", []):
-            annot = ref.get_object()
-            if annot.get("/Subtype") != "/Widget":
-                continue
-
-            # Skip if this widget has its own /AP — pdftoppm will render it.
-            # Do NOT check parent: IRS name/address fields are children of ReadOrder
-            # groups that have a parent /AP (border/shading). We deleted the child
-            # /AP in _fill_pdf so pdftoppm cannot render the text; Pillow must do it.
-            if "/AP" in annot:
-                continue
-
-            v = annot.get("/V")
-            if not v:
-                continue
-            val = str(v).strip("() \t")
-            # Skip empty, PDF name objects (/Yes, /Off), and checkbox literals
-            if not val or val.startswith("/") or val.lower() in ("off", "yes", "no"):
-                continue
-
-            rect = annot.get("/Rect")
-            if not rect:
-                continue
-            x1, y1, x2, y2 = (float(rect[i]) for i in range(4))
-            # PDF origin is bottom-left; image origin is top-left
-            px_x = int(x1 * SCALE) + 3
-            px_y = int((h_pts - y2) * SCALE) + 3
-            overlays.setdefault(pg_i, []).append((px_x, px_y, val))
-
-    # ── Render PDF pages to PNG ───────────────────────────────────────────────
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as sf:
         sf.write(pdf_bytes)
         src = sf.name
@@ -241,37 +216,6 @@ def flatten_pdf(pdf_bytes: bytes) -> bytes:
             check=True, capture_output=True
         )
         pages = sorted(glob.glob(os.path.join(out_dir, "*.png")))
-
-        # ── Overlay missing field values using Pillow ─────────────────────────
-        if overlays:
-            # Try system monospace font; fall back to Pillow default
-            _font_paths = [
-                "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
-                "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-                "/usr/share/fonts/truetype/freefont/FreeMono.ttf",
-            ]
-            font = None
-            for fp in _font_paths:
-                try:
-                    font = ImageFont.truetype(fp, 12)
-                    break
-                except Exception:
-                    pass
-            if font is None:
-                try:
-                    font = ImageFont.load_default(size=12)
-                except Exception:
-                    font = ImageFont.load_default()
-
-            for i, png_path in enumerate(pages):
-                if i not in overlays:
-                    continue
-                img  = Image.open(png_path).convert("RGB")
-                draw = ImageDraw.Draw(img)
-                for px_x, px_y, val in overlays[i]:
-                    draw.text((px_x, px_y), val, fill=(0, 0, 0), font=font)
-                img.save(png_path)
-
         with open(dst_path, "wb") as f:
             f.write(img2pdf.convert(pages))
         with open(dst_path, "rb") as f:
@@ -416,7 +360,7 @@ def fill_1040(form_data: dict) -> bytes:
         "f1_53[0]": _f(c["wages_1g"]),       # 1g  Form 8919 wages
         # f1_54 = 1h description text — skip
         "f1_55[0]": _f(c["wages_1h"]),       # 1h  other earned income amount
-        # f1_56 = 1i nontaxable combat pay — skip
+        "f1_56[0]": _f(float(d.get("combat_pay") or 0)), # 1i nontaxable combat pay
         "f1_57[0]": _f(c["total_wages"]),    # 1z  total wages
         "f1_58[0]": _f(c["tax_exempt_int"]), # 2a  tax-exempt interest
         "f1_59[0]": _f(c["taxable_int"]),    # 2b  taxable interest
@@ -440,24 +384,26 @@ def fill_1040(form_data: dict) -> bytes:
         # ── Tax & Credits Page 2 (probe-confirmed) ──────────────────────────
         "f2_01[0]": _f(c["agi"]),            # 11b AGI carry-over
         "f2_02[0]": _f(c["ded"]),            # 12e std/itemized deduction
-        # f2_03=13a QBI → skip (QBI=0)
-        # f2_04=13b → skip
-        "f2_05[0]": _f(c["ded"]),            # 14  add 12+13 (QBI=0)
+        "f2_03[0]": _f(c["qbi_ded"]),       # 13a QBI deduction
+        # f2_04=13b additional deductions → skip (always 0)
+        "f2_05[0]": _f(c["ded"] + c["qbi_ded"]),  # 14  add 12+13
         "f2_06[0]": _f(c["taxable"]),        # 15  taxable income
         # f2_07=16 form# text → skip
         "f2_08[0]": _f(c["gross_tax"]),      # 16  tax
-        # f2_09=17 Sch2 → skip
-        "f2_10[0]": _f(c["gross_tax"]),      # 18  add 16+17 (Sch2=0)
+        "f2_09[0]": _f(c["sched2_tax"]),     # 17  Schedule 2 additional tax
+        "f2_10[0]": _f(c["gross_tax"] + c["sched2_tax"]),  # 18  add 16+17
         "f2_11[0]": _f(c["child_cr"]),       # 19  child tax credit
         # f2_12=20 Sch3 → skip
         "f2_13[0]": _f(c["non_ref_cr"]),     # 21  total non-refundable credits
         "f2_14[0]": _f(c["tax_after_cr"]),   # 22  tax minus credits
-        # f2_15=23 other taxes → skip
+        "f2_15[0]": _f(c["other_tax"]),      # 23  other taxes
         "f2_16[0]": _f(c["tax_liability"]),  # 24  total tax
 
         # ── Payments ────────────────────────────────────────────────────────
         "f2_17[0]": _f(c["fed_wh"]),         # 25a  W-2 withholding
-        "f2_20[0]": _f(c["fed_wh"]),         # 25d  total withholding
+        "f2_18[0]": _f(c["wh_1099"]),        # 25b  Form 1099 withholding
+        "f2_19[0]": _f(c["other_wh"]),       # 25c  other withholding
+        "f2_20[0]": _f(c["fed_wh"] + c["wh_1099"] + c["other_wh"]),  # 25d total
         "f2_21[0]": _f(c["est_pmts"]),       # 26   estimated tax payments
         "f2_23[0]": _f(c["eic"]),            # 27a  earned income credit
         "f2_29[0]": _f(c["total_pmts"]),     # 33   total payments
@@ -469,6 +415,9 @@ def fill_1040(form_data: dict) -> bytes:
         # ── Direct Deposit ──────────────────────────────────────────────────
         "f2_32[0]": d.get("refund_routing") or "",
         "f2_33[0]": d.get("refund_account") or "",
+        # 35c account type (Checking/Savings radio button)
+        "c2_1[0]": "/Yes" if (d.get("refund_account_type") or "").lower() == "checking" else "/Off",
+        "c2_2[0]": "/Yes" if (d.get("refund_account_type") or "").lower() == "savings"  else "/Off",
 
         # ── Paid Preparer Use Only ───────────────────────────────────────────
         "f2_46[0]": "TaxRefundLoan.us",
