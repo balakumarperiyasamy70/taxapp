@@ -173,10 +173,6 @@ def _fill_pdf(pdf_path: Path, fields: dict) -> bytes:
                     actual = on_state or val
                     annot[NameObject("/V")]  = NameObject(actual)
                     annot[NameObject("/AS")] = NameObject(actual)
-                    # Propagate to parent field — radio button groups require parent /V
-                    parent_ref = annot.get("/Parent")
-                    if parent_ref:
-                        parent_ref.get_object()[NameObject("/V")] = NameObject(actual)
                 else:
                     annot[NameObject("/V")]  = NameObject("/Off")
                     annot[NameObject("/AS")] = NameObject("/Off")
