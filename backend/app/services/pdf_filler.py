@@ -324,20 +324,19 @@ def fill_1040(form_data: dict) -> bytes:
         "f1_18[0]": d.get("spouse_last_name") or "",
         "f1_19[0]": d.get("spouse_ssn") or "",
 
-        # ── Filing Status checkboxes ────────────────────────────────────────
-        "c1_4[0]": "/Yes" if fs == "single" else "/Off",
-        "c1_5[0]": "/Yes" if fs == "married_joint" else "/Off",
-        "c1_6[0]": "/Yes" if fs == "married_separate" else "/Off",
+        # ── Filing Status checkboxes (confirmed via inspect_checkboxes.py) ──
+        # c1_5=Presidential Election "You" (suppress), c1_6=Single, c1_7=HOH,
+        # c1_8[0]=MFJ, c1_8[1]=MFS, c1_9=QSS
+        "c1_5[0]": "/Off",   # Presidential Election Campaign "You" — keep unchecked
+        "c1_6[0]": "/Yes" if fs == "single" else "/Off",
         "c1_7[0]": "/Yes" if fs == "head_household" else "/Off",
-        "c1_8[0]": "/Off",
+        "c1_8[0]": "/Yes" if fs == "married_joint" else "/Off",
+        "c1_8[1]": "/Yes" if fs == "married_separate" else "/Off",
+        "c1_9[0]": "/Yes" if fs == "qualifying_surviving" else "/Off",
 
-        # ── Presidential Election Campaign — uncheck both (original IRS PDF defaults them on) ──
-        "c1_9[0]":  "/Off",
-        "c1_10[0]": "/Off",
-
-        # ── Digital Assets Yes/No (c1_12=Yes checkbox, c1_11=No checkbox) ──
-        "c1_11[0]": "/Off" if d.get("digital_assets") else "/Yes",
-        "c1_12[0]": "/Yes" if d.get("digital_assets") else "/Off",
+        # ── Digital Assets Yes/No (c1_10[0]=Yes on-state /1, c1_10[1]=No on-state /2) ──
+        "c1_10[0]": "/Yes" if d.get("digital_assets") else "/Off",
+        "c1_10[1]": "/Off" if d.get("digital_assets") else "/Yes",
 
         # ── Address ────────────────────────────────────────────────────────
         "f1_20[0]": d.get("address", ""),
@@ -411,9 +410,9 @@ def fill_1040(form_data: dict) -> bytes:
         # ── Direct Deposit ──────────────────────────────────────────────────
         "f2_32[0]": d.get("refund_routing") or "",
         "f2_33[0]": d.get("refund_account") or "",
-        # 35c account type (Checking/Savings radio button)
-        "c2_1[0]": "/Yes" if (d.get("refund_account_type") or "").lower() == "checking" else "/Off",
-        "c2_2[0]": "/Yes" if (d.get("refund_account_type") or "").lower() == "savings"  else "/Off",
+        # 35c account type: c2_17[0]=Checking, c2_17[1]=Savings (confirmed via inspect_checkboxes.py)
+        "c2_17[0]": "/Yes" if (d.get("refund_account_type") or "").lower() == "checking" else "/Off",
+        "c2_17[1]": "/Yes" if (d.get("refund_account_type") or "").lower() == "savings"  else "/Off",
 
         # ── Paid Preparer Use Only ───────────────────────────────────────────
         "f2_46[0]": "TaxRefundLoan.us",
