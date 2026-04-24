@@ -1,6 +1,6 @@
 """
-Probe each filing-status checkbox one at a time.
-Produces 7 separate PDFs so you can open each and see which box gets checked.
+Probe each filing-status checkbox one at a time + page 2 account type.
+Produces separate PDFs so you can open each and see which box gets checked.
 
 Usage (on VPS):
     cd /opt/taxapp/backend
@@ -16,67 +16,59 @@ from pypdf.generic import NameObject, BooleanObject
 from app.services.pdf_filler import FORMS_DIR, flatten_pdf
 
 pdf_path = FORMS_DIR / "f1040.pdf"
+reader0 = PdfReader(str(pdf_path))
 
-# ── Step 1: dump ALL page-1 checkbox /T names and their on-states ─────────────
-print("\n=== PAGE 1 CHECKBOX INVENTORY ===")
-print(f"{'Y-from-top':>10}  {'Field /T':<22}  {'on-state':<12}  parent")
-print("-" * 70)
 
-reader = PdfReader(str(pdf_path))
-page = reader.pages[0]
-h = float(page.mediabox.height)
-rows = []
-for ref in page.get("/Annots", []):
-    annot = ref.get_object()
-    if annot.get("/Subtype") != "/Widget":
-        continue
-    if str(annot.get("/FT", "")) != "/Btn":
-        continue
-    t = annot.get("/T")
-    if t is None:
-        continue
-    rect = annot.get("/Rect")
-    y = round(float(rect[3]), 1) if rect else 0
-    on_state = "?"
-    ap = annot.get("/AP")
-    if ap:
-        ap_obj = ap.get_object()
-        n_dict = ap_obj.get("/N")
-        if n_dict:
-            n_obj = n_dict.get_object()
-            for k in n_obj.keys():
-                if str(k) != "/Off":
-                    on_state = str(k)
-                    break
-    parent_t = ""
-    par_ref = annot.get("/Parent")
-    if par_ref:
-        p = par_ref.get_object()
-        pt = p.get("/T")
-        if pt:
-            parent_t = str(pt)
-    rows.append((round(h - y, 1), str(t), on_state, parent_t))
+def _page_inventory(page_idx, label):
+    page = reader0.pages[page_idx]
+    h = float(page.mediabox.height)
+    rows = []
+    for ref in page.get("/Annots", []):
+        annot = ref.get_object()
+        if annot.get("/Subtype") != "/Widget":
+            continue
+        if str(annot.get("/FT", "")) != "/Btn":
+            continue
+        t = annot.get("/T")
+        if t is None:
+            continue
+        rect = annot.get("/Rect")
+        y = round(float(rect[3]), 1) if rect else 0
+        v_default = str(annot.get("/V", "/Off"))
+        on_state = "?"
+        ap = annot.get("/AP")
+        if ap:
+            ap_obj = ap.get_object()
+            n_dict = ap_obj.get("/N")
+            if n_dict:
+                n_obj = n_dict.get_object()
+                for k in n_obj.keys():
+                    if str(k) != "/Off":
+                        on_state = str(k)
+                        break
+        parent_t = ""
+        par_ref = annot.get("/Parent")
+        if par_ref:
+            p = par_ref.get_object()
+            pt = p.get("/T")
+            if pt:
+                parent_t = str(pt)
+        rows.append((round(h - y, 1), str(t), v_default, on_state, parent_t))
 
-rows.sort()
-for y_top, name, on, par in rows:
-    print(f"{y_top:>10}  {name:<22}  {on:<12}  {par}")
+    rows.sort()
+    print(f"\n=== {label} CHECKBOX INVENTORY ===")
+    print(f"{'Y-from-top':>10}  {'Field /T':<22}  {'default/V':<12}  {'on-state':<12}  parent")
+    print("-" * 80)
+    for y_top, name, v, on, par in rows:
+        print(f"{y_top:>10}  {name:<22}  {v:<12}  {on:<12}  {par}")
 
-# ── Step 2: probe each candidate checkbox individually ────────────────────────
-# These are the candidates we believe to be filing status checkboxes
-candidates = [
-    "c1_4[0]", "c1_4",
-    "c1_5[0]", "c1_5",
-    "c1_6[0]", "c1_6",
-    "c1_7[0]", "c1_7",
-    "c1_8[0]", "c1_8",
-    "c1_8[1]",
-    "c1_9[0]", "c1_9",
-]
 
-print("\n\n=== INDIVIDUAL CHECKBOX PROBE ===")
-print("Each field set to its on-state. Open the PDF to see which box lights up.")
+_page_inventory(0, "PAGE 1")
+_page_inventory(1, "PAGE 2")
 
-for field_name in candidates:
+
+def _probe_one(field_name, page_idx=None):
+    """Generate a flattened PDF with exactly one checkbox set to its on-state."""
     reader2 = PdfReader(str(pdf_path))
     writer = PdfWriter()
     writer.append(reader2)
@@ -86,10 +78,10 @@ for field_name in candidates:
         acroform = acroform.get_object()
         acroform[NameObject("/NeedAppearances")] = BooleanObject(True)
 
-    base = field_name.split("[")[0]   # strip [0]/[1]
-
     hit = False
-    for page in writer.pages:
+    for pg_i, page in enumerate(writer.pages):
+        if page_idx is not None and pg_i != page_idx:
+            continue
         for ref in page.get("/Annots", []):
             annot = ref.get_object()
             if annot.get("/Subtype") != "/Widget":
@@ -99,11 +91,8 @@ for field_name in candidates:
             t = annot.get("/T")
             if t is None:
                 continue
-            # match both "c1_6" and "c1_6[0]"
-            t_str = str(t)
-            if t_str != field_name and t_str != base:
+            if str(t) != field_name:
                 continue
-            # auto-detect on-state
             on_state = None
             ap = annot.get("/AP")
             if ap:
@@ -121,18 +110,30 @@ for field_name in candidates:
             hit = True
 
     if not hit:
-        print(f"  {field_name:<15}  — NOT FOUND in annotations")
-        continue
+        print(f"  {field_name:<18}  — NOT FOUND")
+        return
 
     buf = io.BytesIO()
     writer.write(buf)
-    pdf_bytes = buf.getvalue()
-    pdf_bytes = flatten_pdf(pdf_bytes)
-
+    pdf_bytes = flatten_pdf(buf.getvalue())
     safe = field_name.replace("[", "_").replace("]", "")
     out = f"/tmp/cb_test_{safe}.pdf"
     with open(out, "wb") as f:
         f.write(pdf_bytes)
-    print(f"  {field_name:<15}  → {out}")
+    print(f"  {field_name:<18}  → {out}")
 
-print("\nDone. Open each PDF and check which filing-status box is checked.")
+
+# ── Page 1: filing status candidates (Y=62 group + Y=74 + Y=146) ─────────────
+print("\n\n=== FILING STATUS PROBE (page 1) ===")
+for fn in ["c1_1[0]", "c1_2[0]", "c1_3[0]", "c1_4[0]", "c1_5[0]"]:
+    _probe_one(fn, page_idx=0)
+
+# ── Page 2: account type candidates ──────────────────────────────────────────
+print("\n=== ACCOUNT TYPE PROBE (page 2) ===")
+for fn in ["c2_17[0]", "c2_17[1]", "c2_18[0]", "c2_18[1]",
+           "c2_1[0]", "c2_2[0]", "c2_3[0]", "c2_4[0]"]:
+    _probe_one(fn, page_idx=1)
+
+print("\nDone. Open each PDF and check which checkbox lights up.")
+print("For filing status: look for Single / MFJ / MFS / HOH / QSS checkboxes.")
+print("For account type:  look for Checking / Savings checkboxes.")
