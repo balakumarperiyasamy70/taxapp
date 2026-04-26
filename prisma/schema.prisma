@@ -1,0 +1,580 @@
+// TaxApp — Prisma Schema
+// Stack: Next.js 14 + PostgreSQL + Prisma
+// Covers: 1040, 1120-S, 1065 | Extensions: 4868, 7004
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  FILER
+  PREPARER
+  ADMIN
+}
+
+enum ReturnType {
+  F1040       // Individual
+  F1120S      // S-Corporation
+  F1065       // Partnership
+}
+
+enum ReturnStatus {
+  DRAFT
+  IN_REVIEW
+  PENDING_SIGNATURE
+  SIGNED
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  AMENDED
+  EXTENSION_FILED
+  EXTENSION_REJECTED
+}
+
+enum ExtensionForm {
+  F4868       // Individual — 6 months, due Apr 15
+  F7004       // Business  — 6 months, due Mar 15
+}
+
+enum ExtensionStatus {
+  DRAFT
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+enum ExtensionTrigger {
+  PREPARER
+  CLIENT
+}
+
+enum FilingStatus {
+  SINGLE
+  MARRIED_FILING_JOINTLY
+  MARRIED_FILING_SEPARATELY
+  HEAD_OF_HOUSEHOLD
+  QUALIFYING_SURVIVING_SPOUSE
+}
+
+enum DocumentType {
+  W2
+  F1099_NEC
+  F1099_MISC
+  F1099_INT
+  F1099_DIV
+  K1
+  F8879          // E-signature authorization
+  EXTENSION_CONF // Extension confirmation PDF
+  OTHER
+}
+
+enum SignatureStatus {
+  PENDING
+  SIGNED
+  DECLINED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+}
+
+// ─────────────────────────────────────────────
+// USERS & FIRMS
+// ─────────────────────────────────────────────
+
+model Firm {
+  id          String   @id @default(cuid())
+  name        String
+  ein         String?  @unique
+  efin        String?  @unique  // Required for e-filing
+  ptin        String?            // Preparer Tax ID
+  address     String?
+  phone       String?
+  website     String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  clients     Client[]
+  returns     TaxReturn[]
+  invoices    Invoice[]
+  deadlines   DeadlineConfig[]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  firmId        String?
+  email         String    @unique
+  name          String
+  role          Role      @default(FILER)
+  ptin          String?   // Preparers only
+  phone         String?
+  avatarUrl     String?
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  firm          Firm?     @relation(fields: [firmId], references: [id])
+  client        Client?                      // Filer → their client record
+  preparedReturns TaxReturn[] @relation("PreparedBy")
+  reviewedReturns TaxReturn[] @relation("ReviewedBy")
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  extensionRequests Extension[] @relation("InitiatedBy")
+}
+
+// ─────────────────────────────────────────────
+// CLIENTS
+// ─────────────────────────────────────────────
+
+model Client {
+  id              String    @id @default(cuid())
+  firmId          String
+  userId          String?   @unique  // Linked portal user (filer)
+  // Personal
+  firstName       String
+  lastName        String
+  ssn             String?   // Encrypted at rest
+  dob             DateTime?
+  email           String?
+  phone           String?
+  address         String?
+  city            String?
+  state           String?
+  zip             String?
+  // Business (if entity)
+  businessName    String?
+  ein             String?   // Encrypted at rest
+  entityType      ReturnType?
+  // Intake
+  intakeCompleted Boolean   @default(false)
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  firm            Firm      @relation(fields: [firmId], references: [id])
+  user            User?     @relation(fields: [userId], references: [id])
+  returns         TaxReturn[]
+  documents       Document[]
+  dependents      Dependent[]
+  extensions      Extension[]
+  invoices        Invoice[]
+}
+
+model Dependent {
+  id            String    @id @default(cuid())
+  clientId      String
+  firstName     String
+  lastName      String
+  ssn           String?   // Encrypted at rest
+  dob           DateTime?
+  relationship  String
+  monthsLived   Int?      // Months lived with taxpayer
+  createdAt     DateTime  @default(now())
+
+  client        Client    @relation(fields: [clientId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// TAX RETURNS
+// ─────────────────────────────────────────────
+
+model TaxReturn {
+  id              String        @id @default(cuid())
+  firmId          String
+  clientId        String
+  preparerId      String?
+  reviewerId      String?
+  taxYear         Int           // e.g. 2025
+  returnType      ReturnType
+  status          ReturnStatus  @default(DRAFT)
+  isAmended       Boolean       @default(false)
+  originalReturnId String?      // For amended returns (1040-X)
+  stateCode       String?       // e.g. "AR" for Arkansas
+  irsSubmissionId String?       // MeF tracking ID
+  irsAckCode      String?       // IRS ACK acceptance/rejection code
+  irsAckAt        DateTime?
+  irsAckMessage   String?
+  refundAmount    Decimal?      @db.Decimal(12,2)
+  amountOwed      Decimal?      @db.Decimal(12,2)
+  readyForReview  Boolean       @default(false)
+  readyForClient  Boolean       @default(false)
+  lockedAt        DateTime?     // Locked once submitted
+  submittedAt     DateTime?
+  acceptedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  firm            Firm          @relation(fields: [firmId], references: [id])
+  client          Client        @relation(fields: [clientId], references: [id])
+  preparer        User?         @relation("PreparedBy", fields: [preparerId], references: [id])
+  reviewer        User?         @relation("ReviewedBy", fields: [reviewerId], references: [id])
+  originalReturn  TaxReturn?    @relation("AmendedFrom", fields: [originalReturnId], references: [id])
+  amendments      TaxReturn[]   @relation("AmendedFrom")
+
+  // Form data (1040 individual)
+  f1040           F1040Data?
+  // Form data (1120-S S-Corp)
+  f1120s          F1120SData?
+  // Form data (1065 Partnership)
+  f1065           F1065Data?
+
+  schedules       Schedule[]
+  incomeItems     IncomeItem[]
+  documents       Document[]
+  signatures      Signature[]
+  extensions      Extension[]
+  invoices        Invoice[]
+  auditLogs       AuditLog[]
+  stateReturns    StateReturn[]
+}
+
+// ─────────────────────────────────────────────
+// FORM DATA — 1040
+// ─────────────────────────────────────────────
+
+model F1040Data {
+  id                String        @id @default(cuid())
+  returnId          String        @unique
+  filingStatus      FilingStatus?
+  spouseFirstName   String?
+  spouseLastName    String?
+  spouseSsn         String?
+  spouseDob         DateTime?
+  // Totals (calculated)
+  totalIncome       Decimal?      @db.Decimal(12,2)
+  adjustedGrossIncome Decimal?    @db.Decimal(12,2)
+  standardDeduction Decimal?      @db.Decimal(12,2)
+  itemizedDeduction Decimal?      @db.Decimal(12,2)
+  taxableIncome     Decimal?      @db.Decimal(12,2)
+  totalTax          Decimal?      @db.Decimal(12,2)
+  totalPayments     Decimal?      @db.Decimal(12,2)
+  refundOrOwed      Decimal?      @db.Decimal(12,2)
+  // Metadata
+  useItemized       Boolean       @default(false)
+  updatedAt         DateTime      @updatedAt
+
+  taxReturn         TaxReturn     @relation(fields: [returnId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// FORM DATA — 1120-S
+// ─────────────────────────────────────────────
+
+model F1120SData {
+  id                String    @id @default(cuid())
+  returnId          String    @unique
+  businessName      String?
+  ein               String?
+  incorporationDate DateTime?
+  sCorpElectionDate DateTime?
+  businessActivity  String?
+  grossReceipts     Decimal?  @db.Decimal(14,2)
+  totalAssets       Decimal?  @db.Decimal(14,2)
+  ordinaryIncome    Decimal?  @db.Decimal(14,2)
+  updatedAt         DateTime  @updatedAt
+
+  taxReturn         TaxReturn @relation(fields: [returnId], references: [id])
+  shareholders      Shareholder[]
+  k1s               K1[]
+}
+
+model Shareholder {
+  id          String    @id @default(cuid())
+  f1120sId    String
+  name        String
+  ssn         String?   // Encrypted at rest
+  ownershipPct Decimal  @db.Decimal(5,4)  // e.g. 0.5000 = 50%
+  createdAt   DateTime  @default(now())
+
+  f1120s      F1120SData @relation(fields: [f1120sId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// FORM DATA — 1065
+// ─────────────────────────────────────────────
+
+model F1065Data {
+  id              String    @id @default(cuid())
+  returnId        String    @unique
+  businessName    String?
+  ein             String?
+  businessActivity String?
+  grossReceipts   Decimal?  @db.Decimal(14,2)
+  totalAssets     Decimal?  @db.Decimal(14,2)
+  ordinaryIncome  Decimal?  @db.Decimal(14,2)
+  updatedAt       DateTime  @updatedAt
+
+  taxReturn       TaxReturn @relation(fields: [returnId], references: [id])
+  partners        Partner[]
+  k1s             K1[]
+}
+
+model Partner {
+  id            String    @id @default(cuid())
+  f1065Id       String
+  name          String
+  ssn           String?   // Encrypted at rest
+  partnershipPct Decimal  @db.Decimal(5,4)
+  isGeneral     Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  f1065         F1065Data @relation(fields: [f1065Id], references: [id])
+}
+
+// K-1 — flows from business return to owner's 1040
+model K1 {
+  id              String    @id @default(cuid())
+  f1120sId        String?
+  f1065Id         String?
+  recipientReturnId String? // Linked 1040 that receives this K-1
+  recipientName   String
+  recipientSsn    String?
+  ordinaryIncome  Decimal?  @db.Decimal(12,2)
+  capitalGains    Decimal?  @db.Decimal(12,2)
+  otherIncome     Decimal?  @db.Decimal(12,2)
+  deductions      Decimal?  @db.Decimal(12,2)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  f1120s          F1120SData? @relation(fields: [f1120sId], references: [id])
+  f1065           F1065Data?  @relation(fields: [f1065Id], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// SCHEDULES
+// ─────────────────────────────────────────────
+
+model Schedule {
+  id          String    @id @default(cuid())
+  returnId    String
+  scheduleType String   // "A", "B", "C", "D", "E", "SE", etc.
+  data        Json      // Flexible per-schedule field storage
+  isComplete  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  taxReturn   TaxReturn @relation(fields: [returnId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// INCOME ITEMS (W-2, 1099s)
+// ─────────────────────────────────────────────
+
+model IncomeItem {
+  id              String       @id @default(cuid())
+  returnId        String
+  type            DocumentType // W2, F1099_NEC, etc.
+  payerName       String?
+  payerEin        String?
+  amount          Decimal      @db.Decimal(12,2)
+  federalWithheld Decimal?     @db.Decimal(12,2)
+  stateWithheld   Decimal?     @db.Decimal(12,2)
+  stateCode       String?
+  boxData         Json?        // All form boxes as JSON
+  documentId      String?      // Linked uploaded document
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  taxReturn       TaxReturn    @relation(fields: [returnId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// STATE RETURNS
+// ─────────────────────────────────────────────
+
+model StateReturn {
+  id              String       @id @default(cuid())
+  returnId        String
+  stateCode       String       // "AR", "TX", etc.
+  status          ReturnStatus @default(DRAFT)
+  irsSubmissionId String?
+  irsAckCode      String?
+  irsAckAt        DateTime?
+  refundAmount    Decimal?     @db.Decimal(12,2)
+  amountOwed      Decimal?     @db.Decimal(12,2)
+  data            Json?
+  submittedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  taxReturn       TaxReturn    @relation(fields: [returnId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// EXTENSIONS
+// ─────────────────────────────────────────────
+
+model Extension {
+  id                String           @id @default(cuid())
+  clientId          String
+  returnId          String?          // May be filed before return exists
+  firmId            String?
+  triggeredBy       ExtensionTrigger
+  initiatedByUserId String?
+  extensionForm     ExtensionForm    // F4868 or F7004
+  taxYear           Int
+  returnType        ReturnType
+  status            ExtensionStatus  @default(DRAFT)
+  // Estimated tax (informational only — client pays IRS directly)
+  estimatedTaxOwed  Decimal?         @db.Decimal(12,2)
+  estimatedPayments Decimal?         @db.Decimal(12,2)
+  balanceDue        Decimal?         @db.Decimal(12,2)
+  // IRS tracking
+  irsSubmissionId   String?
+  irsAckCode        String?
+  irsAckAt          DateTime?
+  irsAckMessage     String?
+  // Dates
+  originalDueDate   DateTime         // Apr 15 or Mar 15
+  extendedDueDate   DateTime         // 6 months later
+  submittedAt       DateTime?
+  acceptedAt        DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  client            Client           @relation(fields: [clientId], references: [id])
+  taxReturn         TaxReturn?       @relation(fields: [returnId], references: [id])
+  initiatedBy       User?            @relation("InitiatedBy", fields: [initiatedByUserId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// DOCUMENTS
+// ─────────────────────────────────────────────
+
+model Document {
+  id          String       @id @default(cuid())
+  clientId    String
+  returnId    String?
+  type        DocumentType
+  filename    String
+  s3Key       String       // AWS S3 object key
+  s3Bucket    String
+  mimeType    String
+  sizeBytes   Int
+  uploadedAt  DateTime     @default(now())
+  isArchived  Boolean      @default(false)
+
+  client      Client       @relation(fields: [clientId], references: [id])
+  taxReturn   TaxReturn?   @relation(fields: [returnId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// E-SIGNATURES (Form 8879)
+// ─────────────────────────────────────────────
+
+model Signature {
+  id          String          @id @default(cuid())
+  returnId    String
+  signerName  String
+  signerEmail String
+  signerRole  String          // "taxpayer", "spouse", "preparer"
+  status      SignatureStatus @default(PENDING)
+  signedAt    DateTime?
+  ipAddress   String?
+  documentUrl String?         // Signed PDF stored in S3
+  expiresAt   DateTime
+  createdAt   DateTime        @default(now())
+
+  taxReturn   TaxReturn       @relation(fields: [returnId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// BILLING
+// ─────────────────────────────────────────────
+
+model Invoice {
+  id            String        @id @default(cuid())
+  firmId        String
+  clientId      String
+  returnId      String?
+  stripeInvoiceId String?     @unique
+  status        InvoiceStatus @default(DRAFT)
+  amountCents   Int           // Store in cents to avoid float issues
+  dueDate       DateTime?
+  paidAt        DateTime?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  firm          Firm          @relation(fields: [firmId], references: [id])
+  client        Client        @relation(fields: [clientId], references: [id])
+  taxReturn     TaxReturn?    @relation(fields: [returnId], references: [id])
+  lineItems     InvoiceLineItem[]
+}
+
+model InvoiceLineItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  description String
+  amountCents Int
+  createdAt   DateTime @default(now())
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// DEADLINE CONFIG
+// ─────────────────────────────────────────────
+
+model DeadlineConfig {
+  id              String        @id @default(cuid())
+  firmId          String
+  returnType      ReturnType
+  taxYear         Int
+  originalDue     DateTime
+  extensionDue    DateTime
+  createdAt       DateTime      @default(now())
+
+  firm            Firm          @relation(fields: [firmId], references: [id])
+
+  @@unique([firmId, returnType, taxYear])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model Notification {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  body        String
+  isRead      Boolean   @default(false)
+  link        String?
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  userId      String?
+  returnId    String?
+  action      String    // e.g. "return.submitted", "extension.filed"
+  detail      Json?
+  ipAddress   String?
+  createdAt   DateTime  @default(now())
+
+  user        User?     @relation(fields: [userId], references: [id])
+  taxReturn   TaxReturn? @relation(fields: [returnId], references: [id])
+}
