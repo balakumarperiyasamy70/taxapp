@@ -9,7 +9,7 @@ export default function ScheduleSEPage() {
   const id = params.id as string; const base = `/dashboard/returns/${id}`
   const [saving, setSaving] = useState(false); const [whose, setWhose] = useState("taxpayer")
   const [fields, setFields] = useState<Record<string,string>>({})
-  function set(f:string,v:string){setFields(p=>{...p,[f]:v})}
+  function set(f:string,v:string){setFields(p=>({...p,[f]:v}))}
   async function handleSave(andAnother=false){
     setSaving(true)
     await fetch(`/api/returns/${id}/income/other-income`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({whose,payerName:fields.payerName,...fields})})
