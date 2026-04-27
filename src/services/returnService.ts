@@ -12,13 +12,13 @@
  * All multi-table writes use Prisma transactions.
  */
 
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/src/lib/prisma"
 import {
   canTransition,
   TransitionContext,
   TransitionEvent,
   STATUS_LABELS,
-} from "@/lib/returnStateMachine"
+} from "@/src/lib/returnStateMachine"
 import { ReturnStatus, Role, TaxReturn, ReturnType } from "@prisma/client"
 
 // ─────────────────────────────────────────────

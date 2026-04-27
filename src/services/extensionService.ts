@@ -14,9 +14,9 @@
  * MeF client when you have your EFIN/ETIN credentials.
  */
 
-import { prisma } from "@/lib/prisma"
-import { getDeadlines, isPastOriginalDue, formatDeadline } from "@/lib/deadlines"
-import { canTransition } from "@/lib/returnStateMachine"
+import { prisma } from "@/src/lib/prisma"
+import { getDeadlines, isPastOriginalDue, formatDeadline } from "@/src/lib/deadlines"
+import { canTransition } from "@/src/lib/returnStateMachine"
 import {
   ExtensionStatus,
   ExtensionTrigger,

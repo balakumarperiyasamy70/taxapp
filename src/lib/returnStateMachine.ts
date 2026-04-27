@@ -5,7 +5,7 @@
  * that must be satisfied before the transition is allowed.
  *
  * Usage:
- *   import { canTransition, transition } from "@/lib/returnStateMachine"
+ *   import { canTransition, transition } from "@/src/lib/returnStateMachine"
  *
  *   const result = transition(return, "SUBMIT", context)
  *   if (!result.ok) throw new Error(result.reason)
@@ -59,7 +59,7 @@ interface TransitionDef {
   guard: (ctx: TransitionContext) => string | null  // null = allowed; string = reason blocked
 }
 
-const TRANSITIONS: Record<TransitionKey, TransitionDef> = {
+const TRANSITIONS: Record<string, TransitionDef> = {
 
   // ── DRAFT ──────────────────────────────────
 

@@ -53,60 +53,60 @@ export default function ScheduleEPage() {
           </div>
           <div className="field">
             <label>Type *</label>
-            <select value={form.type} onChange={e => set("type",e.target.value)}>
+            <select value={form.type} onChange={(e: any) => set("type",e.target.value)}>
               {TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
-          <Field label="Description *" value={form.description} onChange={v => set("description",v)} />
+          <Field label="Description *" value={form.description} onChange={(v: any) => set("description",v)} />
           <div className="field">
             <label>Country</label>
-            <select value={form.country} onChange={e => set("country",e.target.value)}>
+            <select value={form.country} onChange={(e: any) => set("country",e.target.value)}>
               <option>United States</option>
             </select>
           </div>
           <div className="form-row">
-            <Field label="ZIP code" value={form.zip} onChange={v => set("zip",v)} />
-            <Field label="City" value={form.city} onChange={v => set("city",v)} />
+            <Field label="ZIP code" value={form.zip} onChange={(v: any) => set("zip",v)} />
+            <Field label="City" value={form.city} onChange={(v: any) => set("city",v)} />
             <div className="field">
               <label>State</label>
-              <select value={form.state} onChange={e => set("state",e.target.value)}>
+              <select value={form.state} onChange={(e: any) => set("state",e.target.value)}>
                 {STATES.map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
           </div>
-          <CB label="Check if personal use" checked={form.personalUse} onChange={v => set("personalUse",v)} />
+          <CB label="Check if personal use" checked={form.personalUse} onChange={(v: any) => set("personalUse",v)} />
           <div className="field">
             <label>Percent of ownership *</label>
-            <input value={form.ownershipPct} onChange={e => set("ownershipPct",e.target.value)} style={{maxWidth:100}} />
+            <input value={form.ownershipPct} onChange={(e: any) => set("ownershipPct",e.target.value)} style={{maxWidth:100}} />
           </div>
-          <MF label="Rental Payments Received (including rental income reported on Form 1099-K)" value={form.rentalIncome} onChange={v => set("rentalIncome",v)} />
-          <Field label="Enter the number of days the property was rented at fair rental value" value={form.daysRented} onChange={v => set("daysRented",v)} />
-          <Field label="Enter the number of days the property was used for personal purposes" value={form.daysPersonal} onChange={v => set("daysPersonal",v)} />
+          <MF label="Rental Payments Received (including rental income reported on Form 1099-K)" value={form.rentalIncome} onChange={(v: any) => set("rentalIncome",v)} />
+          <Field label="Enter the number of days the property was rented at fair rental value" value={form.daysRented} onChange={(v: any) => set("daysRented",v)} />
+          <Field label="Enter the number of days the property was used for personal purposes" value={form.daysPersonal} onChange={(v: any) => set("daysPersonal",v)} />
           <div className="checkboxes">
-            <CB label="Check here if you are a member of a Qualified Joint Venture" checked={form.qualifiedJointVenture} onChange={v => set("qualifiedJointVenture",v)} />
-            <CB label="Check if you actively participated" checked={form.activelyParticipated} onChange={v => set("activelyParticipated",v)} />
-            <CB label="Check here if you are a real estate professional or sold or disposed of the property this year (This will allow ALL losses)." checked={form.realEstateProfessional} onChange={v => set("realEstateProfessional",v)} />
-            <CB label="All Investment is At-Risk." checked={form.allAtRisk} onChange={v => set("allAtRisk",v)} />
+            <CB label="Check here if you are a member of a Qualified Joint Venture" checked={form.qualifiedJointVenture} onChange={(v: any) => set("qualifiedJointVenture",v)} />
+            <CB label="Check if you actively participated" checked={form.activelyParticipated} onChange={(v: any) => set("activelyParticipated",v)} />
+            <CB label="Check here if you are a real estate professional or sold or disposed of the property this year (This will allow ALL losses)." checked={form.realEstateProfessional} onChange={(v: any) => set("realEstateProfessional",v)} />
+            <CB label="All Investment is At-Risk." checked={form.allAtRisk} onChange={(v: any) => set("allAtRisk",v)} />
           </div>
         </div>
 
         <div className="card">
           <h2>Expenses</h2>
           <div className="exp-grid">
-            <MF label="Advertising" value={form.advertising} onChange={v => set("advertising",v)} />
-            <MF label="Auto and travel" value={form.autoTravel} onChange={v => set("autoTravel",v)} />
-            <MF label="Cleaning and maintenance" value={form.cleaning} onChange={v => set("cleaning",v)} />
-            <MF label="Commissions" value={form.commissions} onChange={v => set("commissions",v)} />
-            <MF label="Insurance" value={form.insurance} onChange={v => set("insurance",v)} />
-            <MF label="Legal and professional fees" value={form.legalPro} onChange={v => set("legalPro",v)} />
-            <MF label="Management fees" value={form.management} onChange={v => set("management",v)} />
-            <MF label="Mortgage interest paid" value={form.mortgage} onChange={v => set("mortgage",v)} />
-            <MF label="Repairs" value={form.repairs} onChange={v => set("repairs",v)} />
-            <MF label="Supplies" value={form.supplies} onChange={v => set("supplies",v)} />
-            <MF label="Taxes" value={form.taxes} onChange={v => set("taxes",v)} />
-            <MF label="Utilities" value={form.utilities} onChange={v => set("utilities",v)} />
-            <MF label="Depreciation expense or depletion" value={form.depreciation} onChange={v => set("depreciation",v)} />
-            <MF label="Other expenses" value={form.otherExpenses} onChange={v => set("otherExpenses",v)} />
+            <MF label="Advertising" value={form.advertising} onChange={(v: any) => set("advertising",v)} />
+            <MF label="Auto and travel" value={form.autoTravel} onChange={(v: any) => set("autoTravel",v)} />
+            <MF label="Cleaning and maintenance" value={form.cleaning} onChange={(v: any) => set("cleaning",v)} />
+            <MF label="Commissions" value={form.commissions} onChange={(v: any) => set("commissions",v)} />
+            <MF label="Insurance" value={form.insurance} onChange={(v: any) => set("insurance",v)} />
+            <MF label="Legal and professional fees" value={form.legalPro} onChange={(v: any) => set("legalPro",v)} />
+            <MF label="Management fees" value={form.management} onChange={(v: any) => set("management",v)} />
+            <MF label="Mortgage interest paid" value={form.mortgage} onChange={(v: any) => set("mortgage",v)} />
+            <MF label="Repairs" value={form.repairs} onChange={(v: any) => set("repairs",v)} />
+            <MF label="Supplies" value={form.supplies} onChange={(v: any) => set("supplies",v)} />
+            <MF label="Taxes" value={form.taxes} onChange={(v: any) => set("taxes",v)} />
+            <MF label="Utilities" value={form.utilities} onChange={(v: any) => set("utilities",v)} />
+            <MF label="Depreciation expense or depletion" value={form.depreciation} onChange={(v: any) => set("depreciation",v)} />
+            <MF label="Other expenses" value={form.otherExpenses} onChange={(v: any) => set("otherExpenses",v)} />
           </div>
         </div>
 
@@ -143,14 +143,14 @@ export default function ScheduleEPage() {
   )
 }
 function Field({ label, value, onChange, placeholder }: any) {
-  return <div className="field"><label>{label}</label><input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} /></div>
+  return <div className="field"><label>{label}</label><input value={value} onChange={(e: any) => onChange(e.target.value)} placeholder={placeholder} /></div>
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>
 }
 function CB({ label, checked, onChange }: any) {
-  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:13,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
+  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:13,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
 }

@@ -77,7 +77,7 @@ export default function ClientsPage() {
         <button className="primary-btn" onClick={() => setShowForm(true)}>+ New Client</button>
       </div>
 
-      <input className="search" placeholder="Search by name or email..." value={search} onChange={e => setSearch(e.target.value)} />
+      <input className="search" placeholder="Search by name or email..." value={search} onChange={(e: any) => setSearch(e.target.value)} />
 
       {loading ? (
         <div className="loading"><div className="spinner"/></div>
@@ -117,43 +117,43 @@ export default function ClientsPage() {
               <div className="form-row">
                 <div className="field">
                   <label>First Name *</label>
-                  <input required value={form.firstName} onChange={e => setForm(f => ({...f, firstName: e.target.value}))} />
+                  <input required value={form.firstName} onChange={(e: any) => setForm(f => ({...f, firstName: e.target.value}))} />
                 </div>
                 <div className="field">
                   <label>Last Name *</label>
-                  <input required value={form.lastName} onChange={e => setForm(f => ({...f, lastName: e.target.value}))} />
+                  <input required value={form.lastName} onChange={(e: any) => setForm(f => ({...f, lastName: e.target.value}))} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="field">
                   <label>Email</label>
-                  <input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} />
+                  <input type="email" value={form.email} onChange={(e: any) => setForm(f => ({...f, email: e.target.value}))} />
                 </div>
                 <div className="field">
                   <label>Phone</label>
-                  <input value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} />
+                  <input value={form.phone} onChange={(e: any) => setForm(f => ({...f, phone: e.target.value}))} />
                 </div>
               </div>
               <div className="field">
                 <label>SSN (stored encrypted)</label>
-                <input placeholder="XXX-XX-XXXX" value={form.ssn} onChange={e => setForm(f => ({...f, ssn: e.target.value}))} />
+                <input placeholder="XXX-XX-XXXX" value={form.ssn} onChange={(e: any) => setForm(f => ({...f, ssn: e.target.value}))} />
               </div>
               <div className="field">
                 <label>Address</label>
-                <input value={form.address} onChange={e => setForm(f => ({...f, address: e.target.value}))} />
+                <input value={form.address} onChange={(e: any) => setForm(f => ({...f, address: e.target.value}))} />
               </div>
               <div className="form-row">
                 <div className="field">
                   <label>City</label>
-                  <input value={form.city} onChange={e => setForm(f => ({...f, city: e.target.value}))} />
+                  <input value={form.city} onChange={(e: any) => setForm(f => ({...f, city: e.target.value}))} />
                 </div>
                 <div className="field" style={{maxWidth: 80}}>
                   <label>State</label>
-                  <input maxLength={2} value={form.state} onChange={e => setForm(f => ({...f, state: e.target.value.toUpperCase()}))} />
+                  <input maxLength={2} value={form.state} onChange={(e: any) => setForm(f => ({...f, state: e.target.value.toUpperCase()}))} />
                 </div>
                 <div className="field" style={{maxWidth: 120}}>
                   <label>ZIP</label>
-                  <input value={form.zip} onChange={e => setForm(f => ({...f, zip: e.target.value}))} />
+                  <input value={form.zip} onChange={(e: any) => setForm(f => ({...f, zip: e.target.value}))} />
                 </div>
               </div>
               {error && <div className="error">{error}</div>}

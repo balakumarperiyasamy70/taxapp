@@ -14,7 +14,7 @@
 
 import { z } from "zod"
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/src/lib/prisma"
 import {
   applyTransition,
   runDiagnostics,
@@ -22,8 +22,8 @@ import {
   correctRejectedReturn,
   createAmendedReturn,
   ReturnServiceError,
-} from "@/services/returnService"
-import { requireSession, canAccessClient } from "@/lib/routeAuth"
+} from "@/src/services/returnService"
+import { requireSession, canAccessClient } from "@/src/lib/routeAuth"
 import {
   ok,
   created,
@@ -31,9 +31,9 @@ import {
   forbidden,
   notFound,
   handleError,
-} from "@/lib/apiHelpers"
+} from "@/src/lib/apiHelpers"
 import { ReturnType, ReturnStatus } from "@prisma/client"
-import { TransitionEvent } from "@/lib/returnStateMachine"
+import { TransitionEvent } from "@/src/lib/returnStateMachine"
 
 // ─────────────────────────────────────────────
 // Schemas

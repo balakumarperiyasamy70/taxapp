@@ -29,17 +29,17 @@ export default function AlimonyPage() {
         <h1 className="title">Alimony Received</h1>
         <button className="cancel-btn" onClick={() => router.push(`${base}/federal/income`)}>CANCEL</button>
         <div className="card">
-          <MF label="Amount of Alimony Taxpayer Received" value={form.taxpayerAmount} onChange={v => set("taxpayerAmount",v)} />
+          <MF label="Amount of Alimony Taxpayer Received" value={form.taxpayerAmount} onChange={(v: any) => set("taxpayerAmount",v)} />
           <div className="field">
             <label>Date of original divorce or separation agreement</label>
             <p className="note">*If the agreement has been modified to conform to TCJA after 2018, enter this date of modification instead.</p>
-            <input type="date" value={form.taxpayerDate} onChange={e => set("taxpayerDate",e.target.value)} />
+            <input type="date" value={form.taxpayerDate} onChange={(e: any) => set("taxpayerDate",e.target.value)} />
           </div>
-          <MF label="Amount of Alimony Spouse Received" value={form.spouseAmount} onChange={v => set("spouseAmount",v)} />
+          <MF label="Amount of Alimony Spouse Received" value={form.spouseAmount} onChange={(v: any) => set("spouseAmount",v)} />
           <div className="field">
             <label>Date of original divorce or separation agreement</label>
             <p className="note">*If the agreement has been modified to conform to TCJA after 2018, enter this date of modification instead.</p>
-            <input type="date" value={form.spouseDate} onChange={e => set("spouseDate",e.target.value)} />
+            <input type="date" value={form.spouseDate} onChange={(e: any) => set("spouseDate",e.target.value)} />
           </div>
         </div>
         <div className="footer">
@@ -71,5 +71,5 @@ export default function AlimonyPage() {
   )
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }

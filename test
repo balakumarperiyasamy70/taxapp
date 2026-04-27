@@ -1,0 +1,38 @@
+cd /opt/sbx-taxapp
+
+# Fix all import paths
+grep -rl '"@/lib/auth"' app/ | xargs sed -i 's|"@/lib/auth"|"@/src/lib/auth"|g'
+grep -rl '"@/lib/prisma"' app/ | xargs sed -i 's|"@/lib/prisma"|"@/src/lib/prisma"|g'
+grep -rl '"@/api/' app/ | xargs sed -i 's|"@/api/|"@/src/api/|g'
+grep -rl "'@/api/" src/app/ | xargs sed -i "s|'@/api/|'@/src/api/|g"
+grep -rl '"@/lib/' src/ | xargs sed -i 's|"@/lib/|"@/src/lib/|g'
+grep -rl '"@/services/' src/ | xargs sed -i 's|"@/services/|"@/src/services/|g'
+
+# Fix function names starting with numbers
+sed -i 's/export default function 1099kPage/export default function Form1099kPage/' app/dashboard/returns/\[id\]/federal/income/1099k/page.tsx
+sed -i 's/export default function 1099miscPage/export default function Form1099miscPage/' app/dashboard/returns/\[id\]/federal/income/1099misc/page.tsx
+sed -i 's/export default function 1099necPage/export default function Form1099necPage/' app/dashboard/returns/\[id\]/federal/income/1099nec/page.tsx
+sed -i 's/export default function 1099rPage/export default function Form1099rPage/' app/dashboard/returns/\[id\]/federal/income/1099r/page.tsx
+sed -i 's/export default function 8915fPage/export default function Form8915fPage/' app/dashboard/returns/\[id\]/federal/income/8915f/page.tsx
+
+# Fix TypeScript any types
+find app/dashboard -name "*.tsx" | xargs sed -i 's/onChange={v=>/onChange={(v: any) =>/g'
+find app/dashboard -name "*.tsx" | xargs sed -i 's/onChange={v =>/onChange={(v: any) =>/g'
+find app/dashboard -name "*.tsx" | xargs sed -i 's/o={v=>/o={(v: any) =>/g'
+find app/dashboard -name "*.tsx" | xargs sed -i 's/o={v =>/o={(v: any) =>/g'
+find app/dashboard -name "*.tsx" | xargs sed -i 's/onChange={e=>/onChange={(e: any) =>/g'
+find app/dashboard -name "*.tsx" | xargs sed -i 's/onChange={e =>/onChange={(e: any) =>/g'
+
+# Fix SSNInput -> SSNField
+sed -i 's/<SSNInput/<SSNField/g; s/<\/SSNInput>/<\/SSNField>/g' app/dashboard/returns/\[id\]/basic-info/dependents/page.tsx
+
+# Fix w2 checkbox boolean
+sed -i 's/onChange={(v: any) => setBox13/onChange={(v: boolean) => setBox13/g' app/dashboard/returns/\[id\]/federal/income/w2/page.tsx
+
+# Fix returnStateMachine type
+sed -i 's/const TRANSITIONS: Record<TransitionKey, TransitionDef> = {/const TRANSITIONS: Record<string, TransitionDef> = {/' src/lib/returnStateMachine.ts
+
+# Fix auth session type
+sed -i 's/session\.user = {/(session.user as any) = {/' src/lib/auth.ts
+
+npm run build

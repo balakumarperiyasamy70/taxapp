@@ -32,11 +32,11 @@ export default function IPPINPage() {
           <p className="note">Enter the 6-digit Identity Protection PIN (IP PIN) issued by the IRS. You will find this on the CP01A notice sent to you by the IRS. If you did not receive an IP PIN, leave this blank.</p>
           <div className="field">
             <label>Taxpayer IP PIN</label>
-            <input maxLength={6} placeholder="6-digit PIN" value={taxpayerPIN} onChange={e => setTaxpayerPIN(e.target.value.replace(/\D/g, ""))} style={{maxWidth: 200}} />
+            <input maxLength={6} placeholder="6-digit PIN" value={taxpayerPIN} onChange={(e: any) => setTaxpayerPIN(e.target.value.replace(/\D/g, ""))} style={{maxWidth: 200}} />
           </div>
           <div className="field">
             <label>Spouse IP PIN</label>
-            <input maxLength={6} placeholder="6-digit PIN" value={spousePIN} onChange={e => setSpousePIN(e.target.value.replace(/\D/g, ""))} style={{maxWidth: 200}} />
+            <input maxLength={6} placeholder="6-digit PIN" value={spousePIN} onChange={(e: any) => setSpousePIN(e.target.value.replace(/\D/g, ""))} style={{maxWidth: 200}} />
           </div>
         </div>
         <div className="footer">

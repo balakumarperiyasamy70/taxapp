@@ -174,7 +174,7 @@ function NewReturnForm() {
         {step === 1 && (
           <div className="step-body">
             <h2 className="step-title">Select Client</h2>
-            <input className="search" placeholder="Search clients..." value={clientSearch} onChange={e => setClientSearch(e.target.value)} autoFocus />
+            <input className="search" placeholder="Search clients..." value={clientSearch} onChange={(e: any) => setClientSearch(e.target.value)} autoFocus />
             <div className="client-list">
               {filteredClients.length === 0 ? (
                 <div className="empty-clients">
@@ -214,20 +214,20 @@ function NewReturnForm() {
             <div className="form-grid">
               <div className="field">
                 <label>Tax Year *</label>
-                <select value={form.taxYear} onChange={e => setForm(f => ({...f, taxYear: Number(e.target.value)}))}>
+                <select value={form.taxYear} onChange={(e: any) => setForm(f => ({...f, taxYear: Number(e.target.value)}))}>
                   {[2025, 2024, 2023].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
               <div className="field">
                 <label>State Return</label>
-                <select value={form.stateCode} onChange={e => setForm(f => ({...f, stateCode: e.target.value}))}>
+                <select value={form.stateCode} onChange={(e: any) => setForm(f => ({...f, stateCode: e.target.value}))}>
                   <option value="">None</option>
                   {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div className="field full">
                 <label>Filing Status *</label>
-                <select value={form.filingStatus} onChange={e => setForm(f => ({...f, filingStatus: e.target.value}))}>
+                <select value={form.filingStatus} onChange={(e: any) => setForm(f => ({...f, filingStatus: e.target.value}))}>
                   <option value="">Select filing status</option>
                   {FILING_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
@@ -236,15 +236,15 @@ function NewReturnForm() {
               {form.filingStatus === "MARRIED_FILING_JOINTLY" && <>
                 <div className="field">
                   <label>Spouse First Name</label>
-                  <input value={form.spouseFirstName} onChange={e => setForm(f => ({...f, spouseFirstName: e.target.value}))} />
+                  <input value={form.spouseFirstName} onChange={(e: any) => setForm(f => ({...f, spouseFirstName: e.target.value}))} />
                 </div>
                 <div className="field">
                   <label>Spouse Last Name</label>
-                  <input value={form.spouseLastName} onChange={e => setForm(f => ({...f, spouseLastName: e.target.value}))} />
+                  <input value={form.spouseLastName} onChange={(e: any) => setForm(f => ({...f, spouseLastName: e.target.value}))} />
                 </div>
                 <div className="field full">
                   <label>Spouse SSN</label>
-                  <input placeholder="XXX-XX-XXXX" value={form.spouseSsn} onChange={e => setForm(f => ({...f, spouseSsn: e.target.value}))} />
+                  <input placeholder="XXX-XX-XXXX" value={form.spouseSsn} onChange={(e: any) => setForm(f => ({...f, spouseSsn: e.target.value}))} />
                 </div>
               </>}
             </div>
@@ -271,19 +271,19 @@ function NewReturnForm() {
                 <div className="form-grid">
                   <div className="field full">
                     <label>Employer Name</label>
-                    <input placeholder="Employer name" value={item.payerName} onChange={e => updateIncome(i, "payerName", e.target.value)} />
+                    <input placeholder="Employer name" value={item.payerName} onChange={(e: any) => updateIncome(i, "payerName", e.target.value)} />
                   </div>
                   <div className="field">
                     <label>Box 1 — Wages *</label>
-                    <input type="number" min="0" step="0.01" placeholder="0.00" value={item.amount} onChange={e => updateIncome(i, "amount", e.target.value)} />
+                    <input type="number" min="0" step="0.01" placeholder="0.00" value={item.amount} onChange={(e: any) => updateIncome(i, "amount", e.target.value)} />
                   </div>
                   <div className="field">
                     <label>Box 2 — Federal Withheld</label>
-                    <input type="number" min="0" step="0.01" placeholder="0.00" value={item.federalWithheld} onChange={e => updateIncome(i, "federalWithheld", e.target.value)} />
+                    <input type="number" min="0" step="0.01" placeholder="0.00" value={item.federalWithheld} onChange={(e: any) => updateIncome(i, "federalWithheld", e.target.value)} />
                   </div>
                   <div className="field">
                     <label>State Tax Withheld</label>
-                    <input type="number" min="0" step="0.01" placeholder="0.00" value={item.stateWithheld} onChange={e => updateIncome(i, "stateWithheld", e.target.value)} />
+                    <input type="number" min="0" step="0.01" placeholder="0.00" value={item.stateWithheld} onChange={(e: any) => updateIncome(i, "stateWithheld", e.target.value)} />
                   </div>
                 </div>
               </div>

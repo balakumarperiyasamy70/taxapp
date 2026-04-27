@@ -59,26 +59,26 @@ export default function ScheduleDPage() {
                     <Radio label="Spouse" checked={transaction.whose==="spouse"} onChange={() => setTx("whose","spouse")} />
                     <Radio label="Joint" checked={transaction.whose==="joint"} onChange={() => setTx("whose","joint")} />
                   </div>
-                  <Field label="Description of Property *" value={transaction.description} onChange={v => setTx("description",v)} />
+                  <Field label="Description of Property *" value={transaction.description} onChange={(v: any) => setTx("description",v)} />
                   <div className="field">
                     <label>Date Acquired *</label>
-                    <CB label="Alternate Option: If Date Acquired is not known, leave the date blank and select an option here" checked={transaction.dateAcquiredAlt} onChange={v => setTx("dateAcquiredAlt",v)} />
-                    <input type="date" value={transaction.dateAcquired} onChange={e => setTx("dateAcquired",e.target.value)} />
+                    <CB label="Alternate Option: If Date Acquired is not known, leave the date blank and select an option here" checked={transaction.dateAcquiredAlt} onChange={(v: any) => setTx("dateAcquiredAlt",v)} />
+                    <input type="date" value={transaction.dateAcquired} onChange={(e: any) => setTx("dateAcquired",e.target.value)} />
                   </div>
                   <div className="field">
                     <label>Date Sold *</label>
-                    <CB label="Alternate Option" checked={transaction.dateSoldAlt} onChange={v => setTx("dateSoldAlt",v)} />
-                    <CB label="Check here if a short sale" checked={transaction.shortSale} onChange={v => setTx("shortSale",v)} />
-                    <input type="date" value={transaction.dateSold} onChange={e => setTx("dateSold",e.target.value)} />
+                    <CB label="Alternate Option" checked={transaction.dateSoldAlt} onChange={(v: any) => setTx("dateSoldAlt",v)} />
+                    <CB label="Check here if a short sale" checked={transaction.shortSale} onChange={(v: any) => setTx("shortSale",v)} />
+                    <input type="date" value={transaction.dateSold} onChange={(e: any) => setTx("dateSold",e.target.value)} />
                   </div>
                   <div className="field">
                     <label>Sales Price *</label>
-                    <CB label="Alternate Option: If Sale Price is Expired, leave the sales price blank and select an option here" checked={transaction.salesPriceAlt} onChange={v => setTx("salesPriceAlt",v)} />
-                    <MF label="" value={transaction.salesPrice} onChange={v => setTx("salesPrice",v)} />
+                    <CB label="Alternate Option: If Sale Price is Expired, leave the sales price blank and select an option here" checked={transaction.salesPriceAlt} onChange={(v: any) => setTx("salesPriceAlt",v)} />
+                    <MF label="" value={transaction.salesPrice} onChange={(v: any) => setTx("salesPrice",v)} />
                   </div>
                   <div className="field">
                     <label>Select cost basis type *</label>
-                    <select value={transaction.costBasisType} onChange={e => setTx("costBasisType",e.target.value)}>
+                    <select value={transaction.costBasisType} onChange={(e: any) => setTx("costBasisType",e.target.value)}>
                       <option value="">- Please Select -</option>
                       <option>A - Short-term reported to IRS</option>
                       <option>B - Short-term not reported to IRS</option>
@@ -88,21 +88,21 @@ export default function ScheduleDPage() {
                       <option>F - Long-term basis not reported</option>
                     </select>
                   </div>
-                  <CB label="Is the transaction a Short Term Section 1061 Partnership Interest?" checked={transaction.shortTermPartnership} onChange={v => setTx("shortTermPartnership",v)} />
+                  <CB label="Is the transaction a Short Term Section 1061 Partnership Interest?" checked={transaction.shortTermPartnership} onChange={(v: any) => setTx("shortTermPartnership",v)} />
                   <div className="field">
                     <label>Cost *</label>
-                    <CB label="Alternate Option: If Cost is Expired, leave the cost blank and select an option here" checked={transaction.costAlt} onChange={v => setTx("costAlt",v)} />
-                    <MF label="" value={transaction.cost} onChange={v => setTx("cost",v)} />
+                    <CB label="Alternate Option: If Cost is Expired, leave the cost blank and select an option here" checked={transaction.costAlt} onChange={(v: any) => setTx("costAlt",v)} />
+                    <MF label="" value={transaction.cost} onChange={(v: any) => setTx("cost",v)} />
                   </div>
                   <div className="field">
                     <label>Adjustments</label>
-                    <MF label="Enter any necessary adjustments to Gain or Loss" value={transaction.adjustment} onChange={v => setTx("adjustment",v)} />
+                    <MF label="Enter any necessary adjustments to Gain or Loss" value={transaction.adjustment} onChange={(v: any) => setTx("adjustment",v)} />
                     <div className="adj-codes">
                       {ADJ_CODES.map(code => (
                         <label key={code} className="adj-cb">
                           <input type="checkbox"
                             checked={transaction.adjustmentCodes.includes(code.split(" - ")[0])}
-                            onChange={e => {
+                            onChange={(e: any) => {
                               const c = code.split(" - ")[0]
                               setTx("adjustmentCodes", e.target.checked
                                 ? [...transaction.adjustmentCodes, c]
@@ -113,7 +113,7 @@ export default function ScheduleDPage() {
                       ))}
                     </div>
                   </div>
-                  <CB label="Is this a Collectible Exchange?" checked={transaction.isCollectible} onChange={v => setTx("isCollectible",v)} />
+                  <CB label="Is this a Collectible Exchange?" checked={transaction.isCollectible} onChange={(v: any) => setTx("isCollectible",v)} />
                   <button className="continue-btn" onClick={async () => { setSaving(true); await fetch(`/api/returns/${id}/income/schedule-d`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(transaction)}); setSaving(false); setActiveSection(null) }} disabled={saving}>{saving?"Saving...":"SAVE TRANSACTION"}</button>
                 </div>
               )}
@@ -213,14 +213,14 @@ export default function ScheduleDPage() {
   )
 }
 function Field({ label, value, onChange, placeholder }: any) {
-  return <div className="field"><label>{label}</label><input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} /></div>
+  return <div className="field"><label>{label}</label><input value={value} onChange={(e: any) => onChange(e.target.value)} placeholder={placeholder} /></div>
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field">{label && <label>{label}</label>}<div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field">{label && <label>{label}</label>}<div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>
 }
 function CB({ label, checked, onChange }: any) {
-  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:12,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
+  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:12,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
 }

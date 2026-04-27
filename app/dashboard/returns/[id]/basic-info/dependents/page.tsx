@@ -84,21 +84,21 @@ export default function DependentsPage() {
             </div>
 
             <div className="form-row">
-              <Field label="First name *" value={editing.firstName} onChange={v => set("firstName",v)} />
-              <Field label="MI" value={editing.mi} onChange={v => set("mi",v)} style={{maxWidth:60}} maxLength={1} />
-              <Field label="Last name *" value={editing.lastName} onChange={v => set("lastName",v)} />
+              <Field label="First name *" value={editing.firstName} onChange={(v: any) => set("firstName",v)} />
+              <Field label="MI" value={editing.mi} onChange={(v: any) => set("mi",v)} style={{maxWidth:60}} maxLength={1} />
+              <Field label="Last name *" value={editing.lastName} onChange={(v: any) => set("lastName",v)} />
             </div>
-            <Field label="Date of birth *" value={editing.dob} onChange={v => set("dob",v)} type="date" />
+            <Field label="Date of birth *" value={editing.dob} onChange={(v: any) => set("dob",v)} type="date" />
 
             {!editing.noSSN && (
-              <SSNInput
+              <SSNField
                 label="Social Security number (ITIN & ATIN also accepted)"
                 required
                 value={editing.ssn}
-                onChange={v => set("ssn",v)}
+                onChange={(v: any) => set("ssn",v)}
               />
             )}
-            <CB label="Check box if the dependent does not have an SSN/ITIN/ATIN" checked={editing.noSSN} onChange={v => set("noSSN",v)} />
+            <CB label="Check box if the dependent does not have an SSN/ITIN/ATIN" checked={editing.noSSN} onChange={(v: any) => set("noSSN",v)} />
 
             <div className="field">
               <label>Was this individual a U.S. citizen, U.S. national, or U.S. resident alien? *</label>
@@ -111,14 +111,14 @@ export default function DependentsPage() {
             <div className="form-row">
               <div className="field">
                 <label>Relationship *</label>
-                <select value={editing.relationship} onChange={e => set("relationship",e.target.value)}>
+                <select value={editing.relationship} onChange={(e: any) => set("relationship",e.target.value)}>
                   <option value="">Select...</option>
                   {RELATIONSHIPS.map(r => <option key={r}>{r}</option>)}
                 </select>
               </div>
               <div className="field">
                 <label>Months lived in your home during 2025</label>
-                <select value={editing.monthsLived} onChange={e => set("monthsLived",Number(e.target.value))}>
+                <select value={editing.monthsLived} onChange={(e: any) => set("monthsLived",Number(e.target.value))}>
                   {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
                 <span className="note">If born in 2025, select 12</span>
@@ -127,14 +127,14 @@ export default function DependentsPage() {
 
             <div className="section-label">Check All That Apply:</div>
             <div className="checkboxes">
-              <CB label="This person was over age 18 and a full-time student at an eligible educational institution." checked={editing.isStudent} onChange={v => set("isStudent",v)} />
-              <CB label="Check if this person was DISABLED." checked={editing.isDisabled} onChange={v => set("isDisabled",v)} />
-              <CB label="Check if this qualifying child is NOT YOUR DEPENDENT." checked={editing.notYourDependent} onChange={v => set("notYourDependent",v)} />
-              <CB label="Check if you wish to NOT claim this dependent for Earned Income Credit purposes." checked={editing.notEIC} onChange={v => set("notEIC",v)} />
-              <CB label="Check if this dependent is married and filing a joint return." checked={editing.marriedFilingJoint} onChange={v => set("marriedFilingJoint",v)} />
-              <CB label="This individual made over $5,200 of income" checked={editing.incomeOver5200} onChange={v => set("incomeOver5200",v)} />
-              <CB label="This dependent qualifies for a Multiple Support Declaration." checked={editing.multipleSupport} onChange={v => set("multipleSupport",v)} />
-              <CB label="Check if this qualifying person has a SSN that is not valid for employment" checked={editing.ssnNotValidEmployment} onChange={v => set("ssnNotValidEmployment",v)} />
+              <CB label="This person was over age 18 and a full-time student at an eligible educational institution." checked={editing.isStudent} onChange={(v: any) => set("isStudent",v)} />
+              <CB label="Check if this person was DISABLED." checked={editing.isDisabled} onChange={(v: any) => set("isDisabled",v)} />
+              <CB label="Check if this qualifying child is NOT YOUR DEPENDENT." checked={editing.notYourDependent} onChange={(v: any) => set("notYourDependent",v)} />
+              <CB label="Check if you wish to NOT claim this dependent for Earned Income Credit purposes." checked={editing.notEIC} onChange={(v: any) => set("notEIC",v)} />
+              <CB label="Check if this dependent is married and filing a joint return." checked={editing.marriedFilingJoint} onChange={(v: any) => set("marriedFilingJoint",v)} />
+              <CB label="This individual made over $5,200 of income" checked={editing.incomeOver5200} onChange={(v: any) => set("incomeOver5200",v)} />
+              <CB label="This dependent qualifies for a Multiple Support Declaration." checked={editing.multipleSupport} onChange={(v: any) => set("multipleSupport",v)} />
+              <CB label="Check if this qualifying person has a SSN that is not valid for employment" checked={editing.ssnNotValidEmployment} onChange={(v: any) => set("ssnNotValidEmployment",v)} />
             </div>
 
             <div className="top-bar">
@@ -189,11 +189,11 @@ export default function DependentsPage() {
   )
 }
 function Field({ label, value, onChange, type, style, maxLength }: any) {
-  return <div className="field" style={style}><label>{label}</label><input type={type||"text"} value={value} onChange={e => onChange(e.target.value)} maxLength={maxLength} /></div>
+  return <div className="field" style={style}><label>{label}</label><input type={type||"text"} value={value} onChange={(e: any) => onChange(e.target.value)} maxLength={maxLength} /></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>
 }
 function CB({ label, checked, onChange }: any) {
-  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:13,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
+  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:13,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
 }

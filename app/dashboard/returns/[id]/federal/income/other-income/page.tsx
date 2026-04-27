@@ -101,17 +101,17 @@ export default function OtherIncomePage() {
           </div>
           <div className="field">
             <label>Other Income Description *</label>
-            <select value={description} onChange={e => setDescription(e.target.value)}>
+            <select value={description} onChange={(e: any) => setDescription(e.target.value)}>
               <option value="">Select...</option>
               {OTHER_INCOME_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
           <div className="field">
             <label>Amount of other income *</label>
-            <div className="money-input"><span>$</span><input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} /></div>
+            <div className="money-input"><span>$</span><input type="number" step="0.01" value={amount} onChange={(e: any) => setAmount(e.target.value)} /></div>
           </div>
           <label className="checkbox-row">
-            <input type="checkbox" checked={earnedIncome} onChange={e => setEarnedIncome(e.target.checked)} />
+            <input type="checkbox" checked={earnedIncome} onChange={(e: any) => setEarnedIncome(e.target.checked)} />
             Earned Income
           </label>
         </div>
@@ -256,7 +256,7 @@ export default function OtherIncomePage() {
 }
 
 function MoneyField({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>

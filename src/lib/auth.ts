@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/src/lib/prisma"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,8 +13,8 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email) return null
 
-        const user = await prisma.user.findUnique({
-          where: { email: { equals: credentials.email, mode: "insensitive" } },
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: credentials?.email, mode: "insensitive" } },
 
         })
 	console.log("USER FOUND:", user)
@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      session.user = {
+      (session.user as any) = {
         ...session.user,
         id: token.id as string,
         role: token.role as any,

@@ -40,30 +40,30 @@ export default function Form1099GBox2Page() {
         <div className="card">
           <h2>Bypass State Refund Worksheet</h2>
           <p className="note">Enter an amount here to bypass worksheet and enter the full amount as taxable on Form 1040</p>
-          <MF label="" value={form.bypassAmount} onChange={v => set("bypassAmount", v)} />
+          <MF label="" value={form.bypassAmount} onChange={(v: any) => set("bypassAmount", v)} />
         </div>
 
         <div className="card">
           <h2>State & Local Refunds</h2>
-          <MF label="2024 state tax refunds (all refunds from 1099-G or similar statements)" value={form.stateRefund2024} onChange={v => set("stateRefund2024", v)} />
+          <MF label="2024 state tax refunds (all refunds from 1099-G or similar statements)" value={form.stateRefund2024} onChange={(v: any) => set("stateRefund2024", v)} />
         </div>
 
         <div className="card">
           <h2>Prior Year Taxes</h2>
-          <MF label="Last year's (2024 tax return) total state and local tax paid (Schedule A line 5d)" value={form.priorStateLocalTax} onChange={v => set("priorStateLocalTax", v)} />
-          <MF label="Last year's (2024 Tax Return) total itemized or standard deductions (Form 1040 line 12)" value={form.priorItemizedDeduction} onChange={v => set("priorItemizedDeduction", v)} />
-          <MF label="Total amount of prior year state tax withheld (including state estimated payments, Schedule A line 5a)" value={form.priorStateWithheld} onChange={v => set("priorStateWithheld", v)} />
-          <MF label="Prior year sales tax deduction (Schedule A line 5a)" value={form.priorSalesTax} onChange={v => set("priorSalesTax", v)} />
+          <MF label="Last year's (2024 tax return) total state and local tax paid (Schedule A line 5d)" value={form.priorStateLocalTax} onChange={(v: any) => set("priorStateLocalTax", v)} />
+          <MF label="Last year's (2024 Tax Return) total itemized or standard deductions (Form 1040 line 12)" value={form.priorItemizedDeduction} onChange={(v: any) => set("priorItemizedDeduction", v)} />
+          <MF label="Total amount of prior year state tax withheld (including state estimated payments, Schedule A line 5a)" value={form.priorStateWithheld} onChange={(v: any) => set("priorStateWithheld", v)} />
+          <MF label="Prior year sales tax deduction (Schedule A line 5a)" value={form.priorSalesTax} onChange={(v: any) => set("priorSalesTax", v)} />
           <div className="field">
             <label>Last Year's (2024 Tax Return) Filing Status *</label>
-            <select value={form.priorFilingStatus} onChange={e => set("priorFilingStatus", e.target.value)}>
+            <select value={form.priorFilingStatus} onChange={(e: any) => set("priorFilingStatus", e.target.value)}>
               <option value="">Select one...</option>
               {FILING_STATUSES.map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
           <div className="checkboxes">
-            <label className="cb"><input type="checkbox" checked={form.claimedAge65} onChange={e => set("claimedAge65", e.target.checked)} /> Check here if Taxpayer claimed the Age 65 and older deduction last year.</label>
-            <label className="cb"><input type="checkbox" checked={form.claimedBlind} onChange={e => set("claimedBlind", e.target.checked)} /> Check here if Taxpayer claimed the Blind deduction last year.</label>
+            <label className="cb"><input type="checkbox" checked={form.claimedAge65} onChange={(e: any) => set("claimedAge65", e.target.checked)} /> Check here if Taxpayer claimed the Age 65 and older deduction last year.</label>
+            <label className="cb"><input type="checkbox" checked={form.claimedBlind} onChange={(e: any) => set("claimedBlind", e.target.checked)} /> Check here if Taxpayer claimed the Blind deduction last year.</label>
           </div>
         </div>
 
@@ -100,5 +100,5 @@ export default function Form1099GBox2Page() {
   )
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }

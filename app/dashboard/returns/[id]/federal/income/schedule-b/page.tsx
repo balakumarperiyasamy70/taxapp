@@ -68,25 +68,25 @@ export default function ScheduleBPage() {
               <Radio label="Taxpayer" checked={form.whose==="taxpayer"} onChange={() => set("whose","taxpayer")} />
               <Radio label="Spouse" checked={form.whose==="spouse"} onChange={() => set("whose","spouse")} />
             </div>
-            <Field label="Payer's Name *" value={form.payerName} onChange={v => set("payerName",v)} />
-            <EINField label="Payer EIN" value={form.payerEIN} onChange={v => set("payerEIN",v)} />
+            <Field label="Payer's Name *" value={form.payerName} onChange={(v: any) => set("payerName",v)} />
+            <EINField label="Payer EIN" value={form.payerEIN} onChange={(v: any) => set("payerEIN",v)} />
             {(type.includes("INT") || type.includes("OID")) && <>
-              <MF label="Amount *" value={form.amount} onChange={v => set("amount",v)} />
-              <MF label="Tax-exempt interest" value={form.taxExempt} onChange={v => set("taxExempt",v)} />
-              <MF label="Federal income tax withheld" value={form.federalWithheld} onChange={v => set("federalWithheld",v)} />
-              <MF label="State tax withheld" value={form.stateWithheld} onChange={v => set("stateWithheld",v)} />
+              <MF label="Amount *" value={form.amount} onChange={(v: any) => set("amount",v)} />
+              <MF label="Tax-exempt interest" value={form.taxExempt} onChange={(v: any) => set("taxExempt",v)} />
+              <MF label="Federal income tax withheld" value={form.federalWithheld} onChange={(v: any) => set("federalWithheld",v)} />
+              <MF label="State tax withheld" value={form.stateWithheld} onChange={(v: any) => set("stateWithheld",v)} />
             </>}
             {type.includes("DIV") && <>
-              <MF label="Ordinary dividends *" value={form.ordinaryDividends} onChange={v => set("ordinaryDividends",v)} />
-              <MF label="Qualified dividends" value={form.qualifiedDividends} onChange={v => set("qualifiedDividends",v)} />
-              <MF label="Total capital gain distributions" value={form.totalCapGain} onChange={v => set("totalCapGain",v)} />
-              <MF label="Unrecaptured Section 1250 gain" value={form.unrecap1250Gain} onChange={v => set("unrecap1250Gain",v)} />
-              <MF label="Section 1202 gain" value={form.section1202Gain} onChange={v => set("section1202Gain",v)} />
-              <MF label="Collectibles (28%) gain" value={form.collectiblesGain} onChange={v => set("collectiblesGain",v)} />
-              <MF label="Federal income tax withheld" value={form.federalWithheld} onChange={v => set("federalWithheld",v)} />
-              <MF label="Foreign tax paid" value={form.foreignTax} onChange={v => set("foreignTax",v)} />
-              <MF label="Cash liquidation distributions" value={form.cashLiquidation} onChange={v => set("cashLiquidation",v)} />
-              <MF label="Exempt-interest dividends" value={form.exemptInterestDiv} onChange={v => set("exemptInterestDiv",v)} />
+              <MF label="Ordinary dividends *" value={form.ordinaryDividends} onChange={(v: any) => set("ordinaryDividends",v)} />
+              <MF label="Qualified dividends" value={form.qualifiedDividends} onChange={(v: any) => set("qualifiedDividends",v)} />
+              <MF label="Total capital gain distributions" value={form.totalCapGain} onChange={(v: any) => set("totalCapGain",v)} />
+              <MF label="Unrecaptured Section 1250 gain" value={form.unrecap1250Gain} onChange={(v: any) => set("unrecap1250Gain",v)} />
+              <MF label="Section 1202 gain" value={form.section1202Gain} onChange={(v: any) => set("section1202Gain",v)} />
+              <MF label="Collectibles (28%) gain" value={form.collectiblesGain} onChange={(v: any) => set("collectiblesGain",v)} />
+              <MF label="Federal income tax withheld" value={form.federalWithheld} onChange={(v: any) => set("federalWithheld",v)} />
+              <MF label="Foreign tax paid" value={form.foreignTax} onChange={(v: any) => set("foreignTax",v)} />
+              <MF label="Cash liquidation distributions" value={form.cashLiquidation} onChange={(v: any) => set("cashLiquidation",v)} />
+              <MF label="Exempt-interest dividends" value={form.exemptInterestDiv} onChange={(v: any) => set("exemptInterestDiv",v)} />
             </>}
             <div className="row-btns">
               <button className="cancel-btn" onClick={() => setStep(1)}>BACK</button>
@@ -128,10 +128,10 @@ export default function ScheduleBPage() {
   )
 }
 function Field({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><input value={value} onChange={e => onChange(e.target.value)} /></div>
+  return <div className="field"><label>{label}</label><input value={value} onChange={(e: any) => onChange(e.target.value)} /></div>
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>

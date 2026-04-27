@@ -7,8 +7,8 @@
 
 import { NextResponse } from "next/server"
 import { ZodError } from "zod"
-import { ReturnServiceError } from "@/services/returnService"
-import { ExtensionError } from "@/services/extensionService"
+import { ReturnServiceError } from "@/src/services/returnService"
+import { ExtensionError } from "@/src/services/extensionService"
 
 // ─────────────────────────────────────────────
 // Success

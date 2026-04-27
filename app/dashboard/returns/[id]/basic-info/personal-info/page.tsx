@@ -120,81 +120,81 @@ export default function PersonalInfoPage() {
         <section className="card">
           <h2 className="stitle">Taxpayer Information</h2>
           <div className="row">
-            <F label="Primary taxpayer first name *" value={form.firstName} onChange={v=>set("firstName",v)} f={2} />
-            <F label="MI" value={form.mi} onChange={v=>set("mi",v)} mw={60} ml={1} />
+            <F label="Primary taxpayer first name *" value={form.firstName} onChange={(v: any) =>set("firstName",v)} f={2} />
+            <F label="MI" value={form.mi} onChange={(v: any) =>set("mi",v)} mw={60} ml={1} />
           </div>
           <div className="row">
-            <F label="Last name *" value={form.lastName} onChange={v=>set("lastName",v)} f={2} />
-            <div className="field" style={{maxWidth:120}}><label>Suffix</label><select value={form.suffix} onChange={e=>set("suffix",e.target.value)}>{SUFFIXES.map(s=><option key={s}>{s}</option>)}</select></div>
+            <F label="Last name *" value={form.lastName} onChange={(v: any) =>set("lastName",v)} f={2} />
+            <div className="field" style={{maxWidth:120}}><label>Suffix</label><select value={form.suffix} onChange={(e: any) =>set("suffix",e.target.value)}>{SUFFIXES.map(s=><option key={s}>{s}</option>)}</select></div>
           </div>
-          <SSNField label="SSN *" value={form.ssn} onChange={v=>set("ssn",v)} />
+          <SSNField label="SSN *" value={form.ssn} onChange={(v: any) =>set("ssn",v)} />
           <div className="row">
-            <F label="Date of Birth *" value={form.dob} onChange={v=>set("dob",v)} type="date" />
-            <F label="Occupation" value={form.occupation} onChange={v=>set("occupation",v)} />
+            <F label="Date of Birth *" value={form.dob} onChange={(v: any) =>set("dob",v)} type="date" />
+            <F label="Occupation" value={form.occupation} onChange={(v: any) =>set("occupation",v)} />
           </div>
           <div className="cbs">
-            <CB label="Taxpayer can be claimed as a dependent on someone else's return." c={form.isDependent} o={v=>set("isDependent",v)} />
-            <CB label="Taxpayer was over age 18 and a full-time student at an eligible educational institution." c={form.isStudent} o={v=>set("isStudent",v)} />
-            <CB label="Taxpayer is blind." c={form.isBlind} o={v=>set("isBlind",v)} />
-            <CB label="Taxpayer is deceased." c={form.isDeceased} o={v=>set("isDeceased",v)} />
-            {form.isDeceased && <F label="Date of Death *" value={form.dateOfDeath} onChange={v=>set("dateOfDeath",v)} type="date" indent />}
-            <CB label="Taxpayer wishes to contribute $3 to the Presidential Election Campaign Fund." c={form.presidentialFund} o={v=>set("presidentialFund",v)} />
-            <CB label="Taxpayer or spouse served in a combat zone during the current tax year." c={form.combatZone} o={v=>set("combatZone",v)} />
-            <CB label="Taxpayer or spouse was affected by a natural disaster during the current tax year." c={form.naturalDisaster} o={v=>set("naturalDisaster",v)} />
-            {form.naturalDisaster && <F label="Disaster Designation *" value={form.disasterDesignation} onChange={v=>set("disasterDesignation",v)} indent />}
-            <CB label="Taxpayer received, sold, or disposed of a digital asset in the current tax year." c={form.digitalAssets} o={v=>set("digitalAssets",v)} />
-            <CB label="Taxpayer prefers to receive written communications from the IRS in a language other than English." c={form.nonEnglish} o={v=>set("nonEnglish",v)} />
-            {form.nonEnglish && <div className="field indent"><label>Language *</label><select value={form.language} onChange={e=>set("language",e.target.value)}><option value="">Select...</option>{LANGUAGES.map(l=><option key={l}>{l}</option>)}</select></div>}
-            <CB label="Taxpayer prefers to receive written communications from the IRS in an accessible format." c={form.accessibleFormat} o={v=>set("accessibleFormat",v)} />
-            {form.accessibleFormat && <div className="field indent"><label>Media *</label><select value={form.media} onChange={e=>set("media",e.target.value)}><option value="">Select...</option>{MEDIA.map(m=><option key={m}>{m}</option>)}</select></div>}
-            <CB label="Taxpayer is treating a nonresident alien or dual-status alien spouse as a U.S. resident for the entire tax year." c={form.nonresidentAlien} o={v=>set("nonresidentAlien",v)} />
-            <CB label="SSN not Valid for EIC / Employment" c={form.ssnNotValidEIC} o={v=>set("ssnNotValidEIC",v)} />
+            <CB label="Taxpayer can be claimed as a dependent on someone else's return." c={form.isDependent} o={(v: any) =>set("isDependent",v)} />
+            <CB label="Taxpayer was over age 18 and a full-time student at an eligible educational institution." c={form.isStudent} o={(v: any) =>set("isStudent",v)} />
+            <CB label="Taxpayer is blind." c={form.isBlind} o={(v: any) =>set("isBlind",v)} />
+            <CB label="Taxpayer is deceased." c={form.isDeceased} o={(v: any) =>set("isDeceased",v)} />
+            {form.isDeceased && <F label="Date of Death *" value={form.dateOfDeath} onChange={(v: any) =>set("dateOfDeath",v)} type="date" indent />}
+            <CB label="Taxpayer wishes to contribute $3 to the Presidential Election Campaign Fund." c={form.presidentialFund} o={(v: any) =>set("presidentialFund",v)} />
+            <CB label="Taxpayer or spouse served in a combat zone during the current tax year." c={form.combatZone} o={(v: any) =>set("combatZone",v)} />
+            <CB label="Taxpayer or spouse was affected by a natural disaster during the current tax year." c={form.naturalDisaster} o={(v: any) =>set("naturalDisaster",v)} />
+            {form.naturalDisaster && <F label="Disaster Designation *" value={form.disasterDesignation} onChange={(v: any) =>set("disasterDesignation",v)} indent />}
+            <CB label="Taxpayer received, sold, or disposed of a digital asset in the current tax year." c={form.digitalAssets} o={(v: any) =>set("digitalAssets",v)} />
+            <CB label="Taxpayer prefers to receive written communications from the IRS in a language other than English." c={form.nonEnglish} o={(v: any) =>set("nonEnglish",v)} />
+            {form.nonEnglish && <div className="field indent"><label>Language *</label><select value={form.language} onChange={(e: any) =>set("language",e.target.value)}><option value="">Select...</option>{LANGUAGES.map(l=><option key={l}>{l}</option>)}</select></div>}
+            <CB label="Taxpayer prefers to receive written communications from the IRS in an accessible format." c={form.accessibleFormat} o={(v: any) =>set("accessibleFormat",v)} />
+            {form.accessibleFormat && <div className="field indent"><label>Media *</label><select value={form.media} onChange={(e: any) =>set("media",e.target.value)}><option value="">Select...</option>{MEDIA.map(m=><option key={m}>{m}</option>)}</select></div>}
+            <CB label="Taxpayer is treating a nonresident alien or dual-status alien spouse as a U.S. resident for the entire tax year." c={form.nonresidentAlien} o={(v: any) =>set("nonresidentAlien",v)} />
+            <CB label="SSN not Valid for EIC / Employment" c={form.ssnNotValidEIC} o={(v: any) =>set("ssnNotValidEIC",v)} />
           </div>
         </section>
 
         <section className="card">
           <h2 className="stitle">Address and Phone Number</h2>
           <div className="cbs">
-            <CB label="I have stateside military address" c={form.militaryAddress} o={v=>set("militaryAddress",v)} />
-            <CB label="Check here if foreign address" c={form.foreignAddress} o={v=>set("foreignAddress",v)} />
+            <CB label="I have stateside military address" c={form.militaryAddress} o={(v: any) =>set("militaryAddress",v)} />
+            <CB label="Check here if foreign address" c={form.foreignAddress} o={(v: any) =>set("foreignAddress",v)} />
           </div>
           {!form.foreignAddress ? (<>
             <AddressField label="Address *" required value={form.address} onChange={p=>{set("address",p.street);set("city",p.city);set("state",p.state);set("zip",p.zip)}} />
             <div className="row">
-              <F label="City" value={form.city} onChange={v=>set("city",v)} f={2} />
-              <div className="field" style={{maxWidth:80}}><label>State</label><select value={form.state} onChange={e=>set("state",e.target.value)}><option value=""></option>{STATES.map(s=><option key={s}>{s}</option>)}</select></div>
-              <F label="ZIP" value={form.zip} onChange={v=>set("zip",v)} mw={120} ml={10} />
+              <F label="City" value={form.city} onChange={(v: any) =>set("city",v)} f={2} />
+              <div className="field" style={{maxWidth:80}}><label>State</label><select value={form.state} onChange={(e: any) =>set("state",e.target.value)}><option value=""></option>{STATES.map(s=><option key={s}>{s}</option>)}</select></div>
+              <F label="ZIP" value={form.zip} onChange={(v: any) =>set("zip",v)} mw={120} ml={10} />
             </div>
           </>) : (<>
-            <div className="row"><F label="Foreign Province" value={form.foreignProvince} onChange={v=>set("foreignProvince",v)} /><F label="Foreign Country *" value={form.foreignCountry} onChange={v=>set("foreignCountry",v)} /></div>
-            <div className="row"><F label="Postal Code" value={form.foreignPostalCode} onChange={v=>set("foreignPostalCode",v)} /><F label="Foreign Phone" value={form.foreignPhone} onChange={v=>set("foreignPhone",v)} /></div>
+            <div className="row"><F label="Foreign Province" value={form.foreignProvince} onChange={(v: any) =>set("foreignProvince",v)} /><F label="Foreign Country *" value={form.foreignCountry} onChange={(v: any) =>set("foreignCountry",v)} /></div>
+            <div className="row"><F label="Postal Code" value={form.foreignPostalCode} onChange={(v: any) =>set("foreignPostalCode",v)} /><F label="Foreign Phone" value={form.foreignPhone} onChange={(v: any) =>set("foreignPhone",v)} /></div>
           </>)}
           <div className="row">
-            <F label="Daytime Phone *" value={form.daytimePhone} onChange={v=>set("daytimePhone",v)} />
-            <F label="Secondary Phone" value={form.secondaryPhone} onChange={v=>set("secondaryPhone",v)} />
+            <F label="Daytime Phone *" value={form.daytimePhone} onChange={(v: any) =>set("daytimePhone",v)} />
+            <F label="Secondary Phone" value={form.secondaryPhone} onChange={(v: any) =>set("secondaryPhone",v)} />
           </div>
-          <F label="Primary Client Email" value={form.email} onChange={v=>set("email",v)} type="email" />
-          <CB label="Invite to Customer Portal" c={form.invitePortal} o={v=>set("invitePortal",v)} />
+          <F label="Primary Client Email" value={form.email} onChange={(v: any) =>set("email",v)} type="email" />
+          <CB label="Invite to Customer Portal" c={form.invitePortal} o={(v: any) =>set("invitePortal",v)} />
         </section>
 
         <section className="card">
           <h2 className="stitle">Spouse Information</h2>
           <div className="row">
-            <F label="Spouse first name *" value={form.spouseFirstName} onChange={v=>set("spouseFirstName",v)} f={2} />
-            <F label="MI" value={form.spouseMI} onChange={v=>set("spouseMI",v)} mw={60} ml={1} />
+            <F label="Spouse first name *" value={form.spouseFirstName} onChange={(v: any) =>set("spouseFirstName",v)} f={2} />
+            <F label="MI" value={form.spouseMI} onChange={(v: any) =>set("spouseMI",v)} mw={60} ml={1} />
           </div>
           <div className="row">
-            <F label="Last name *" value={form.spouseLastName} onChange={v=>set("spouseLastName",v)} f={2} />
-            <div className="field" style={{maxWidth:120}}><label>Suffix</label><select value={form.spouseSuffix} onChange={e=>set("spouseSuffix",e.target.value)}>{SUFFIXES.map(s=><option key={s}>{s}</option>)}</select></div>
+            <F label="Last name *" value={form.spouseLastName} onChange={(v: any) =>set("spouseLastName",v)} f={2} />
+            <div className="field" style={{maxWidth:120}}><label>Suffix</label><select value={form.spouseSuffix} onChange={(e: any) =>set("spouseSuffix",e.target.value)}>{SUFFIXES.map(s=><option key={s}>{s}</option>)}</select></div>
           </div>
-          <SSNField label="Spouse SSN *" value={form.spouseSSN} onChange={v=>set("spouseSSN",v)} />
+          <SSNField label="Spouse SSN *" value={form.spouseSSN} onChange={(v: any) =>set("spouseSSN",v)} />
           <div className="row">
-            <F label="Date of Birth *" value={form.spouseDOB} onChange={v=>set("spouseDOB",v)} type="date" />
-            <F label="Occupation" value={form.spouseOccupation} onChange={v=>set("spouseOccupation",v)} />
+            <F label="Date of Birth *" value={form.spouseDOB} onChange={(v: any) =>set("spouseDOB",v)} type="date" />
+            <F label="Occupation" value={form.spouseOccupation} onChange={(v: any) =>set("spouseOccupation",v)} />
           </div>
-          <CB label="Spouse is blind." c={form.spouseIsBlind} o={v=>set("spouseIsBlind",v)} />
-          <CB label="Spouse is deceased." c={form.spouseIsDeceased} o={v=>set("spouseIsDeceased",v)} />
-          {form.spouseIsDeceased && <F label="Date of Death *" value={form.spouseDateOfDeath} onChange={v=>set("spouseDateOfDeath",v)} type="date" indent />}
+          <CB label="Spouse is blind." c={form.spouseIsBlind} o={(v: any) =>set("spouseIsBlind",v)} />
+          <CB label="Spouse is deceased." c={form.spouseIsDeceased} o={(v: any) =>set("spouseIsDeceased",v)} />
+          {form.spouseIsDeceased && <F label="Date of Death *" value={form.spouseDateOfDeath} onChange={(v: any) =>set("spouseDateOfDeath",v)} type="date" indent />}
         </section>
 
         <div className="actions">
@@ -233,10 +233,10 @@ function F({ label, value, onChange, type, f, mw, ml, indent }: any) {
   return (
     <div className={`field${indent?" indent":""}`} style={{...(f?{flex:f}:{}), ...(mw?{maxWidth:mw}:{})}}>
       <label>{label}</label>
-      <input type={type||"text"} value={value} onChange={e=>onChange(e.target.value)} maxLength={ml ?? 524288} />
+      <input type={type||"text"} value={value} onChange={(e: any) =>onChange(e.target.value)} maxLength={ml ?? 524288} />
     </div>
   )
 }
 function CB({ label, c, o }: any) {
-  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:14,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={c} onChange={e=>o(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
+  return <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:14,color:"#374151",lineHeight:1.5}}><input type="checkbox" checked={c} onChange={(e: any) =>o(e.target.checked)} style={{marginTop:2,flexShrink:0}} />{label}</label>
 }

@@ -133,23 +133,23 @@ export default function W2Page() {
         <div className="two-col">
           <div className="card">
             <h2 className="card-title">Employer information</h2>
-            <EINField label="Employer identification number (EIN) *" required value={employer.ein} onChange={v => setEmp("ein", v)} />
-            <Field label="Employer's name *" value={employer.name} onChange={v => setEmp("name", v)} />
+            <EINField label="Employer identification number (EIN) *" required value={employer.ein} onChange={(v: any) => setEmp("ein", v)} />
+            <Field label="Employer's name *" value={employer.name} onChange={(v: any) => setEmp("name", v)} />
             <div className="form-row">
               <div className="field">
                 <label>Country</label>
-                <select value={employer.country} onChange={e => setEmp("country", e.target.value)}>
+                <select value={employer.country} onChange={(e: any) => setEmp("country", e.target.value)}>
                   <option>United States</option>
                 </select>
               </div>
             </div>
-            <Field label="Address *" value={employer.address} onChange={v => setEmp("address", v)} />
+            <Field label="Address *" value={employer.address} onChange={(v: any) => setEmp("address", v)} />
             <div className="form-row">
-              <Field label="ZIP Code *" value={employer.zip} onChange={v => setEmp("zip", v)} />
-              <Field label="City *" value={employer.city} onChange={v => setEmp("city", v)} />
+              <Field label="ZIP Code *" value={employer.zip} onChange={(v: any) => setEmp("zip", v)} />
+              <Field label="City *" value={employer.city} onChange={(v: any) => setEmp("city", v)} />
               <div className="field">
                 <label>State *</label>
-                <select value={employer.state} onChange={e => setEmp("state", e.target.value)}>
+                <select value={employer.state} onChange={(e: any) => setEmp("state", e.target.value)}>
                   {STATES.map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
@@ -158,23 +158,23 @@ export default function W2Page() {
 
           <div className="card">
             <h2 className="card-title">Employee information</h2>
-            <Field label="Control number" value={employee.controlNumber} onChange={v => setEmpe("controlNumber", v)} />
-            <Field label="Employee's full name *" value={employee.fullName} onChange={v => setEmpe("fullName", v)} />
+            <Field label="Control number" value={employee.controlNumber} onChange={(v: any) => setEmpe("controlNumber", v)} />
+            <Field label="Employee's full name *" value={employee.fullName} onChange={(v: any) => setEmpe("fullName", v)} />
             <div className="form-row">
               <div className="field">
                 <label>Country *</label>
-                <select value={employee.country} onChange={e => setEmpe("country", e.target.value)}>
+                <select value={employee.country} onChange={(e: any) => setEmpe("country", e.target.value)}>
                   <option>United States</option>
                 </select>
               </div>
             </div>
-            <Field label="Address *" value={employee.address} onChange={v => setEmpe("address", v)} />
+            <Field label="Address *" value={employee.address} onChange={(v: any) => setEmpe("address", v)} />
             <div className="form-row">
-              <Field label="ZIP Code *" value={employee.zip} onChange={v => setEmpe("zip", v)} />
-              <Field label="City *" value={employee.city} onChange={v => setEmpe("city", v)} />
+              <Field label="ZIP Code *" value={employee.zip} onChange={(v: any) => setEmpe("zip", v)} />
+              <Field label="City *" value={employee.city} onChange={(v: any) => setEmpe("city", v)} />
               <div className="field">
                 <label>State *</label>
-                <select value={employee.state} onChange={e => setEmpe("state", e.target.value)}>
+                <select value={employee.state} onChange={(e: any) => setEmpe("state", e.target.value)}>
                   {STATES.map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
@@ -186,21 +186,21 @@ export default function W2Page() {
         <div className="two-col">
           <div className="card">
             <h2 className="card-title">W-2 Box Amounts (Left)</h2>
-            <MoneyField label="1 - Wages, tips, other compensation" value={boxes.box1} onChange={v => setBox("box1", v)} />
-            <MoneyField label="3 - Social security wages" value={boxes.box3} onChange={v => setBox("box3", v)} />
-            <MoneyField label="5 - Medicare wages and tips" value={boxes.box5} onChange={v => setBox("box5", v)} />
-            <MoneyField label="7 - Social security tips" value={boxes.box7} onChange={v => setBox("box7", v)} />
-            <Field label="9 - W-2 verification code" value={boxes.box9} onChange={v => setBox("box9", v)} />
-            <MoneyField label="11 - Nonqualified plans" value={boxes.box11} onChange={v => setBox("box11", v)} />
+            <MoneyField label="1 - Wages, tips, other compensation" value={boxes.box1} onChange={(v: any) => setBox("box1", v)} />
+            <MoneyField label="3 - Social security wages" value={boxes.box3} onChange={(v: any) => setBox("box3", v)} />
+            <MoneyField label="5 - Medicare wages and tips" value={boxes.box5} onChange={(v: any) => setBox("box5", v)} />
+            <MoneyField label="7 - Social security tips" value={boxes.box7} onChange={(v: any) => setBox("box7", v)} />
+            <Field label="9 - W-2 verification code" value={boxes.box9} onChange={(v: any) => setBox("box9", v)} />
+            <MoneyField label="11 - Nonqualified plans" value={boxes.box11} onChange={(v: any) => setBox("box11", v)} />
           </div>
           <div className="card">
             <h2 className="card-title">W-2 Box Amounts (Right)</h2>
-            <MoneyField label="2 - Federal income tax withheld" value={boxes.federalWithheld} onChange={v => setBox("federalWithheld", v)} />
-            <MoneyField label="4 - Social security withheld" value={boxes.ssWithheld} onChange={v => setBox("ssWithheld", v)} />
-            <MoneyField label="6 - Medicare withheld" value={boxes.medicareWithheld} onChange={v => setBox("medicareWithheld", v)} />
-            <MoneyField label="8 - Allocated tips" value={boxes.allocatedTips} onChange={v => setBox("allocatedTips", v)} />
-            <MoneyField label="10 - Dependent care benefits" value={boxes.dependentCare} onChange={v => setBox("dependentCare", v)} />
-            <MoneyField label="Uncollected tips" value={boxes.uncollectedTips} onChange={v => setBox("uncollectedTips", v)} />
+            <MoneyField label="2 - Federal income tax withheld" value={boxes.federalWithheld} onChange={(v: any) => setBox("federalWithheld", v)} />
+            <MoneyField label="4 - Social security withheld" value={boxes.ssWithheld} onChange={(v: any) => setBox("ssWithheld", v)} />
+            <MoneyField label="6 - Medicare withheld" value={boxes.medicareWithheld} onChange={(v: any) => setBox("medicareWithheld", v)} />
+            <MoneyField label="8 - Allocated tips" value={boxes.allocatedTips} onChange={(v: any) => setBox("allocatedTips", v)} />
+            <MoneyField label="10 - Dependent care benefits" value={boxes.dependentCare} onChange={(v: any) => setBox("dependentCare", v)} />
+            <MoneyField label="Uncollected tips" value={boxes.uncollectedTips} onChange={(v: any) => setBox("uncollectedTips", v)} />
           </div>
         </div>
 
@@ -213,23 +213,23 @@ export default function W2Page() {
               <div key={i} className="box12-row">
                 <div className="field" style={{maxWidth: 80}}>
                   <label>12{String.fromCharCode(65 + i)} - Code</label>
-                  <select value={item.code} onChange={e => updateBox12(i, "code", e.target.value)}>
+                  <select value={item.code} onChange={(e: any) => updateBox12(i, "code", e.target.value)}>
                     <option value="">--</option>
                     {BOX12_CODES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="field">
                   <label>Amount</label>
-                  <div className="money-input"><span>$</span><input type="number" value={item.amount} onChange={e => updateBox12(i, "amount", e.target.value)} /></div>
+                  <div className="money-input"><span>$</span><input type="number" value={item.amount} onChange={(e: any) => updateBox12(i, "amount", e.target.value)} /></div>
                 </div>
               </div>
             ))}
           </div>
           <div className="box13-row">
             <label>13:</label>
-            <Checkbox label="Statutory employee" checked={box13.statutoryEmployee} onChange={v => setBox13(b => ({...b, statutoryEmployee: v}))} />
-            <Checkbox label="Retirement plan" checked={box13.retirementPlan} onChange={v => setBox13(b => ({...b, retirementPlan: v}))} />
-            <Checkbox label="Third-party sick pay" checked={box13.thirdPartySick} onChange={v => setBox13(b => ({...b, thirdPartySick: v}))} />
+            <Checkbox label="Statutory employee" checked={box13.statutoryEmployee} onChange={(v: boolean) => setBox13(b => ({...b, statutoryEmployee: v}))} />
+            <Checkbox label="Retirement plan" checked={box13.retirementPlan} onChange={(v: boolean) => setBox13(b => ({...b, retirementPlan: v}))} />
+            <Checkbox label="Third-party sick pay" checked={box13.thirdPartySick} onChange={(v: boolean) => setBox13(b => ({...b, thirdPartySick: v}))} />
           </div>
         </div>
 
@@ -241,22 +241,22 @@ export default function W2Page() {
             <div key={i} className="box14-row">
               <div className="field">
                 <label>14 - Show</label>
-                <select value={item.show} onChange={e => updateBox14(i, "show", e.target.value)}>
+                <select value={item.show} onChange={(e: any) => updateBox14(i, "show", e.target.value)}>
                   <option value="">Select...</option>
                   <option>Shown on W-2</option>
                   <option>Entered manually</option>
                 </select>
               </div>
-              <Field label="Code" value={item.code} onChange={v => updateBox14(i, "code", v)} />
+              <Field label="Code" value={item.code} onChange={(v: any) => updateBox14(i, "code", v)} />
               <div className="field">
                 <label>Amount</label>
-                <div className="money-input"><span>$</span><input type="number" value={item.amount} onChange={e => updateBox14(i, "amount", e.target.value)} /></div>
+                <div className="money-input"><span>$</span><input type="number" value={item.amount} onChange={(e: any) => updateBox14(i, "amount", e.target.value)} /></div>
               </div>
             </div>
           ))}
           <div className="field" style={{maxWidth: 200}}>
             <label>Medicaid Waiver Payment</label>
-            <div className="money-input"><span>$</span><input type="number" value={box14[0]?.medicaidWaiver} onChange={e => updateBox14(0, "medicaidWaiver", e.target.value)} /></div>
+            <div className="money-input"><span>$</span><input type="number" value={box14[0]?.medicaidWaiver} onChange={(e: any) => updateBox14(0, "medicaidWaiver", e.target.value)} /></div>
           </div>
         </div>
 
@@ -271,37 +271,37 @@ export default function W2Page() {
               <div className="form-row">
                 <div className="field" style={{maxWidth: 100}}>
                   <label>15 - State</label>
-                  <select value={item.state} onChange={e => updateStateLocal(i, "state", e.target.value)}>
+                  <select value={item.state} onChange={(e: any) => updateStateLocal(i, "state", e.target.value)}>
                     {STATES.map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
                 <div className="field">
                   <label>Employer's state ID number</label>
-                  <input value={item.employerStateId} onChange={e => updateStateLocal(i, "employerStateId", e.target.value)} />
+                  <input value={item.employerStateId} onChange={(e: any) => updateStateLocal(i, "employerStateId", e.target.value)} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="field">
                   <label>16 - State wages, tips, etc.</label>
-                  <div className="money-input"><span>$</span><input type="number" value={item.stateWages} onChange={e => updateStateLocal(i, "stateWages", e.target.value)} /></div>
+                  <div className="money-input"><span>$</span><input type="number" value={item.stateWages} onChange={(e: any) => updateStateLocal(i, "stateWages", e.target.value)} /></div>
                 </div>
                 <div className="field">
                   <label>17 - State income tax</label>
-                  <div className="money-input"><span>$</span><input type="number" value={item.stateIncomeTax} onChange={e => updateStateLocal(i, "stateIncomeTax", e.target.value)} /></div>
+                  <div className="money-input"><span>$</span><input type="number" value={item.stateIncomeTax} onChange={(e: any) => updateStateLocal(i, "stateIncomeTax", e.target.value)} /></div>
                 </div>
               </div>
               <div className="form-row">
                 <div className="field">
                   <label>18 - Local wages, tips, etc.</label>
-                  <div className="money-input"><span>$</span><input type="number" value={item.localWages} onChange={e => updateStateLocal(i, "localWages", e.target.value)} /></div>
+                  <div className="money-input"><span>$</span><input type="number" value={item.localWages} onChange={(e: any) => updateStateLocal(i, "localWages", e.target.value)} /></div>
                 </div>
                 <div className="field">
                   <label>19 - Local income tax</label>
-                  <div className="money-input"><span>$</span><input type="number" value={item.localIncomeTax} onChange={e => updateStateLocal(i, "localIncomeTax", e.target.value)} /></div>
+                  <div className="money-input"><span>$</span><input type="number" value={item.localIncomeTax} onChange={(e: any) => updateStateLocal(i, "localIncomeTax", e.target.value)} /></div>
                 </div>
                 <div className="field">
                   <label>20 - Locality name</label>
-                  <input value={item.localityName} onChange={e => updateStateLocal(i, "localityName", e.target.value)} />
+                  <input value={item.localityName} onChange={(e: any) => updateStateLocal(i, "localityName", e.target.value)} />
                 </div>
               </div>
             </div>
@@ -365,7 +365,7 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
   return (
     <div className="field">
       <label>{label}</label>
-      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      <input value={value} onChange={(e: any) => onChange(e.target.value)} placeholder={placeholder} />
     </div>
   )
 }
@@ -376,7 +376,7 @@ function MoneyField({ label, value, onChange }: { label: string; value: string; 
       <label>{label}</label>
       <div className="money-input">
         <span>$</span>
-        <input type="number" step="0.01" min="0" value={value} onChange={e => onChange(e.target.value)} />
+        <input type="number" step="0.01" min="0" value={value} onChange={(e: any) => onChange(e.target.value)} />
       </div>
     </div>
   )
@@ -394,7 +394,7 @@ function Radio({ label, checked, onChange }: { label: string; checked: boolean; 
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, color: "#374151" }}>
-      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
+      <input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} />
       {label}
     </label>
   )

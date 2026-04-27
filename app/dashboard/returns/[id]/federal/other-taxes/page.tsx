@@ -91,11 +91,11 @@ export default function OtherTaxesPage() {
                   <h2>Self-Employment Tax <span className="line-ref">Schedule SE / Line 15</span></h2>
                   <p className="note">Net earnings from self-employment are subject to 15.3% SE tax (12.4% SS + 2.9% Medicare). You can deduct half on Schedule 1.</p>
                 </div>
-                <Toggle checked={form.hasSelfEmployment} onChange={v => set("hasSelfEmployment", v)} />
+                <Toggle checked={form.hasSelfEmployment} onChange={(v: any) => set("hasSelfEmployment", v)} />
               </div>
               {form.hasSelfEmployment && (
                 <div className="sub-form">
-                  <MF label="Net self-employment income (from Schedule C, F, or K-1)" value={form.selfEmploymentIncome} onChange={v => set("selfEmploymentIncome", v)} />
+                  <MF label="Net self-employment income (from Schedule C, F, or K-1)" value={form.selfEmploymentIncome} onChange={(v: any) => set("selfEmploymentIncome", v)} />
                   {seIncome > 0 && (
                     <div className="calc-box">
                       <div className="calc-row"><span>Net SE income</span><span>${seIncome.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
@@ -104,8 +104,8 @@ export default function OtherTaxesPage() {
                       <div className="calc-row deduct"><span>Deductible portion (÷2)</span><span>-${seDeduction.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
                     </div>
                   )}
-                  <MF label="Self-employed health insurance deduction" value={form.seHealthInsurance} onChange={v => set("seHealthInsurance", v)} />
-                  <MF label="Self-employed SEP/SIMPLE/qualified plan contributions" value={form.seRetirement} onChange={v => set("seRetirement", v)} />
+                  <MF label="Self-employed health insurance deduction" value={form.seHealthInsurance} onChange={(v: any) => set("seHealthInsurance", v)} />
+                  <MF label="Self-employed SEP/SIMPLE/qualified plan contributions" value={form.seRetirement} onChange={(v: any) => set("seRetirement", v)} />
                 </div>
               )}
             </div>
@@ -117,11 +117,11 @@ export default function OtherTaxesPage() {
                   <h2>Alternative Minimum Tax (AMT) <span className="line-ref">Form 6251 / Line 17</span></h2>
                   <p className="note">AMT exemption for 2025: $88,100 (single), $137,000 (MFJ). Phase-out begins at $626,350 / $1,252,700.</p>
                 </div>
-                <Toggle checked={form.hasAMT} onChange={v => set("hasAMT", v)} />
+                <Toggle checked={form.hasAMT} onChange={(v: any) => set("hasAMT", v)} />
               </div>
               {form.hasAMT && (
                 <div className="sub-form">
-                  <MF label="AMT from Form 6251" value={form.amtAmount} onChange={v => set("amtAmount", v)} />
+                  <MF label="AMT from Form 6251" value={form.amtAmount} onChange={(v: any) => set("amtAmount", v)} />
                 </div>
               )}
             </div>
@@ -133,11 +133,11 @@ export default function OtherTaxesPage() {
                   <h2>Household Employment Taxes <span className="line-ref">Schedule H / Line 16</span></h2>
                   <p className="note">If you paid a household employee $2,700 or more in 2025, you may owe employer taxes.</p>
                 </div>
-                <Toggle checked={form.hasHouseholdEmployee} onChange={v => set("hasHouseholdEmployee", v)} />
+                <Toggle checked={form.hasHouseholdEmployee} onChange={(v: any) => set("hasHouseholdEmployee", v)} />
               </div>
               {form.hasHouseholdEmployee && (
                 <div className="sub-form">
-                  <MF label="Total cash wages paid to household employees" value={form.householdWages} onChange={v => set("householdWages", v)} />
+                  <MF label="Total cash wages paid to household employees" value={form.householdWages} onChange={(v: any) => set("householdWages", v)} />
                 </div>
               )}
             </div>
@@ -149,11 +149,11 @@ export default function OtherTaxesPage() {
                   <h2>Net Investment Income Tax <span className="line-ref">Form 8960 / Line 17</span></h2>
                   <p className="note">3.8% tax on lesser of net investment income or MAGI exceeding $200,000 (single) / $250,000 (MFJ).</p>
                 </div>
-                <Toggle checked={form.hasNIIT} onChange={v => set("hasNIIT", v)} />
+                <Toggle checked={form.hasNIIT} onChange={(v: any) => set("hasNIIT", v)} />
               </div>
               {form.hasNIIT && (
                 <div className="sub-form">
-                  <MF label="Net investment income from Form 8960" value={form.netInvestmentIncome} onChange={v => set("netInvestmentIncome", v)} />
+                  <MF label="Net investment income from Form 8960" value={form.netInvestmentIncome} onChange={(v: any) => set("netInvestmentIncome", v)} />
                 </div>
               )}
             </div>
@@ -165,11 +165,11 @@ export default function OtherTaxesPage() {
                   <h2>Additional Medicare Tax <span className="line-ref">Form 8959 / Line 17</span></h2>
                   <p className="note">0.9% additional Medicare tax on wages/SE income exceeding $200,000 (single) / $250,000 (MFJ).</p>
                 </div>
-                <Toggle checked={form.hasAdditionalMedicare} onChange={v => set("hasAdditionalMedicare", v)} />
+                <Toggle checked={form.hasAdditionalMedicare} onChange={(v: any) => set("hasAdditionalMedicare", v)} />
               </div>
               {form.hasAdditionalMedicare && (
                 <div className="sub-form">
-                  <MF label="Wages subject to Additional Medicare Tax" value={form.additionalMedicareWages} onChange={v => set("additionalMedicareWages", v)} />
+                  <MF label="Wages subject to Additional Medicare Tax" value={form.additionalMedicareWages} onChange={(v: any) => set("additionalMedicareWages", v)} />
                 </div>
               )}
             </div>
@@ -177,15 +177,15 @@ export default function OtherTaxesPage() {
             {/* Recapture & Other */}
             <div className="card">
               <h2>Recapture and Other Taxes <span className="line-ref">Schedule 2 Lines 7-21</span></h2>
-              <MF label="First-time homebuyer credit recapture (Form 5405)" value={form.firstTimeHomebuyerRecapture} onChange={v => set("firstTimeHomebuyerRecapture", v)} />
-              <MF label="Education credit recapture" value={form.educationCreditRecapture} onChange={v => set("educationCreditRecapture", v)} />
-              <MF label="Tax on early distributions / Section 72(t) penalty (Form 5329)" value={form.earlyDistributionPenalty} onChange={v => set("earlyDistributionPenalty", v)} />
-              <MF label="Interest on tax attributable to installment sales" value={form.interestOnTaxDeferral} onChange={v => set("interestOnTaxDeferral", v)} />
-              <MF label="Interest on lookback method (Form 8697 / 8866)" value={form.lookbackInterest} onChange={v => set("lookbackInterest", v)} />
-              <MF label="Golden parachute payments tax (20%)" value={form.goldenParachutePayments} onChange={v => set("goldenParachutePayments", v)} />
-              <MF label="Uncollected Social Security / Medicare tax on wages (Form 4137)" value={form.uncollectedSSTax} onChange={v => set("uncollectedSSTax", v)} />
-              <MF label="Tax on accumulation distribution of trusts (Form 4970)" value={form.taxOnAccumulationDistribution} onChange={v => set("taxOnAccumulationDistribution", v)} />
-              <MF label="Other additional taxes" value={form.otherTaxes} onChange={v => set("otherTaxes", v)} />
+              <MF label="First-time homebuyer credit recapture (Form 5405)" value={form.firstTimeHomebuyerRecapture} onChange={(v: any) => set("firstTimeHomebuyerRecapture", v)} />
+              <MF label="Education credit recapture" value={form.educationCreditRecapture} onChange={(v: any) => set("educationCreditRecapture", v)} />
+              <MF label="Tax on early distributions / Section 72(t) penalty (Form 5329)" value={form.earlyDistributionPenalty} onChange={(v: any) => set("earlyDistributionPenalty", v)} />
+              <MF label="Interest on tax attributable to installment sales" value={form.interestOnTaxDeferral} onChange={(v: any) => set("interestOnTaxDeferral", v)} />
+              <MF label="Interest on lookback method (Form 8697 / 8866)" value={form.lookbackInterest} onChange={(v: any) => set("lookbackInterest", v)} />
+              <MF label="Golden parachute payments tax (20%)" value={form.goldenParachutePayments} onChange={(v: any) => set("goldenParachutePayments", v)} />
+              <MF label="Uncollected Social Security / Medicare tax on wages (Form 4137)" value={form.uncollectedSSTax} onChange={(v: any) => set("uncollectedSSTax", v)} />
+              <MF label="Tax on accumulation distribution of trusts (Form 4970)" value={form.taxOnAccumulationDistribution} onChange={(v: any) => set("taxOnAccumulationDistribution", v)} />
+              <MF label="Other additional taxes" value={form.otherTaxes} onChange={(v: any) => set("otherTaxes", v)} />
             </div>
 
             <div className="nav-footer">
@@ -275,7 +275,7 @@ function MF({ label, value, onChange }: any) {
       <label>{label}</label>
       <div className="money-input">
         <span>$</span>
-        <input type="number" step="0.01" min="0" value={value} onChange={e => onChange(e.target.value)} />
+        <input type="number" step="0.01" min="0" value={value} onChange={(e: any) => onChange(e.target.value)} />
       </div>
     </div>
   )
@@ -283,7 +283,7 @@ function MF({ label, value, onChange }: any) {
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="toggle">
-      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
+      <input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} />
       <span className="toggle-slider"></span>
     </label>
   )

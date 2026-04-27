@@ -10,14 +10,14 @@
 
 import { z } from "zod"
 import { NextRequest } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/src/lib/prisma"
 import {
   createExtension,
   submitExtension,
   handleMeFAck,
   ExtensionError,
-} from "@/services/extensionService"
-import { requireSession, canAccessClient } from "@/lib/routeAuth"
+} from "@/src/services/extensionService"
+import { requireSession, canAccessClient } from "@/src/lib/routeAuth"
 import {
   ok,
   created,
@@ -25,7 +25,7 @@ import {
   forbidden,
   notFound,
   handleError,
-} from "@/lib/apiHelpers"
+} from "@/src/lib/apiHelpers"
 import { ReturnType, ExtensionTrigger } from "@prisma/client"
 
 // ─────────────────────────────────────────────

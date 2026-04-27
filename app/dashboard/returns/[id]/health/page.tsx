@@ -140,9 +140,9 @@ export default function HealthInsurancePage() {
                   {form.forms1095A.length > 1 && <div className="form-label">Form 1095-A #{fi + 1}</div>}
 
                   <div className="form-row">
-                    <Field label="Marketplace (e.g. healthcare.gov)" value={f1095.marketplace} onChange={v => update1095A(fi, "marketplace", v)} />
-                    <Field label="Policy Number" value={f1095.policyNumber} onChange={v => update1095A(fi, "policyNumber", v)} />
-                    <Field label="Issuer Name" value={f1095.issuerName} onChange={v => update1095A(fi, "issuerName", v)} />
+                    <Field label="Marketplace (e.g. healthcare.gov)" value={f1095.marketplace} onChange={(v: any) => update1095A(fi, "marketplace", v)} />
+                    <Field label="Policy Number" value={f1095.policyNumber} onChange={(v: any) => update1095A(fi, "policyNumber", v)} />
+                    <Field label="Issuer Name" value={f1095.issuerName} onChange={(v: any) => update1095A(fi, "issuerName", v)} />
                   </div>
 
                   <div className="entry-toggle">
@@ -152,9 +152,9 @@ export default function HealthInsurancePage() {
 
                   {f1095.useAnnual ? (
                     <div className="form-row">
-                      <MF label="Annual enrollment premiums (Col A)" value={f1095.annualEnrollmentPremium} onChange={v => update1095A(fi, "annualEnrollmentPremium", v)} />
-                      <MF label="Annual SLCSP premium (Col B)" value={f1095.annualSLCSP} onChange={v => update1095A(fi, "annualSLCSP", v)} />
-                      <MF label="Annual advance PTC (Col C)" value={f1095.annualAdvancedPTC} onChange={v => update1095A(fi, "annualAdvancedPTC", v)} />
+                      <MF label="Annual enrollment premiums (Col A)" value={f1095.annualEnrollmentPremium} onChange={(v: any) => update1095A(fi, "annualEnrollmentPremium", v)} />
+                      <MF label="Annual SLCSP premium (Col B)" value={f1095.annualSLCSP} onChange={(v: any) => update1095A(fi, "annualSLCSP", v)} />
+                      <MF label="Annual advance PTC (Col C)" value={f1095.annualAdvancedPTC} onChange={(v: any) => update1095A(fi, "annualAdvancedPTC", v)} />
                     </div>
                   ) : (
                     <div className="monthly-grid">
@@ -167,9 +167,9 @@ export default function HealthInsurancePage() {
                       {f1095.months.map((m, mi) => (
                         <div key={mi} className="month-row">
                           <span className="month-name">{MONTHS[mi]}</span>
-                          <MF label="" value={m.enrollmentPremium} onChange={v => updateMonth(fi, mi, "enrollmentPremium", v)} />
-                          <MF label="" value={m.slcsp} onChange={v => updateMonth(fi, mi, "slcsp", v)} />
-                          <MF label="" value={m.advancedPTC} onChange={v => updateMonth(fi, mi, "advancedPTC", v)} />
+                          <MF label="" value={m.enrollmentPremium} onChange={(v: any) => updateMonth(fi, mi, "enrollmentPremium", v)} />
+                          <MF label="" value={m.slcsp} onChange={(v: any) => updateMonth(fi, mi, "slcsp", v)} />
+                          <MF label="" value={m.advancedPTC} onChange={(v: any) => updateMonth(fi, mi, "advancedPTC", v)} />
                         </div>
                       ))}
                     </div>
@@ -186,19 +186,19 @@ export default function HealthInsurancePage() {
         {form.hadCoverageAllYear === false && (
           <div className="card">
             <h2>Coverage Exemptions</h2>
-            <CB label="Claim a coverage exemption for months without coverage" checked={form.hasExemption} onChange={v => set("hasExemption", v)} />
+            <CB label="Claim a coverage exemption for months without coverage" checked={form.hasExemption} onChange={(v: any) => set("hasExemption", v)} />
             {form.hasExemption && (
               <>
                 <div className="field">
                   <label>Exemption type</label>
-                  <select value={form.exemptionType} onChange={e => set("exemptionType", e.target.value)}>
+                  <select value={form.exemptionType} onChange={(e: any) => set("exemptionType", e.target.value)}>
                     <option value="">Select...</option>
                     {EXEMPTION_TYPES.map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
                 <div className="field">
                   <label>Exemption certificate number (if applicable)</label>
-                  <input value={form.exemptionCode} onChange={e => set("exemptionCode", e.target.value)} placeholder="ECN from marketplace" style={{maxWidth:200}} />
+                  <input value={form.exemptionCode} onChange={(e: any) => set("exemptionCode", e.target.value)} placeholder="ECN from marketplace" style={{maxWidth:200}} />
                 </div>
               </>
             )}
@@ -251,14 +251,14 @@ export default function HealthInsurancePage() {
   )
 }
 function Field({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><input value={value} onChange={e => onChange(e.target.value)} /></div>
+  return <div className="field"><label>{label}</label><input value={value} onChange={(e: any) => onChange(e.target.value)} /></div>
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field">{label && <label>{label}</label>}<div className="money-input"><span>$</span><input type="number" step="0.01" min="0" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field">{label && <label>{label}</label>}<div className="money-input"><span>$</span><input type="number" step="0.01" min="0" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>
 }
 function CB({ label, checked, onChange }: any) {
-  return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />{label}</label>
+  return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} />{label}</label>
 }

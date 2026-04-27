@@ -56,20 +56,20 @@ export default function Form1099GBox1Page() {
           {/* Payer */}
           <div className="card">
             <h2 className="card-title">Payer Information</h2>
-            <Field label="Payer Federal ID number (or TIN) *" value={form.payerTIN} onChange={v => set("payerTIN", v)} placeholder="XX-XXXXXXX" />
-            <Field label="Payer's name *" value={form.payerName} onChange={v => set("payerName", v)} />
-            <Field label="Address *" value={form.payerAddress} onChange={v => set("payerAddress", v)} placeholder="Street number and name" />
+            <Field label="Payer Federal ID number (or TIN) *" value={form.payerTIN} onChange={(v: any) => set("payerTIN", v)} placeholder="XX-XXXXXXX" />
+            <Field label="Payer's name *" value={form.payerName} onChange={(v: any) => set("payerName", v)} />
+            <Field label="Address *" value={form.payerAddress} onChange={(v: any) => set("payerAddress", v)} placeholder="Street number and name" />
             <div className="form-row">
-              <Field label="ZIP code *" value={form.payerZip} onChange={v => set("payerZip", v)} />
-              <Field label="City *" value={form.payerCity} onChange={v => set("payerCity", v)} />
+              <Field label="ZIP code *" value={form.payerZip} onChange={(v: any) => set("payerZip", v)} />
+              <Field label="City *" value={form.payerCity} onChange={(v: any) => set("payerCity", v)} />
               <div className="field">
                 <label>State *</label>
-                <select value={form.payerState} onChange={e => set("payerState", e.target.value)}>
+                <select value={form.payerState} onChange={(e: any) => set("payerState", e.target.value)}>
                   {STATES.map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
             </div>
-            <Field label="Phone" value={form.payerPhone} onChange={v => set("payerPhone", v)} />
+            <Field label="Phone" value={form.payerPhone} onChange={(v: any) => set("payerPhone", v)} />
 
             <h2 className="card-title" style={{marginTop: 8}}>Payee Information</h2>
             <div className="radio-row">
@@ -78,17 +78,17 @@ export default function Form1099GBox1Page() {
             </div>
             <div className="field">
               <label>Country *</label>
-              <select value={form.country} onChange={e => set("country", e.target.value)}>
+              <select value={form.country} onChange={(e: any) => set("country", e.target.value)}>
                 <option>United States</option>
               </select>
             </div>
-            <Field label="Address *" value={form.address} onChange={v => set("address", v)} placeholder="Street number and name" />
+            <Field label="Address *" value={form.address} onChange={(v: any) => set("address", v)} placeholder="Street number and name" />
             <div className="form-row">
-              <Field label="ZIP code *" value={form.zip} onChange={v => set("zip", v)} />
-              <Field label="City *" value={form.city} onChange={v => set("city", v)} />
+              <Field label="ZIP code *" value={form.zip} onChange={(v: any) => set("zip", v)} />
+              <Field label="City *" value={form.city} onChange={(v: any) => set("city", v)} />
               <div className="field">
                 <label>State *</label>
-                <select value={form.state} onChange={e => set("state", e.target.value)}>
+                <select value={form.state} onChange={(e: any) => set("state", e.target.value)}>
                   {STATES.map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
@@ -99,21 +99,21 @@ export default function Form1099GBox1Page() {
           <div>
             <div className="card">
               <h2 className="card-title">1099-G Information</h2>
-              <MoneyField label="Unemployment compensation *" value={form.unemploymentComp} onChange={v => set("unemploymentComp", v)} />
-              <MoneyField label="Federal tax withheld" value={form.federalWithheld} onChange={v => set("federalWithheld", v)} />
-              <MoneyField label="Taxable grants *" value={form.taxableGrants} onChange={v => set("taxableGrants", v)} />
+              <MoneyField label="Unemployment compensation *" value={form.unemploymentComp} onChange={(v: any) => set("unemploymentComp", v)} />
+              <MoneyField label="Federal tax withheld" value={form.federalWithheld} onChange={(v: any) => set("federalWithheld", v)} />
+              <MoneyField label="Taxable grants *" value={form.taxableGrants} onChange={(v: any) => set("taxableGrants", v)} />
             </div>
             <div className="card" style={{marginTop: 16}}>
               <h2 className="card-title">State Information</h2>
               <div className="field">
                 <label>State</label>
-                <select value={form.stateCode} onChange={e => set("stateCode", e.target.value)}>
+                <select value={form.stateCode} onChange={(e: any) => set("stateCode", e.target.value)}>
                   <option value="">- Please Select -</option>
                   {STATES.filter(Boolean).map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
-              <Field label="State ID no." value={form.stateIdNo} onChange={v => set("stateIdNo", v)} />
-              <MoneyField label="State tax withheld" value={form.stateTaxWithheld} onChange={v => set("stateTaxWithheld", v)} />
+              <Field label="State ID no." value={form.stateIdNo} onChange={(v: any) => set("stateIdNo", v)} />
+              <MoneyField label="State tax withheld" value={form.stateTaxWithheld} onChange={(v: any) => set("stateTaxWithheld", v)} />
             </div>
           </div>
         </div>
@@ -158,10 +158,10 @@ export default function Form1099GBox1Page() {
 }
 
 function Field({ label, value, onChange, placeholder }: any) {
-  return <div className="field"><label>{label}</label><input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} /></div>
+  return <div className="field"><label>{label}</label><input value={value} onChange={(e: any) => onChange(e.target.value)} placeholder={placeholder} /></div>
 }
 function MoneyField({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>

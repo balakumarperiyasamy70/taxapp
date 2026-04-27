@@ -181,16 +181,16 @@ export default function Dashboard() {
             className="search-input"
             placeholder="Search client name..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e: any) => setSearch(e.target.value)}
           />
-          <select className="filter-select" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1) }}>
+          <select className="filter-select" value={filterStatus} onChange={(e: any) => { setFilterStatus(e.target.value); setPage(1) }}>
             {STATUSES.map(s => <option key={s} value={s}>{s === "ALL" ? "All Statuses" : STATUS_CONFIG[s]?.label ?? s}</option>)}
           </select>
-          <select className="filter-select" value={filterYear} onChange={e => { setFilterYear(e.target.value ? Number(e.target.value) : ""); setPage(1) }}>
+          <select className="filter-select" value={filterYear} onChange={(e: any) => { setFilterYear(e.target.value ? Number(e.target.value) : ""); setPage(1) }}>
             <option value="">All Years</option>
             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
-          <select className="filter-select" value={filterType} onChange={e => { setFilterType(e.target.value); setPage(1) }}>
+          <select className="filter-select" value={filterType} onChange={(e: any) => { setFilterType(e.target.value); setPage(1) }}>
             <option value="">All Types</option>
             {Object.entries(RETURN_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>

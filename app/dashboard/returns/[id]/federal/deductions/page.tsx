@@ -129,10 +129,10 @@ export default function DeductionsPage() {
               <div className="std-options">
                 <p className="std-note">Standard deduction adjustments:</p>
                 <div className="cb-grid">
-                  <CB label="Taxpayer is age 65 or older" checked={form.over65Taxpayer} onChange={v => set("over65Taxpayer",v)} />
-                  <CB label="Taxpayer is blind" checked={form.blindTaxpayer} onChange={v => set("blindTaxpayer",v)} />
-                  <CB label="Spouse is age 65 or older" checked={form.over65Spouse} onChange={v => set("over65Spouse",v)} />
-                  <CB label="Spouse is blind" checked={form.blindSpouse} onChange={v => set("blindSpouse",v)} />
+                  <CB label="Taxpayer is age 65 or older" checked={form.over65Taxpayer} onChange={(v: any) => set("over65Taxpayer",v)} />
+                  <CB label="Taxpayer is blind" checked={form.blindTaxpayer} onChange={(v: any) => set("blindTaxpayer",v)} />
+                  <CB label="Spouse is age 65 or older" checked={form.over65Spouse} onChange={(v: any) => set("over65Spouse",v)} />
+                  <CB label="Spouse is blind" checked={form.blindSpouse} onChange={(v: any) => set("blindSpouse",v)} />
                 </div>
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function DeductionsPage() {
             <div className="card">
               <h2>Medical and Dental Expenses <span className="line-ref">Line 1</span></h2>
               <p className="note">Only the amount exceeding 7.5% of AGI is deductible (Line 4)</p>
-              <MF label="Total medical and dental expenses paid" value={form.medicalExpenses} onChange={v => set("medicalExpenses",v)} />
+              <MF label="Total medical and dental expenses paid" value={form.medicalExpenses} onChange={(v: any) => set("medicalExpenses",v)} />
             </div>
 
             <div className="card">
@@ -152,12 +152,12 @@ export default function DeductionsPage() {
                 <Radio label="State & local general sales taxes" checked={form.useSalesTax} onChange={() => set("useSalesTax", true)} />
               </div>
               {!form.useSalesTax
-                ? <MF label="State and local income taxes (Line 5a)" value={form.stateLocalIncomeTax} onChange={v => set("stateLocalIncomeTax",v)} />
-                : <MF label="State and local general sales taxes (Line 5a)" value={form.stateLocalSalesTax} onChange={v => set("stateLocalSalesTax",v)} />
+                ? <MF label="State and local income taxes (Line 5a)" value={form.stateLocalIncomeTax} onChange={(v: any) => set("stateLocalIncomeTax",v)} />
+                : <MF label="State and local general sales taxes (Line 5a)" value={form.stateLocalSalesTax} onChange={(v: any) => set("stateLocalSalesTax",v)} />
               }
-              <MF label="Real estate taxes (Line 5b)" value={form.realEstateTax} onChange={v => set("realEstateTax",v)} />
-              <MF label="Personal property taxes (Line 5c)" value={form.personalPropertyTax} onChange={v => set("personalPropertyTax",v)} />
-              <MF label="Other taxes (Line 6)" value={form.otherTaxes} onChange={v => set("otherTaxes",v)} />
+              <MF label="Real estate taxes (Line 5b)" value={form.realEstateTax} onChange={(v: any) => set("realEstateTax",v)} />
+              <MF label="Personal property taxes (Line 5c)" value={form.personalPropertyTax} onChange={(v: any) => set("personalPropertyTax",v)} />
+              <MF label="Other taxes (Line 6)" value={form.otherTaxes} onChange={(v: any) => set("otherTaxes",v)} />
               <div className="salt-total">
                 <span>SALT Total (capped at $10,000):</span>
                 <span className="salt-val">${Math.min(10000, (parseFloat(form.useSalesTax ? form.stateLocalSalesTax : form.stateLocalIncomeTax)||0) + (parseFloat(form.realEstateTax)||0) + (parseFloat(form.personalPropertyTax)||0)).toLocaleString()}</span>
@@ -166,28 +166,28 @@ export default function DeductionsPage() {
 
             <div className="card">
               <h2>Interest You Paid <span className="line-ref">Lines 8-9</span></h2>
-              <MF label="Home mortgage interest reported on Form 1098 (Line 8a)" value={form.homeMortgageInterest1098} onChange={v => set("homeMortgageInterest1098",v)} />
-              <MF label="Home mortgage interest not reported on Form 1098 (Line 8b)" value={form.homeMortgageInterestNo1098} onChange={v => set("homeMortgageInterestNo1098",v)} />
-              <MF label="Mortgage insurance premiums (Line 8d)" value={form.mortgageInsurancePremiums} onChange={v => set("mortgageInsurancePremiums",v)} />
-              <MF label="Investment interest (Line 9)" value={form.investmentInterest} onChange={v => set("investmentInterest",v)} />
+              <MF label="Home mortgage interest reported on Form 1098 (Line 8a)" value={form.homeMortgageInterest1098} onChange={(v: any) => set("homeMortgageInterest1098",v)} />
+              <MF label="Home mortgage interest not reported on Form 1098 (Line 8b)" value={form.homeMortgageInterestNo1098} onChange={(v: any) => set("homeMortgageInterestNo1098",v)} />
+              <MF label="Mortgage insurance premiums (Line 8d)" value={form.mortgageInsurancePremiums} onChange={(v: any) => set("mortgageInsurancePremiums",v)} />
+              <MF label="Investment interest (Line 9)" value={form.investmentInterest} onChange={(v: any) => set("investmentInterest",v)} />
             </div>
 
             <div className="card">
               <h2>Gifts to Charity <span className="line-ref">Lines 11-14</span></h2>
-              <MF label="Cash or check contributions (Line 11)" value={form.cashCheckGifts} onChange={v => set("cashCheckGifts",v)} />
-              <MF label="Non-cash contributions (Line 12)" value={form.nonCashGifts} onChange={v => set("nonCashGifts",v)} />
-              <MF label="Carryover from prior year (Line 13)" value={form.carryoverPriorYear} onChange={v => set("carryoverPriorYear",v)} />
+              <MF label="Cash or check contributions (Line 11)" value={form.cashCheckGifts} onChange={(v: any) => set("cashCheckGifts",v)} />
+              <MF label="Non-cash contributions (Line 12)" value={form.nonCashGifts} onChange={(v: any) => set("nonCashGifts",v)} />
+              <MF label="Carryover from prior year (Line 13)" value={form.carryoverPriorYear} onChange={(v: any) => set("carryoverPriorYear",v)} />
             </div>
 
             <div className="card">
               <h2>Casualty and Theft Losses <span className="line-ref">Line 15</span></h2>
               <p className="note">Only federally declared disaster losses qualify after 2017 TCJA</p>
-              <MF label="Casualty and theft loss from Form 4684 (Line 15)" value={form.casualtyTheftLoss} onChange={v => set("casualtyTheftLoss",v)} />
+              <MF label="Casualty and theft loss from Form 4684 (Line 15)" value={form.casualtyTheftLoss} onChange={(v: any) => set("casualtyTheftLoss",v)} />
             </div>
 
             <div className="card">
               <h2>Other Itemized Deductions <span className="line-ref">Line 16</span></h2>
-              <MF label="Other itemized deductions (gambling losses, etc.)" value={form.otherDeductions} onChange={v => set("otherDeductions",v)} />
+              <MF label="Other itemized deductions (gambling losses, etc.)" value={form.otherDeductions} onChange={(v: any) => set("otherDeductions",v)} />
             </div>
 
             <div className="nav-footer">
@@ -273,11 +273,11 @@ export default function DeductionsPage() {
   )
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" min="0" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" min="0" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>
 }
 function CB({ label, checked, onChange }: any) {
-  return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,color:"#374151"}}><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />{label}</label>
+  return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,color:"#374151"}}><input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} />{label}</label>
 }

@@ -97,7 +97,7 @@ export default function PaymentsPage() {
             <div className="card">
               <h2>Federal Income Tax Withheld <span className="ref">Line 25</span></h2>
               <p className="note">Auto-populated from W-2 Box 2 and 1099 withholding. Override if needed.</p>
-              <MF label="Total federal income tax withheld (from all W-2s and 1099s)" value={form.federalWithheld} onChange={v => set("federalWithheld", v)} />
+              <MF label="Total federal income tax withheld (from all W-2s and 1099s)" value={form.federalWithheld} onChange={(v: any) => set("federalWithheld", v)} />
             </div>
 
             {/* Estimated Tax Payments */}
@@ -107,23 +107,23 @@ export default function PaymentsPage() {
               <div className="est-grid">
                 <div className="est-row">
                   <span className="est-label">Q1 — due Apr 15, 2025</span>
-                  <MF label="" value={form.est_q1} onChange={v => set("est_q1", v)} />
-                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q1_date} onChange={e => set("est_q1_date", e.target.value)} /></div>
+                  <MF label="" value={form.est_q1} onChange={(v: any) => set("est_q1", v)} />
+                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q1_date} onChange={(e: any) => set("est_q1_date", e.target.value)} /></div>
                 </div>
                 <div className="est-row">
                   <span className="est-label">Q2 — due Jun 16, 2025</span>
-                  <MF label="" value={form.est_q2} onChange={v => set("est_q2", v)} />
-                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q2_date} onChange={e => set("est_q2_date", e.target.value)} /></div>
+                  <MF label="" value={form.est_q2} onChange={(v: any) => set("est_q2", v)} />
+                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q2_date} onChange={(e: any) => set("est_q2_date", e.target.value)} /></div>
                 </div>
                 <div className="est-row">
                   <span className="est-label">Q3 — due Sep 15, 2025</span>
-                  <MF label="" value={form.est_q3} onChange={v => set("est_q3", v)} />
-                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q3_date} onChange={e => set("est_q3_date", e.target.value)} /></div>
+                  <MF label="" value={form.est_q3} onChange={(v: any) => set("est_q3", v)} />
+                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q3_date} onChange={(e: any) => set("est_q3_date", e.target.value)} /></div>
                 </div>
                 <div className="est-row">
                   <span className="est-label">Q4 — due Jan 15, 2026</span>
-                  <MF label="" value={form.est_q4} onChange={v => set("est_q4", v)} />
-                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q4_date} onChange={e => set("est_q4_date", e.target.value)} /></div>
+                  <MF label="" value={form.est_q4} onChange={(v: any) => set("est_q4", v)} />
+                  <div className="field"><label>Date paid</label><input type="date" value={form.est_q4_date} onChange={(e: any) => set("est_q4_date", e.target.value)} /></div>
                 </div>
               </div>
               {totalEstimated > 0 && (
@@ -138,30 +138,30 @@ export default function PaymentsPage() {
             <div className="card">
               <h2>Extension Payment <span className="ref">Line 26</span></h2>
               <p className="note">Amount paid with Form 4868 extension request.</p>
-              <MF label="Amount paid with extension (Form 4868)" value={form.extensionPayment} onChange={v => set("extensionPayment", v)} />
+              <MF label="Amount paid with extension (Form 4868)" value={form.extensionPayment} onChange={(v: any) => set("extensionPayment", v)} />
               <div className="field">
                 <label>Date paid</label>
-                <input type="date" value={form.extensionPaymentDate} onChange={e => set("extensionPaymentDate", e.target.value)} />
+                <input type="date" value={form.extensionPaymentDate} onChange={(e: any) => set("extensionPaymentDate", e.target.value)} />
               </div>
             </div>
 
             {/* Other Payments */}
             <div className="card">
               <h2>Other Payments <span className="ref">Lines 27-32</span></h2>
-              <MF label="Excess Social Security tax withheld (Line 11)" value={form.excessSSTax} onChange={v => set("excessSSTax", v)} />
-              <MF label="Amount from prior year return applied to 2025 (Line 26)" value={form.priorYearOverpayment} onChange={v => set("priorYearOverpayment", v)} />
+              <MF label="Excess Social Security tax withheld (Line 11)" value={form.excessSSTax} onChange={(v: any) => set("excessSSTax", v)} />
+              <MF label="Amount from prior year return applied to 2025 (Line 26)" value={form.priorYearOverpayment} onChange={(v: any) => set("priorYearOverpayment", v)} />
             </div>
 
             {/* Refundable Credits */}
             <div className="card">
               <h2>Refundable Credits <span className="ref">Schedule 3 Part II</span></h2>
-              <MF label="Earned Income Credit — EIC (Schedule EIC)" value={form.eic} onChange={v => set("eic", v)} />
-              <MF label="Additional Child Tax Credit (Schedule 8812)" value={form.additionalChildTax} onChange={v => set("additionalChildTax", v)} />
-              <MF label="American Opportunity Credit (Form 8863, line 8)" value={form.americanOpportunityCredit} onChange={v => set("americanOpportunityCredit", v)} />
-              <MF label="Net Premium Tax Credit (Form 8962)" value={form.netPremiumTaxCredit} onChange={v => set("netPremiumTaxCredit", v)} />
-              <MF label="Credit from Form 2439 — undistributed capital gains" value={form.form2439Credit} onChange={v => set("form2439Credit", v)} />
-              <MF label="Credit for federal tax on fuels (Form 4136)" value={form.fuelTaxCredit} onChange={v => set("fuelTaxCredit", v)} />
-              <MF label="Other refundable credits" value={form.otherRefundableCredits} onChange={v => set("otherRefundableCredits", v)} />
+              <MF label="Earned Income Credit — EIC (Schedule EIC)" value={form.eic} onChange={(v: any) => set("eic", v)} />
+              <MF label="Additional Child Tax Credit (Schedule 8812)" value={form.additionalChildTax} onChange={(v: any) => set("additionalChildTax", v)} />
+              <MF label="American Opportunity Credit (Form 8863, line 8)" value={form.americanOpportunityCredit} onChange={(v: any) => set("americanOpportunityCredit", v)} />
+              <MF label="Net Premium Tax Credit (Form 8962)" value={form.netPremiumTaxCredit} onChange={(v: any) => set("netPremiumTaxCredit", v)} />
+              <MF label="Credit from Form 2439 — undistributed capital gains" value={form.form2439Credit} onChange={(v: any) => set("form2439Credit", v)} />
+              <MF label="Credit for federal tax on fuels (Form 4136)" value={form.fuelTaxCredit} onChange={(v: any) => set("fuelTaxCredit", v)} />
+              <MF label="Other refundable credits" value={form.otherRefundableCredits} onChange={(v: any) => set("otherRefundableCredits", v)} />
             </div>
 
             {/* Refund Options */}
@@ -187,7 +187,7 @@ export default function PaymentsPage() {
                     <label>Routing number (9 digits) *</label>
                     <input
                       value={form.routingNumber}
-                      onChange={e => set("routingNumber", e.target.value.replace(/\D/g, "").slice(0, 9))}
+                      onChange={(e: any) => set("routingNumber", e.target.value.replace(/\D/g, "").slice(0, 9))}
                       placeholder="XXXXXXXXX"
                       style={{ maxWidth: 200, letterSpacing: 3 }}
                     />
@@ -199,7 +199,7 @@ export default function PaymentsPage() {
                     <label>Account number *</label>
                     <input
                       value={form.accountNumber}
-                      onChange={e => set("accountNumber", e.target.value.replace(/\D/g, "").slice(0, 17))}
+                      onChange={(e: any) => set("accountNumber", e.target.value.replace(/\D/g, "").slice(0, 17))}
                       placeholder="Up to 17 digits"
                       style={{ maxWidth: 240, letterSpacing: 3 }}
                     />
@@ -211,7 +211,7 @@ export default function PaymentsPage() {
               )}
 
               {form.refundOption === "apply_next_year" && (
-                <MF label="Amount to apply to 2026 estimated tax" value={form.applyToNextYear} onChange={v => set("applyToNextYear", v)} />
+                <MF label="Amount to apply to 2026 estimated tax" value={form.applyToNextYear} onChange={(v: any) => set("applyToNextYear", v)} />
               )}
             </div>
 
@@ -292,7 +292,7 @@ function MF({ label, value, onChange }: any) {
       {label && <label>{label}</label>}
       <div className="money-input">
         <span>$</span>
-        <input type="number" step="0.01" min="0" value={value} onChange={e => onChange(e.target.value)} />
+        <input type="number" step="0.01" min="0" value={value} onChange={(e: any) => onChange(e.target.value)} />
       </div>
     </div>
   )

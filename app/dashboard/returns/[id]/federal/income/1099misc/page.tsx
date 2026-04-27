@@ -4,7 +4,7 @@ import { useRouter, useParams } from "next/navigation"
 import ReturnNav from "../../../ReturnNav"
 import { EINField } from "../../../../../../components/TaxFields"
 
-export default function 1099miscPage() {
+export default function Form1099miscPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
@@ -43,11 +43,11 @@ export default function 1099miscPage() {
             <Radio label="Taxpayer" checked={whose==="taxpayer"} onChange={() => setWhose("taxpayer")} />
             <Radio label="Spouse" checked={whose==="spouse"} onChange={() => setWhose("spouse")} />
           </div>
-          <Field label="Payer Name *" value={fields.payerName??""} onChange={v => set("payerName",v)} />
-          <EINField label="Payer EIN / TIN" value={fields.payerEIN??""} onChange={v => set("payerEIN",v)} />
-          <MF label="Gross amount *" value={fields.amount??""} onChange={v => set("amount",v)} />
-          <MF label="Federal income tax withheld" value={fields.federalWithheld??""} onChange={v => set("federalWithheld",v)} />
-          <MF label="State tax withheld" value={fields.stateWithheld??""} onChange={v => set("stateWithheld",v)} />
+          <Field label="Payer Name *" value={fields.payerName??""} onChange={(v: any) => set("payerName",v)} />
+          <EINField label="Payer EIN / TIN" value={fields.payerEIN??""} onChange={(v: any) => set("payerEIN",v)} />
+          <MF label="Gross amount *" value={fields.amount??""} onChange={(v: any) => set("amount",v)} />
+          <MF label="Federal income tax withheld" value={fields.federalWithheld??""} onChange={(v: any) => set("federalWithheld",v)} />
+          <MF label="State tax withheld" value={fields.stateWithheld??""} onChange={(v: any) => set("stateWithheld",v)} />
         </div>
         <div className="top-bar">
           <button className="cancel-btn" onClick={() => router.push(`${base}/federal/income`)}>CANCEL</button>
@@ -83,10 +83,10 @@ export default function 1099miscPage() {
   )
 }
 function Field({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><input value={value} onChange={e => onChange(e.target.value)} /></div>
+  return <div className="field"><label>{label}</label><input value={value} onChange={(e: any) => onChange(e.target.value)} /></div>
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field"><label>{label}</label><div className="money-input"><span>$</span><input type="number" step="0.01" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>

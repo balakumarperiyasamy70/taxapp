@@ -126,7 +126,7 @@ export default function StateSectionPage() {
               <p className="note">Arkansas filing status typically matches your federal filing status.</p>
               <div className="field">
                 <label>Arkansas filing status *</label>
-                <select value={form.filingStatus} onChange={e => set("filingStatus", e.target.value)}>
+                <select value={form.filingStatus} onChange={(e: any) => set("filingStatus", e.target.value)}>
                   <option value="">Select...</option>
                   {FILING_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
@@ -136,23 +136,23 @@ export default function StateSectionPage() {
             {/* Income */}
             <div className="card">
               <h2>Arkansas Income <span className="ref">Lines 1-12</span></h2>
-              <MF label="Federal Adjusted Gross Income (from Form 1040 Line 11)" value={form.federalAGI} onChange={v => set("federalAGI", v)} />
+              <MF label="Federal Adjusted Gross Income (from Form 1040 Line 11)" value={form.federalAGI} onChange={(v: any) => set("federalAGI", v)} />
 
               <h3 className="sub-head">Additions to Income</h3>
-              <MF label="Interest from obligations of other states" value={form.interestFromOtherStates} onChange={v => set("interestFromOtherStates", v)} />
-              <MF label="Lump-sum distribution (federal tax)" value={form.lumpSumDistribution} onChange={v => set("lumpSumDistribution", v)} />
-              <MF label="Other additions" value={form.otherAdditions} onChange={v => set("otherAdditions", v)} />
+              <MF label="Interest from obligations of other states" value={form.interestFromOtherStates} onChange={(v: any) => set("interestFromOtherStates", v)} />
+              <MF label="Lump-sum distribution (federal tax)" value={form.lumpSumDistribution} onChange={(v: any) => set("lumpSumDistribution", v)} />
+              <MF label="Other additions" value={form.otherAdditions} onChange={(v: any) => set("otherAdditions", v)} />
 
               <h3 className="sub-head">Subtractions from Income</h3>
-              <MF label="Social Security benefits (taxable amount)" value={form.socialSecurityBenefits} onChange={v => set("socialSecurityBenefits", v)} />
-              <MF label="Military pay" value={form.militaryPay} onChange={v => set("militaryPay", v)} />
-              <MF label="Teacher retirement (AR Teacher Retirement System)" value={form.teacherRetirement} onChange={v => set("teacherRetirement", v)} />
-              <MF label="Other retirement income (up to $6,000 single / $12,000 joint)" value={form.otherRetirement} onChange={v => set("otherRetirement", v)} />
-              <MF label="Capital gains (AR exemption — 50% of net capital gains)" value={form.capitalGainsExclusion} onChange={v => set("capitalGainsExclusion", v)} />
-              <MF label="Disability income (up to $6,000)" value={form.disabilityIncome} onChange={v => set("disabilityIncome", v)} />
-              <MF label="Scholarship income" value={form.scholarshipIncome} onChange={v => set("scholarshipIncome", v)} />
-              <MF label="Military spouse income (MSRRA)" value={form.msnIncome} onChange={v => set("msnIncome", v)} />
-              <MF label="Other subtractions" value={form.otherSubtractions} onChange={v => set("otherSubtractions", v)} />
+              <MF label="Social Security benefits (taxable amount)" value={form.socialSecurityBenefits} onChange={(v: any) => set("socialSecurityBenefits", v)} />
+              <MF label="Military pay" value={form.militaryPay} onChange={(v: any) => set("militaryPay", v)} />
+              <MF label="Teacher retirement (AR Teacher Retirement System)" value={form.teacherRetirement} onChange={(v: any) => set("teacherRetirement", v)} />
+              <MF label="Other retirement income (up to $6,000 single / $12,000 joint)" value={form.otherRetirement} onChange={(v: any) => set("otherRetirement", v)} />
+              <MF label="Capital gains (AR exemption — 50% of net capital gains)" value={form.capitalGainsExclusion} onChange={(v: any) => set("capitalGainsExclusion", v)} />
+              <MF label="Disability income (up to $6,000)" value={form.disabilityIncome} onChange={(v: any) => set("disabilityIncome", v)} />
+              <MF label="Scholarship income" value={form.scholarshipIncome} onChange={(v: any) => set("scholarshipIncome", v)} />
+              <MF label="Military spouse income (MSRRA)" value={form.msnIncome} onChange={(v: any) => set("msnIncome", v)} />
+              <MF label="Other subtractions" value={form.otherSubtractions} onChange={(v: any) => set("otherSubtractions", v)} />
 
               <div className="calc-box">
                 <div className="calc-row"><span>Federal AGI</span><span>${federalAGI.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
@@ -177,7 +177,7 @@ export default function StateSectionPage() {
                 </div>
               </div>
               {!form.useARStandard && (
-                <MF label="AR itemized deductions (from AR Schedule A)" value={form.arItemized} onChange={v => set("arItemized", v)} />
+                <MF label="AR itemized deductions (from AR Schedule A)" value={form.arItemized} onChange={(v: any) => set("arItemized", v)} />
               )}
             </div>
 
@@ -186,41 +186,41 @@ export default function StateSectionPage() {
               <h2>Personal Tax Credits <span className="ref">Lines 16-18</span></h2>
               <p className="note">Arkansas allows a $29 personal tax credit per exemption (not a deduction).</p>
               <div className="form-row">
-                <MF label="Taxpayer personal credit ($29)" value={form.personalCreditTaxpayer} onChange={v => set("personalCreditTaxpayer", v)} />
-                <MF label="Spouse personal credit ($29)" value={form.personalCreditSpouse} onChange={v => set("personalCreditSpouse", v)} />
-                <MF label="Dependent credits ($29 each)" value={form.dependentCredits} onChange={v => set("dependentCredits", v)} />
+                <MF label="Taxpayer personal credit ($29)" value={form.personalCreditTaxpayer} onChange={(v: any) => set("personalCreditTaxpayer", v)} />
+                <MF label="Spouse personal credit ($29)" value={form.personalCreditSpouse} onChange={(v: any) => set("personalCreditSpouse", v)} />
+                <MF label="Dependent credits ($29 each)" value={form.dependentCredits} onChange={(v: any) => set("dependentCredits", v)} />
               </div>
             </div>
 
             {/* Tax Credits */}
             <div className="card">
               <h2>Arkansas Tax Credits <span className="ref">Lines 21-28</span></h2>
-              <CB label="Low income tax credit (income under $21,646 single / $30,000 joint)" checked={form.lowIncomeCredit} onChange={v => set("lowIncomeCredit", v)} />
-              <MF label="Child care credit (20% of federal credit)" value={form.childCareCredit} onChange={v => set("childCareCredit", v)} />
-              <MF label="Educational opportunity credit" value={form.educationalCredit} onChange={v => set("educationalCredit", v)} />
-              <MF label="Adoption credit" value={form.adoptionCredit} onChange={v => set("adoptionCredit", v)} />
-              <MF label="Phenylketonuria disorder credit" value={form.phenylketonuriaCredit} onChange={v => set("phenylketonuriaCredit", v)} />
-              <MF label="Wetlands and riparian zone credit" value={form.wetlandsCredit} onChange={v => set("wetlandsCredit", v)} />
-              <MF label="Other AR credits" value={form.otherCredits} onChange={v => set("otherCredits", v)} />
+              <CB label="Low income tax credit (income under $21,646 single / $30,000 joint)" checked={form.lowIncomeCredit} onChange={(v: any) => set("lowIncomeCredit", v)} />
+              <MF label="Child care credit (20% of federal credit)" value={form.childCareCredit} onChange={(v: any) => set("childCareCredit", v)} />
+              <MF label="Educational opportunity credit" value={form.educationalCredit} onChange={(v: any) => set("educationalCredit", v)} />
+              <MF label="Adoption credit" value={form.adoptionCredit} onChange={(v: any) => set("adoptionCredit", v)} />
+              <MF label="Phenylketonuria disorder credit" value={form.phenylketonuriaCredit} onChange={(v: any) => set("phenylketonuriaCredit", v)} />
+              <MF label="Wetlands and riparian zone credit" value={form.wetlandsCredit} onChange={(v: any) => set("wetlandsCredit", v)} />
+              <MF label="Other AR credits" value={form.otherCredits} onChange={(v: any) => set("otherCredits", v)} />
             </div>
 
             {/* Payments */}
             <div className="card">
               <h2>Arkansas Payments <span className="ref">Lines 29-32</span></h2>
-              <MF label="Arkansas income tax withheld (from W-2 Box 17)" value={form.arWithheld} onChange={v => set("arWithheld", v)} />
-              <MF label="Arkansas estimated tax payments" value={form.arEstimatedPayments} onChange={v => set("arEstimatedPayments", v)} />
-              <MF label="Extension payment (AR1055)" value={form.arExtensionPayment} onChange={v => set("arExtensionPayment", v)} />
+              <MF label="Arkansas income tax withheld (from W-2 Box 17)" value={form.arWithheld} onChange={(v: any) => set("arWithheld", v)} />
+              <MF label="Arkansas estimated tax payments" value={form.arEstimatedPayments} onChange={(v: any) => set("arEstimatedPayments", v)} />
+              <MF label="Extension payment (AR1055)" value={form.arExtensionPayment} onChange={(v: any) => set("arExtensionPayment", v)} />
             </div>
 
             {/* Political Checkoffs */}
             <div className="card">
               <h2>Arkansas Political Checkoffs <span className="ref">Lines 40-44</span></h2>
               <p className="note">Check any fund you wish to contribute $1 to (reduces your refund or increases tax due).</p>
-              <CB label="Arkansas Game & Fish Wildlife Management Fund ($1)" checked={form.wildlifeCheckoff} onChange={v => set("wildlifeCheckoff", v)} />
-              <CB label="Arkansas Children's Services Fund ($1)" checked={form.childrenServicesCheckoff} onChange={v => set("childrenServicesCheckoff", v)} />
-              <CB label="Arkansas Veterans Fund ($1)" checked={form.veteransCheckoff} onChange={v => set("veteransCheckoff", v)} />
-              <CB label="Arkansas Arts Council Fund ($1)" checked={form.artsCheckoff} onChange={v => set("artsCheckoff", v)} />
-              <CB label="Arkansas War Memorial Stadium Fund ($1)" checked={form.warMemorialCheckoff} onChange={v => set("warMemorialCheckoff", v)} />
+              <CB label="Arkansas Game & Fish Wildlife Management Fund ($1)" checked={form.wildlifeCheckoff} onChange={(v: any) => set("wildlifeCheckoff", v)} />
+              <CB label="Arkansas Children's Services Fund ($1)" checked={form.childrenServicesCheckoff} onChange={(v: any) => set("childrenServicesCheckoff", v)} />
+              <CB label="Arkansas Veterans Fund ($1)" checked={form.veteransCheckoff} onChange={(v: any) => set("veteransCheckoff", v)} />
+              <CB label="Arkansas Arts Council Fund ($1)" checked={form.artsCheckoff} onChange={(v: any) => set("artsCheckoff", v)} />
+              <CB label="Arkansas War Memorial Stadium Fund ($1)" checked={form.warMemorialCheckoff} onChange={(v: any) => set("warMemorialCheckoff", v)} />
             </div>
 
             {/* Refund Options */}
@@ -248,8 +248,8 @@ export default function StateSectionPage() {
                           <Radio label="Savings" checked={form.arAccountType === "savings"} onChange={() => set("arAccountType", "savings")} />
                         </div>
                       </div>
-                      <Field label="Routing number (9 digits)" value={form.arRoutingNumber} onChange={v => set("arRoutingNumber", v.replace(/\D/g,"").slice(0,9))} />
-                      <Field label="Account number" value={form.arAccountNumber} onChange={v => set("arAccountNumber", v.replace(/\D/g,"").slice(0,17))} />
+                      <Field label="Routing number (9 digits)" value={form.arRoutingNumber} onChange={(v: any) => set("arRoutingNumber", v.replace(/\D/g,"").slice(0,9))} />
+                      <Field label="Account number" value={form.arAccountNumber} onChange={(v: any) => set("arAccountNumber", v.replace(/\D/g,"").slice(0,17))} />
                     </div>
                   )}
                 </>
@@ -342,14 +342,14 @@ export default function StateSectionPage() {
   )
 }
 function Field({ label, value, onChange }: any) {
-  return <div className="field"><label>{label}</label><input value={value} onChange={e => onChange(e.target.value)} /></div>
+  return <div className="field"><label>{label}</label><input value={value} onChange={(e: any) => onChange(e.target.value)} /></div>
 }
 function MF({ label, value, onChange }: any) {
-  return <div className="field">{label && <label>{label}</label>}<div className="money-input"><span>$</span><input type="number" step="0.01" min="0" value={value} onChange={e => onChange(e.target.value)} /></div></div>
+  return <div className="field">{label && <label>{label}</label>}<div className="money-input"><span>$</span><input type="number" step="0.01" min="0" value={value} onChange={(e: any) => onChange(e.target.value)} /></div></div>
 }
 function Radio({ label, checked, onChange }: any) {
   return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="radio" checked={checked} onChange={onChange} />{label}</label>
 }
 function CB({ label, checked, onChange }: any) {
-  return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />{label}</label>
+  return <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#374151"}}><input type="checkbox" checked={checked} onChange={(e: any) => onChange(e.target.checked)} />{label}</label>
 }

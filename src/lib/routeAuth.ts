@@ -9,9 +9,9 @@
  */
 
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/src/lib/auth"
 import { Role } from "@prisma/client"
-import { unauthorized, forbidden } from "@/lib/apiHelpers"
+import { unauthorized, forbidden } from "@/src/lib/apiHelpers"
 import { NextResponse } from "next/server"
 
 export interface SessionUser {
@@ -68,13 +68,13 @@ export async function canAccessClient(
 ): Promise<boolean> {
   if (user.role === "PREPARER" || user.role === "ADMIN") {
     // Any preparer in the firm can access
-    const { prisma } = await import("@/lib/prisma")
+    const { prisma } = await import("@/src/lib/prisma")
     const client = await prisma.client.findUnique({ where: { id: clientId } })
     return client?.firmId === user.firmId
   }
 
   if (user.role === "FILER") {
-    const { prisma } = await import("@/lib/prisma")
+    const { prisma } = await import("@/src/lib/prisma")
     const client = await prisma.client.findUnique({ where: { id: clientId } })
     return client?.userId === user.id
   }
