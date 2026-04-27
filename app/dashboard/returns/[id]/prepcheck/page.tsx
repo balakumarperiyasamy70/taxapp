@@ -47,7 +47,7 @@ export default function PrepCheckPage() {
     setRunning(true)
     setLoading(true)
     try {
-      const res = await fetch(`/api/returns/${id}/prepcheck`)
+      const res = await fetch(`/api/returns/${id}/prepcheck`, { credentials: "include" })
       const json = await res.json()
       setResult(json.data)
     } catch (e) {
