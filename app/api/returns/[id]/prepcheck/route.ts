@@ -87,15 +87,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   // ── INCOME ─────────────────────────────────────────────
-  if (!f1040?.totalIncome && f1040?.totalIncome !== 0) {
+  if (!f1040?.totalIncome && Number(f1040?.totalIncome) !== 0) {
     checks.push({ id: "inc-missing", category: "Income", severity: "warning",
       message: "No income entered", detail: "If you have no income, make sure this is correct.", path: "/federal/income" })
   } else {
     checks.push({ id: "inc-ok", category: "Income", severity: "ok",
-      message: `Total income: $${Number(f1040.totalIncome).toLocaleString()}` })
+      message: `Total income: $${Number(f1040?.totalIncome).toLocaleString()}` })
   }
 
-  if (f1040?.adjustedGrossIncome && Number(f1040.adjustedGrossIncome) < 0) {
+  if (f1040?.adjustedGrossIncome && Number(f1040?.adjustedGrossIncome) < 0) {
     checks.push({ id: "inc-neg-agi", category: "Income", severity: "warning",
       message: "Adjusted Gross Income is negative", detail: "Verify all income and deduction entries.", path: "/federal/income" })
   }
