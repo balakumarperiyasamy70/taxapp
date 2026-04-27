@@ -4,7 +4,7 @@ import { useRouter, useParams } from "next/navigation"
 import ReturnNav from "../../../ReturnNav"
 import { EINField } from "../../../../../../components/TaxFields"
 
-export default function Form1099kPage() {
+export default function Form1099intPage() {
   const router = useRouter(); const params = useParams()
   const id = params.id as string; const base = `/dashboard/returns/${id}`
   const [saving, setSaving] = useState(false); const [whose, setWhose] = useState("taxpayer")
@@ -12,45 +12,42 @@ export default function Form1099kPage() {
   function set(f:string,v:string){setFields(p=>{...p,[f]:v})}
   async function handleSave(andAnother=false){
     setSaving(true)
-    await fetch(`/api/returns/${id}/income/1099k`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({whose,payerName:fields.payerName,...fields})})
+    await fetch(`/api/returns/${id}/income/1099int`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({whose,payerName:fields.payerName,...fields})})
     setSaving(false)
     if(!andAnother)router.push(`${base}/federal/income`); else setFields({})
   }
   return (<div className="root"><ReturnNav returnId={id} taxYear={2025} />
     <main className="main">
-      <h1 className="title">Form 1099-K <span className="ref">Payment Card & Third Party Network</span></h1>
+      <h1 className="title">Form 1099-INT <span className="ref">Interest Income</span></h1>
       <div className="whose-row">
         <button className={`whose-btn ${whose==="taxpayer"?"active":""}`} onClick={()=>setWhose("taxpayer")}>Taxpayer</button>
         <button className={`whose-btn ${whose==="spouse"?"active":""}`} onClick={()=>setWhose("spouse")}>Spouse</button>
       </div>
 
-      <div className="card"><h2>Filer / PSE Information</h2>
-        <div className="row"><TF label="Filer name (payment settlement entity) *" fkey="payerName" fields={fields} set={set} full /></div>
-        <div className="row"><EINField label="Filer EIN" value={fields.ein||""} onChange={(v:string)=>set("ein",v)} /><TF label="PSE phone" fkey="psePhone" fields={fields} set={set} /></div>
+      <div className="card"><h2>Payer Information</h2>
+        <div className="row"><TF label="Payer name (bank/institution) *" fkey="payerName" fields={fields} set={set} full /></div>
+        <div className="row"><EINField label="Payer EIN" value={fields.ein||""} onChange={(v:string)=>set("ein",v)} /><TF label="Account number" fkey="accountNumber" fields={fields} set={set} /></div>
       </div>
-      <div className="card"><h2>Payment Information</h2>
-        <p className="note">Report gross payment amounts — do NOT subtract refunds, returns, or fees.</p>
+      <div className="card"><h2>Interest Income</h2>
         <div className="row">
-          <MF label="Box 1a — Gross amount of payment card/third party network transactions *" fkey="box1a" fields={fields} set={set} full />
+          <MF label="Box 1 — Interest income *" fkey="box1" fields={fields} set={set} />
+          <MF label="Box 2 — Early withdrawal penalty" fkey="box2" fields={fields} set={set} />
+          <MF label="Box 3 — Interest on U.S. savings bonds/T-bills" fkey="box3" fields={fields} set={set} />
         </div>
         <div className="row">
-          <MF label="Box 1b — Card not present transactions" fkey="box1b" fields={fields} set={set} />
-          <MF label="Box 4 — Federal income tax withheld" fkey="box4" fields={fields} set={set} />
+          <MF label="Box 4 — Federal tax withheld" fkey="box4" fields={fields} set={set} />
+          <MF label="Box 5 — Investment expenses" fkey="box5" fields={fields} set={set} />
+          <MF label="Box 6 — Foreign tax paid" fkey="box6" fields={fields} set={set} />
         </div>
         <div className="row">
-          <TF label="Box 5a — Number of transactions" fkey="box5a" fields={fields} set={set} />
-          <TF label="Box 2 — Merchant category code" fkey="box2" fields={fields} set={set} />
+          <MF label="Box 8 — Tax-exempt interest" fkey="box8" fields={fields} set={set} />
+          <MF label="Box 9 — Specified private activity bond interest" fkey="box9" fields={fields} set={set} />
+          <MF label="Box 10 — Market discount" fkey="box10" fields={fields} set={set} />
         </div>
         <div className="row">
-          <TF label="Box 6 — State" fkey="state" fields={fields} set={set} />
-          <MF label="Box 7 — State income tax withheld" fkey="stateWithheld" fields={fields} set={set} />
-        </div>
-        <p className="note">Monthly breakdown (optional):</p>
-        <div className="row">
-          {["Jan","Feb","Mar","Apr","May","Jun"].map(m=><MF key={m} label={m} fkey={`month_${m.toLowerCase()}`} fields={fields} set={set} />)}
-        </div>
-        <div className="row">
-          {["Jul","Aug","Sep","Oct","Nov","Dec"].map(m=><MF key={m} label={m} fkey={`month_${m.toLowerCase()}`} fields={fields} set={set} />)}
+          <MF label="Box 11 — Bond premium" fkey="box11" fields={fields} set={set} />
+          <TF label="Box 15 — State" fkey="state" fields={fields} set={set} />
+          <MF label="Box 16 — State tax withheld" fkey="stateWithheld" fields={fields} set={set} />
         </div>
       </div>
       <div className="footer">

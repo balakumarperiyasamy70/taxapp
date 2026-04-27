@@ -8,12 +8,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const body = await req.json()
-  const amount = body.box1 ?? body.amount ?? 0
+  const amount = body.schedCProfit ?? body.amount ?? 0
   const withheld = body.box4 ?? body.federalWithheld ?? null
   const item = await prisma.incomeItem.create({
     data: {
       returnId: params.id,
-      type: "F1099_INT",
+      type: "OTHER",
       payerName: body.payerName ?? null,
       payerEin: body.ein ?? null,
       amount: new Prisma.Decimal(amount || 0),
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const items = await prisma.incomeItem.findMany({
-    where: { returnId: params.id, type: "F1099_INT" },
+    where: { returnId: params.id, type: "OTHER" },
     orderBy: { createdAt: "asc" },
   })
   return NextResponse.json({ data: items })

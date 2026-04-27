@@ -8,17 +8,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const body = await req.json()
-  const amount = body.amount ?? body.totalAmount ?? body.netProfit ?? body.box1 ?? body.totalGain ?? body.grossIncome ?? 0
-  const withheld = body.federalWithheld ?? body.box4 ?? body.taxWithheld ?? null
+  const amount = body.box1a ?? body.amount ?? 0
+  const withheld = body.box4 ?? body.federalWithheld ?? null
   const item = await prisma.incomeItem.create({
     data: {
       returnId: params.id,
       type: "F1099_DIV",
-      payerName: body.payerName ?? body.employerName ?? body.businessName ?? null,
-      payerEin: body.ein ?? body.payerEin ?? null,
+      payerName: body.payerName ?? null,
+      payerEin: body.ein ?? null,
       amount: new Prisma.Decimal(amount || 0),
       federalWithheld: withheld != null ? new Prisma.Decimal(withheld) : null,
-      stateCode: body.stateCode ?? null,
+      stateCode: body.state ?? null,
       boxData: body,
     },
   })
