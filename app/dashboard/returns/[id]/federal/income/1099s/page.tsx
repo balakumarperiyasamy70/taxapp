@@ -9,7 +9,7 @@ export default function Form1099sPage() {
   const id = params.id as string; const base = `/dashboard/returns/${id}`
   const [saving, setSaving] = useState(false)
   const [fields, setFields] = useState<Record<string,any>>({})
-  function set(f:string,v:any){setFields(p=>{...p,[f]:v})}
+  function set(f:string,v:any){setFields(p=>({...p,[f]:v}))}
   async function handleSave() {
     setSaving(true)
     await fetch(`/api/returns/${id}/income/other-income`, {

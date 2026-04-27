@@ -26,6 +26,13 @@ const INCOME_FORMS = [
   { key: "form-8812", label: "Schedule 8812", desc: "Child Tax Credit and Additional CTC" },
   { key: "form-2441", label: "Form 2441", desc: "Child and Dependent Care Expenses" },
   { key: "alimony", label: "Alimony Received", desc: "Payments from a former spouse under a legal agreement" },
+  { key: "1099sa", label: "Form 1099-SA", desc: "HSA and Archer MSA Distributions" },
+  { key: "1099s", label: "Form 1099-S", desc: "Proceeds from Real Estate Transactions" },
+  { key: "schedule-h", label: "Schedule H", desc: "Household Employment Taxes" },
+  { key: "form-6251", label: "Form 6251", desc: "Alternative Minimum Tax" },
+  { key: "form-8880", label: "Form 8880", desc: "Retirement Savings Credit" },
+  { key: "form-8863", label: "Form 8863", desc: "Education Credits (AOC & LLC)" },
+  { key: "form-8960", label: "Form 8960", desc: "Net Investment Income Tax 3.8%" },
   { key: "other-income", label: "Other Income", desc: "K-1 earnings, gambling winnings, cancellation of debt, etc." },
 ]
 
