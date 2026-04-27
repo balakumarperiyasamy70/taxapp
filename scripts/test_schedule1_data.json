@@ -1,0 +1,30 @@
+{
+  "f1040": {
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "ssn": "123-45-6789"
+  },
+  "schedule1": {
+    "part1": {
+      "line_1": 250,
+      "line_3": 12500,
+      "line_5": 4800,
+      "line_7": 0,
+      "line_8b": 1200,
+      "line_8z_desc": "Hobby income",
+      "line_8z_amount": 600,
+      "line_9": 1800,
+      "line_10": 19350
+    },
+    "part2": {
+      "line_15": 882,
+      "line_17": 4200,
+      "line_21": 1500,
+      "line_24a": 75,
+      "line_24z_desc": "Refunded fees",
+      "line_24z_amount": 50,
+      "line_25": 125,
+      "line_26": 6707
+    }
+  }
+}

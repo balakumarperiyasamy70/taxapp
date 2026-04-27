@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IRS PDF templates (downloaded from irs.gov, too large for git)
+/templates/
+
+# Python bytecode
+__pycache__/
+*.pyc
