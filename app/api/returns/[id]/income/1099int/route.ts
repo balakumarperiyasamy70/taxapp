@@ -13,7 +13,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const item = await prisma.incomeItem.create({
     data: {
       returnId: params.id,
-      type: "INTEREST",
+      type: "F1099_INT",
       payerName: body.payerName ?? body.employerName ?? body.businessName ?? null,
       payerEin: body.ein ?? body.payerEin ?? null,
       amount: new Prisma.Decimal(amount || 0),
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const items = await prisma.incomeItem.findMany({
-    where: { returnId: params.id, type: "INTEREST" },
+    where: { returnId: params.id, type: "F1099_INT" },
     orderBy: { createdAt: "asc" },
   })
   return NextResponse.json({ data: items })
