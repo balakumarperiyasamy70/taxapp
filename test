@@ -1,21 +1,13 @@
 cd /opt/sbx-taxapp
+sed -i 's/amount: new Prisma.Decimal(body.box1Wages || 0)/amount: new Prisma.Decimal(body.boxes?.box1 || 0)/' "/opt/sbx-taxapp/app/api/returns/[id]/income/w2/route.ts"
 
-# Fix all income routes with correct DocumentType values
-sed -i 's/type: "DIVIDENDS"/type: "F1099_DIV"/' app/api/returns/\[id\]/income/1099div/route.ts
-sed -i 's/type: "INTEREST"/type: "F1099_INT"/' app/api/returns/\[id\]/income/1099int/route.ts
-sed -i 's/type: "RETIREMENT"/type: "F1099_NEC"/' app/api/returns/\[id\]/income/1099r/route.ts
-sed -i 's/type: "UNEMPLOYMENT"/type: "F1099_MISC"/' app/api/returns/\[id\]/income/1099g-box1/route.ts
-sed -i 's/type: "STATE_REFUND"/type: "F1099_MISC"/' app/api/returns/\[id\]/income/1099g-box2/route.ts
-sed -i 's/type: "MISC_INCOME"/type: "F1099_MISC"/' app/api/returns/\[id\]/income/1099misc/route.ts
-sed -i 's/type: "NEC_INCOME"/type: "F1099_NEC"/' app/api/returns/\[id\]/income/1099nec/route.ts
-sed -i 's/type: "PAYMENT_CARD"/type: "OTHER"/' app/api/returns/\[id\]/income/1099k/route.ts
-sed -i 's/type: "SCHEDULE_B"/type: "OTHER"/' app/api/returns/\[id\]/income/schedule-b/route.ts
-sed -i 's/type: "SCHEDULE_C"/type: "OTHER"/' app/api/returns/\[id\]/income/schedule-c/route.ts
-sed -i 's/type: "SCHEDULE_D"/type: "OTHER"/' app/api/returns/\[id\]/income/schedule-d/route.ts
-sed -i 's/type: "SCHEDULE_E"/type: "OTHER"/' app/api/returns/\[id\]/income/schedule-e/route.ts
-sed -i 's/type: "SCHEDULE_F"/type: "OTHER"/' app/api/returns/\[id\]/income/schedule-f/route.ts
-sed -i 's/type: "DISASTER_DIST"/type: "OTHER"/' app/api/returns/\[id\]/income/8915f/route.ts
-sed -i 's/type: "ALIMONY"/type: "OTHER"/' app/api/returns/\[id\]/income/alimony/route.ts
-sed -i 's/type: "OTHER_INCOME"/type: "OTHER"/' app/api/returns/\[id\]/income/other-income/route.ts
+sed -i 's/payerName: body.employerName ?? null/payerName: body.employer?.name ?? null/' "/opt/sbx-taxapp/app/api/returns/[id]/income/w2/route.ts"
 
+sed -i 's/payerEin: body.ein ?? null/payerEin: body.employer?.ein ?? null/' "/opt/sbx-taxapp/app/api/returns/[id]/income/w2/route.ts"
+
+sed -i 's/federalWithheld: body.box2Federal != null/federalWithheld: body.boxes?.box2 != null/' "/opt/sbx-taxapp/app/api/returns/[id]/income/w2/route.ts"
+
+sed -i 's/new Prisma.Decimal(body.box2Federal)/new Prisma.Decimal(body.boxes?.box2 || 0)/' "/opt/sbx-taxapp/app/api/returns/[id]/income/w2/route.ts"
+
+npm run build && pm2 restart sbx-taxapp
 npm run build && pm2 restart sbx-taxapp
