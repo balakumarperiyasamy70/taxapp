@@ -11,12 +11,29 @@ import { randomBytes } from "crypto"
 
 const execAsync = promisify(exec)
 
+const SCRIPTS: Record<string, { script: string; prefix: string }> = {
+  "1040":         { script: "generate_1040.py",          prefix: "Form_1040" },
+  "ar1000f":      { script: "generate_ar1000f.py",       prefix: "AR1000F" },
+  "schedule1":    { script: "generate_schedule1.py",     prefix: "Schedule_1" },
+  "schedule-a":   { script: "generate_schedule_a.py",    prefix: "Schedule_A" },
+  "schedule-b":   { script: "generate_schedule_b.py",    prefix: "Schedule_B" },
+  "schedule-c":   { script: "generate_schedule_c.py",    prefix: "Schedule_C" },
+  "schedule-d":   { script: "generate_schedule_d.py",    prefix: "Schedule_D" },
+  "schedule-se":  { script: "generate_schedule_se.py",   prefix: "Schedule_SE" },
+  "schedule-8812":{ script: "generate_schedule_8812.py", prefix: "Schedule_8812" },
+  "form-8962":    { script: "generate_form_8962.py",     prefix: "Form_8962" },
+}
+
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
   const formType = searchParams.get("form") || "1040"
+  const scriptInfo = SCRIPTS[formType]
+  if (!scriptInfo) {
+    return NextResponse.json({ error: `Unknown form type: ${formType}` }, { status: 400 })
+  }
 
   const taxReturn = await prisma.taxReturn.findUnique({
     where: { id: params.id },
@@ -57,6 +74,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     taxYear: taxReturn.taxYear,
     dependents: [],
     f1040: {
+      first_name: client.firstName,
+      last_name: client.lastName,
+      ssn: client.ssn || "",
       totalIncome: Number(f1040?.totalIncome || 0),
       adjustedGrossIncome: Number(f1040?.adjustedGrossIncome || 0),
       standardDeduction: Number(f1040?.standardDeduction || 0),
@@ -95,8 +115,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   try {
     await writeFile(dataPath, JSON.stringify(data))
 
-    const scriptPath = join(process.cwd(), "scripts", "generate_1040.py")
-    
+    const scriptPath = join(process.cwd(), "scripts", scriptInfo.script)
+
     // Use wsl python3 on Windows dev, python3 on Linux prod
     const isWindows = process.platform === "win32"
     const pythonCmd = isWindows
@@ -108,7 +128,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const pdfBuffer = await readFile(pdfPath)
     await Promise.all([unlink(dataPath), unlink(pdfPath)]).catch(() => {})
 
-    const filename = `Form_1040_${client.lastName}_${taxReturn.taxYear}.pdf`
+    const filename = `${scriptInfo.prefix}_${client.lastName}_${taxReturn.taxYear}.pdf`
     return new NextResponse(pdfBuffer, {
       headers: {
         "Content-Type": "application/pdf",

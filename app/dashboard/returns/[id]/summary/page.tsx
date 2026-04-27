@@ -172,11 +172,60 @@ export default function SummaryPage() {
               loading={downloading === "complete"}
             />
             <DownloadCard
+              title="Schedule 1"
+              desc="Additional Income & Adjustments"
+              icon="📄"
+              onClick={() => downloadPDF("schedule1", `Schedule_1_${data.client.lastName}_2025`)}
+              loading={downloading === "schedule1"}
+            />
+            <DownloadCard
               title="Schedule A"
               desc="Itemized Deductions"
               icon="📄"
               onClick={() => downloadPDF("schedule-a", `Schedule_A_${data.client.lastName}_2025`)}
               loading={downloading === "schedule-a"}
+            />
+            <DownloadCard
+              title="Schedule B"
+              desc="Interest & Ordinary Dividends"
+              icon="📄"
+              onClick={() => downloadPDF("schedule-b", `Schedule_B_${data.client.lastName}_2025`)}
+              loading={downloading === "schedule-b"}
+            />
+            <DownloadCard
+              title="Schedule C"
+              desc="Profit or Loss From Business"
+              icon="📄"
+              onClick={() => downloadPDF("schedule-c", `Schedule_C_${data.client.lastName}_2025`)}
+              loading={downloading === "schedule-c"}
+            />
+            <DownloadCard
+              title="Schedule D"
+              desc="Capital Gains and Losses"
+              icon="📄"
+              onClick={() => downloadPDF("schedule-d", `Schedule_D_${data.client.lastName}_2025`)}
+              loading={downloading === "schedule-d"}
+            />
+            <DownloadCard
+              title="Schedule SE"
+              desc="Self-Employment Tax"
+              icon="📄"
+              onClick={() => downloadPDF("schedule-se", `Schedule_SE_${data.client.lastName}_2025`)}
+              loading={downloading === "schedule-se"}
+            />
+            <DownloadCard
+              title="Schedule 8812"
+              desc="Credits for Qualifying Children"
+              icon="📄"
+              onClick={() => downloadPDF("schedule-8812", `Schedule_8812_${data.client.lastName}_2025`)}
+              loading={downloading === "schedule-8812"}
+            />
+            <DownloadCard
+              title="Form 8962"
+              desc="Premium Tax Credit"
+              icon="📄"
+              onClick={() => downloadPDF("form-8962", `Form_8962_${data.client.lastName}_2025`)}
+              loading={downloading === "form-8962"}
             />
           </div>
         </div>
