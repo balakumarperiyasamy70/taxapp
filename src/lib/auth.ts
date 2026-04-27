@@ -14,7 +14,8 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email) return null
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: { equals: credentials.email, mode: "insensitive" } },
+
         })
 	console.log("USER FOUND:", user)
         if (!user || !user.isActive) return null
