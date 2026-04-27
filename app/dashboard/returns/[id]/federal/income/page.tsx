@@ -5,6 +5,10 @@ import ReturnNav from "../../ReturnNav"
 
 const INCOME_FORMS = [
   { key: "w2", label: "Form W-2", desc: "Wage and Tax Statement" },
+  { key: "w2g", label: "Form W-2G", desc: "Certain Gambling Winnings" },
+  { key: "1099int", label: "Form 1099-INT", desc: "Interest income from banks and investments" },
+  { key: "1099div", label: "Form 1099-DIV", desc: "Dividends and distributions" },
+  { key: "1099b", label: "Form 1099-B", desc: "Proceeds from broker and barter exchange transactions" },
   { key: "1099g-box2", label: "Form 1099-G Box 2", desc: "State or local income tax refunds, credits, or offsets" },
   { key: "schedule-b", label: "Schedule B - Forms 1099-INT, DIV, OID", desc: "Interest income, dividends, and distributions" },
   { key: "1099r", label: "Form 1099-R, RRB, SSA", desc: "Distributions from pensions, annuities, retirement, IRAs, social security, etc." },
@@ -17,6 +21,10 @@ const INCOME_FORMS = [
   { key: "schedule-e", label: "Schedule E", desc: "Supplemental Income and Loss from Rents and Royalties" },
   { key: "schedule-d", label: "Schedule D/Form 8949", desc: "Capital gains and losses reported on Schedule D" },
   { key: "schedule-f", label: "Schedule F", desc: "Profit or Loss from Farming" },
+  { key: "schedule-se", label: "Schedule SE", desc: "Self-Employment Tax calculation" },
+  { key: "form-8962", label: "Form 8962", desc: "Premium Tax Credit (ACA Marketplace)" },
+  { key: "form-8812", label: "Schedule 8812", desc: "Child Tax Credit and Additional CTC" },
+  { key: "form-2441", label: "Form 2441", desc: "Child and Dependent Care Expenses" },
   { key: "alimony", label: "Alimony Received", desc: "Payments from a former spouse under a legal agreement" },
   { key: "other-income", label: "Other Income", desc: "K-1 earnings, gambling winnings, cancellation of debt, etc." },
 ]
