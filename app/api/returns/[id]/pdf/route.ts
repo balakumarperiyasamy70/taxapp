@@ -37,7 +37,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const taxReturn = await prisma.taxReturn.findUnique({
     where: { id: params.id },
-    include: { client: true, f1040: true, schedules: true, stateReturns: true, incomeItems: true },
+    include: {
+      client: { include: { dependents: true } },
+      f1040: true, schedules: true, stateReturns: true, incomeItems: true,
+    },
   })
   if (!taxReturn) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
@@ -45,10 +48,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const f1040 = taxReturn.f1040
   const paymentsSchedule = taxReturn.schedules.find(s => s.scheduleType === "PAYMENTS")
   const personalSchedule = taxReturn.schedules.find(s => s.scheduleType === "PERSONAL_INFO")
+  const deductionsSchedule = taxReturn.schedules.find(s => s.scheduleType === "DEDUCTIONS")
+  const healthSchedule = taxReturn.schedules.find(s => s.scheduleType === "HEALTH")
   const stateReturn = taxReturn.stateReturns.find(s => s.stateCode === "AR")
 
   const personalInfo = (personalSchedule?.data as any) || {}
   const payments = (paymentsSchedule?.data as any) || {}
+  const deductions = (deductionsSchedule?.data as any) || {}
+  const health = (healthSchedule?.data as any) || {}
 
   // ─── Schedule data built from IncomeItem rows ───
   const items = taxReturn.incomeItems
@@ -130,6 +137,83 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     line_16: stGain + ltGain,
   }
 
+  // Schedule A — itemized deductions from DEDUCTIONS schedule
+  const agi = Number(f1040?.adjustedGrossIncome ?? 0)
+  const sa_medical = num(deductions.medicalExpenses)
+  const sa_medThreshold = Math.round(agi * 0.075)
+  const sa_medDeduction = Math.max(0, sa_medical - sa_medThreshold)
+  const sa_5a = num(deductions.stateLocalTax ?? deductions.salesTax)
+  const sa_5b = num(deductions.realEstateTax)
+  const sa_5c = num(deductions.personalPropertyTax)
+  const sa_5d = sa_5a + sa_5b + sa_5c
+  const sa_5e = Math.min(sa_5d, 10000)
+  const sa_taxes = sa_5e + num(deductions.otherTaxes)
+  const sa_8a = num(deductions.mortgageInterest1098)
+  const sa_8b = num(deductions.mortgageInterestNot1098)
+  const sa_8c = num(deductions.points)
+  const sa_8e = sa_8a + sa_8b + sa_8c
+  const sa_interest = sa_8e + num(deductions.investmentInterest)
+  const sa_11 = num(deductions.cashGifts)
+  const sa_12 = num(deductions.nonCashGifts)
+  const sa_13 = num(deductions.giftCarryover)
+  const sa_gifts = sa_11 + sa_12 + sa_13
+  const sa_15 = num(deductions.casualtyLosses)
+  const sa_16 = num(deductions.otherDeductions)
+  const schedule_a = {
+    line_1: sa_medical, line_2: agi, line_3: sa_medThreshold, line_4: sa_medDeduction,
+    line_5a: sa_5a, line_5a_box: !!deductions.useSalesTax,
+    line_5b: sa_5b, line_5c: sa_5c, line_5d: sa_5d, line_5e: sa_5e,
+    line_6: num(deductions.otherTaxes), line_7: sa_taxes,
+    line_8a: sa_8a, line_8b: sa_8b, line_8c: sa_8c, line_8e: sa_8e,
+    line_9: num(deductions.investmentInterest), line_10: sa_interest,
+    line_11: sa_11, line_12: sa_12, line_13: sa_13, line_14: sa_gifts,
+    line_15: sa_15, line_16: sa_16,
+    line_17: sa_medDeduction + sa_taxes + sa_interest + sa_gifts + sa_15 + sa_16,
+  }
+
+  // Schedule 8812 — Child Tax Credit. Classify dependents by age.
+  const taxYear = taxReturn.taxYear
+  const deps = taxReturn.client.dependents
+  const ageAt = (dob: Date | null) => dob ? (taxYear - new Date(dob).getFullYear()) : 99
+  const qualifyingChildren = deps.filter(d => ageAt(d.dob) < 17).length
+  const otherDeps = deps.length - qualifyingChildren
+  const filingStatus = f1040?.filingStatus || ""
+  const ctcThreshold = filingStatus === "MARRIED_FILING_JOINTLY" ? 400000 : 200000
+  const ctcLine5 = qualifyingChildren * 2000
+  const ctcLine7 = otherDeps * 500
+  const ctcLine8 = ctcLine5 + ctcLine7
+  const ctcLine10 = Math.max(0, agi - ctcThreshold)
+  const ctcLine11 = Math.ceil(ctcLine10 / 1000) * 50  // rounded up to nearest $1000, × 5%
+  const ctcLine12 = Math.max(0, ctcLine8 - ctcLine11)
+  const schedule_8812 = {
+    line_1: agi, line_3: agi,
+    line_4: qualifyingChildren, line_5: ctcLine5,
+    line_6: otherDeps, line_7: ctcLine7,
+    line_8: ctcLine8, line_9: ctcThreshold,
+    line_10: ctcLine10, line_11: ctcLine11, line_12: ctcLine12,
+  }
+
+  // Form 8962 — Premium Tax Credit from HEALTH schedule
+  const annualPremium = num(health.annualPremium)
+  const annualSlcsp = num(health.annualSlcsp)
+  const annualAptc = num(health.annualAptc)
+  const familySize = num(health.familySize) || (1 + (filingStatus === "MARRIED_FILING_JOINTLY" ? 1 : 0) + deps.length)
+  const form_8962 = {
+    line_1: familySize, line_2a: agi, line_3: agi,
+    line_4: num(health.povertyLine), line_5: num(health.povertyPct),
+    line_7: num(health.applicableFigure), line_8a: num(health.annualContribution),
+    line_11: {
+      annual_premium: annualPremium,
+      annual_slcsp: annualSlcsp,
+      annual_contribution: num(health.annualContribution),
+      annual_aptc: annualAptc,
+    },
+    line_24: num(health.totalPtc),
+    line_25: annualAptc,
+    line_26: Math.max(0, num(health.totalPtc) - annualAptc),
+    line_27: Math.max(0, annualAptc - num(health.totalPtc)),
+  }
+
   // Schedule 1 — combine business income, unemployment, SE deduction
   const unemployment = items
     .filter(i => i.type === "F1099_MISC" && (i.boxData as any)?.unemployment)
@@ -194,10 +278,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       americanOpportunityCredit: Number(payments.americanOpportunityCredit || 0),
     },
     income: {},
+    schedule_a,
     schedule_b,
     schedule_c,
-    schedule_se,
     schedule_d,
+    schedule_se,
+    schedule_8812,
+    form_8962,
     schedule1: schedule_1,
     stateData: (stateReturn?.data as any) || {},
     preparer: {
