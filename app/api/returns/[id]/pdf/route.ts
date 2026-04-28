@@ -75,30 +75,65 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     part3: { has_foreign_account: false, fbar_required: false, foreign_trust: false },
   }
 
-  // Schedule C — first OTHER item flagged as schedule-c in boxData
-  const scItem = items.find(i => i.type === "OTHER" && (i.boxData as any)?.formType === "schedule-c")
+  // Schedule C — OTHER item with boxData.businessCode present
+  const scItem = items.find(i => i.type === "OTHER" && (i.boxData as any)?.businessCode)
   const scBox = (scItem?.boxData as any) || {}
-  const scNetProfit = num(scBox.netProfit ?? scItem?.amount)
-  const scGross = num(scBox.grossReceipts ?? scItem?.amount)
-  const scExpenses = num(scBox.totalExpenses)
+  const sc_l1  = num(scBox.grossReceipts)
+  const sc_l2  = num(scBox.returns)
+  const sc_l3  = sc_l1 - sc_l2
+  const sc_l4  = num(scBox.cogs)              // cost of goods sold (Part III)
+  const sc_l5  = sc_l3 - sc_l4
+  const sc_l6  = num(scBox.otherIncome)
+  const sc_l7  = sc_l5 + sc_l6                // gross income
+  const sc_l8  = num(scBox.advertising)
+  const sc_l9  = num(scBox.carTruck)
+  const sc_l10 = num(scBox.commissions)
+  const sc_l11 = num(scBox.contractLabor)
+  const sc_l12 = num(scBox.depletion)
+  const sc_l13 = num(scBox.depreciation)
+  const sc_l14 = num(scBox.employeeBenefit)
+  const sc_l15 = num(scBox.insurance)
+  const sc_l16a = num(scBox.interestMortgage)
+  const sc_l16b = num(scBox.interestOther)
+  const sc_l17 = num(scBox.legal)
+  const sc_l18 = num(scBox.officeExpense)
+  const sc_l19 = num(scBox.pensionPlans)
+  const sc_l21 = num(scBox.repairsMaint)
+  const sc_l22 = num(scBox.supplies)
+  const sc_l23 = num(scBox.taxesLicenses)
+  const sc_l24a = num(scBox.travel)
+  const sc_l24b = num(scBox.meals)
+  const sc_l25 = num(scBox.utilities)
+  const sc_l26 = num(scBox.wages)
+  const sc_l28 = sc_l8 + sc_l9 + sc_l10 + sc_l11 + sc_l12 + sc_l13 + sc_l14 + sc_l15
+              + sc_l16a + sc_l16b + sc_l17 + sc_l18 + sc_l19 + sc_l21 + sc_l22
+              + sc_l23 + sc_l24a + sc_l24b + sc_l25 + sc_l26
+  const sc_l29 = sc_l7 - sc_l28
+  const sc_l31 = sc_l29                       // line 30 (home office) not yet captured
+  const cityStateZip = scBox.cityStateZip
+    || [scBox.city, scBox.state, scBox.zip].filter(Boolean).join(", ").replace(/, ([A-Z]{2}), /, ", $1 ")
   const schedule_c = scItem ? {
-    principal_business: scBox.principalBusiness || "",
+    principal_business: scBox.description || "",
     business_code: scBox.businessCode || "",
     business_name: scBox.businessName || "",
     ein: scBox.ein || scItem.payerEin || "",
     address: scBox.address || "",
-    city_state_zip: scBox.cityStateZip || "",
+    city_state_zip: cityStateZip,
     accounting_method: scBox.accountingMethod || "cash",
     material_participation: scBox.materialParticipation ?? true,
-    line_1: scGross,
-    line_3: scGross,
-    line_5: scGross,
-    line_7: scGross,
-    line_28: scExpenses,
-    line_29: scNetProfit,
-    line_31: scNetProfit,
-    line_32_risk: "all",
+    form_1099_filed: !!scBox.filed1099,
+    line_1: sc_l1, line_2: sc_l2, line_3: sc_l3, line_4: sc_l4, line_5: sc_l5,
+    line_6: sc_l6, line_7: sc_l7,
+    line_8: sc_l8, line_9: sc_l9, line_10: sc_l10, line_11: sc_l11, line_12: sc_l12,
+    line_13: sc_l13, line_14: sc_l14, line_15: sc_l15,
+    line_16a: sc_l16a, line_16b: sc_l16b, line_17: sc_l17,
+    line_18: sc_l18, line_19: sc_l19,
+    line_21: sc_l21, line_22: sc_l22, line_23: sc_l23,
+    line_24a: sc_l24a, line_24b: sc_l24b, line_25: sc_l25, line_26: sc_l26,
+    line_28: sc_l28, line_29: sc_l29, line_31: sc_l31,
+    line_32_risk: scBox.atRisk ? "all" : "some",
   } : {}
+  const scNetProfit = sc_l31
 
   // Schedule SE — from Schedule C net profit
   const seBase = num(scNetProfit)
